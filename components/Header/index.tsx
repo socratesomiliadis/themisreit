@@ -111,7 +111,7 @@ export default function Header() {
       });
     } else {
       tl.set(".news", {
-        overflowY: "hidden",
+        overflowY: "visible",
       });
       tl.to(".news-item", {
         y: "-2rem",
@@ -128,7 +128,7 @@ export default function Header() {
 
   return (
     <header className="fixed z-[999] left-8 top-8">
-      <div className="flex gap-6 h-[90vh]">
+      <div className="relative flex gap-6 h-[90vh] z-20">
         <div className="relative">
           <div
             style={{
@@ -222,6 +222,12 @@ attending the B-Hype event in Dubai."
           />
         </div>
       </div>
+      <div
+        onClick={() => {
+          setMenuOpen(false);
+        }}
+        className="fixed left-0 top-0 z-10 w-screen h-screen"
+      ></div>
     </header>
   );
 }
