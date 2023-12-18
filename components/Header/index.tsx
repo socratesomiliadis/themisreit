@@ -117,6 +117,20 @@ export default function Header() {
     };
   }, [isNewsOpen]);
 
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === "Escape") {
+      setMenuOpen(false);
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   return (
     <header className="fixed selection:bg-black selection:text-white z-[999] left-8 top-8">
       <div className="relative flex gap-6 h-[90vh] z-20">
