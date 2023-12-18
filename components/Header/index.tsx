@@ -11,7 +11,7 @@ export default function Header() {
   useEffect(() => {
     let tl = gsap.timeline({ paused: true });
     if (isMenuOpen) {
-      tl.set(".menu-body", { opacity: 0.5 }, 0);
+      tl.set(".menu-body", { scale: 0.95, opacity: 0.5 }, 0);
       tl.to(
         "main",
         {
@@ -58,13 +58,6 @@ export default function Header() {
         0.2
       );
     } else {
-      //   tl.set(
-      //     ".news-btn > svg",
-      //     {
-      //       transition: "transform 100s ease-out",
-      //     },
-      //     0
-      //   );
       tl.to(
         "main",
         {
@@ -82,15 +75,12 @@ export default function Header() {
       tl.to(
         ".news-btn",
         {
-          //   x: "2rem",
           opacity: 0,
-          //   boxShadow: "0 0 0 0px #000",
-          duration: 0.4,
         },
-        0
+        0.06
       );
 
-      tl.to(".menu-body", { scale: 0.95, opacity: 0, duration: 0.4 }, 0);
+      tl.to(".menu-body", { opacity: 0, duration: 0.4 }, 0);
     }
     tl.restart();
 
@@ -159,7 +149,11 @@ export default function Header() {
               fill="none"
               className="transition-transform ease-out duration-200"
               style={{
-                transform: isNewsOpen ? "rotate(0deg)" : "rotate(180deg)",
+                transform: isNewsOpen
+                  ? "rotate(0deg)"
+                  : isMenuOpen
+                  ? "rotate(180deg)"
+                  : "rotate(0deg)",
               }}
               xmlns="http://www.w3.org/2000/svg"
             >

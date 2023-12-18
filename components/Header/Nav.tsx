@@ -56,6 +56,37 @@ function NavItem({
   );
 }
 
+function SocialItem({ text, href }: { text: string; href: string }) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      className="text-black group social-item overflow-hidden relative"
+    >
+      <span className="absolute left-0 bottom-0 group-hover:translate-y-[-100%] transition-transform duration-200 ease-out">
+        {text}
+      </span>
+      <span className="flex items-center gap-3 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-200 ease-out">
+        {text}
+        <span className="block w-2">
+          <svg
+            width="100%"
+            viewBox="0 0 14 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3.06978 1.94975L12.9693 1.94973L12.9693 11.8492M0.948451 13.9705L12.6157 2.3033"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 export default function Nav({ isOpen }: { isOpen: boolean }) {
   useEffect(() => {
     let tl = gsap.timeline({ paused: true });
@@ -130,42 +161,12 @@ export default function Nav({ isOpen }: { isOpen: boolean }) {
         <NavItem isMenuOpen={isOpen} text="Contact" href="/contact" />
       </div>
       <div className="flex flex-col w-fit gap-2 tracking-tighter pb-12">
-        <span className="text-[#B9B9B9] social-item">Social</span>
-        <Link
-          href="https://www.linkedin.com/"
-          target="_blank"
-          className="text-black hover:text-[#9c9c9c] transition-colors duration-200 ease-out mt-8 social-item"
-        >
-          LinkedIn
-        </Link>
-        <Link
-          href="https://www.behance.net/"
-          target="_blank"
-          className="text-black hover:text-[#9c9c9c] transition-colors duration-200 ease-out social-item"
-        >
-          Behance
-        </Link>
-        <Link
-          href="https://www.instagram.com/"
-          target="_blank"
-          className="text-black hover:text-[#9c9c9c] transition-colors duration-200 ease-out social-item"
-        >
-          Instagram
-        </Link>
-        <Link
-          href="https://discord.com/"
-          target="_blank"
-          className="text-black hover:text-[#9c9c9c] transition-colors duration-200 ease-out social-item"
-        >
-          Discord
-        </Link>
-        <Link
-          href="https://twitter.com/"
-          target="_blank"
-          className="text-black hover:text-[#9c9c9c] transition-colors duration-200 ease-out social-item"
-        >
-          Twitter
-        </Link>
+        <span className="text-[#B9B9B9] social-item mb-8">Social</span>
+        <SocialItem text="LinkedIn" href="https://www.linkedin.com/" />
+        <SocialItem text="Behance" href="https://www.behance.net/" />
+        <SocialItem text="Instagram" href="https://www.instagram.com/" />
+        <SocialItem text="Discord" href="https://discord.com/" />
+        <SocialItem text="Twitter" href="https://twitter.com/" />
       </div>
     </div>
   );
