@@ -12,7 +12,7 @@ export default function Home() {
         className={`${inter.className} bg-black w-screen h-screen relative flex items-center justify-center p-24`}
       >
         <Image
-          src="/static/images/BgImage.png"
+          src="/static/images/BGImage.png"
           width={1577}
           height={2128}
           alt=""
