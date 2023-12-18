@@ -14,7 +14,7 @@ export default function NewsItem({
   image: string;
 }) {
   return (
-    <div className="bg-[#1E1E1E]/50 news-item opacity-0 -translate-y-8 rounded-2xl w-[30vw] backdrop-blur-xl gap-8 flex p-6">
+    <div className="bg-[#1E1E1E]/50 hover:bg-[#141414]/60 transition-colors duration-200 ease-out cursor-pointer news-item opacity-0 -translate-y-8 rounded-2xl w-[30vw] backdrop-blur-xl gap-8 flex p-6">
       <div className="w-2/3 flex flex-col justify-between">
         <span className="px-4 py-1 rounded-lg bg-white w-fit text-sm tracking-tighter font-medium">
           {tag}

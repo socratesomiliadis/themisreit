@@ -1,7 +1,8 @@
 import { Cross as Hamburger } from "hamburger-react";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import NewsItem from "./NewsItem";
+import Nav from "./Nav";
 
 export default function Header() {
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -111,7 +112,7 @@ export default function Header() {
       });
     } else {
       tl.set(".news", {
-        overflowY: "visible",
+        overflowY: "hidden",
       });
       tl.to(".news-item", {
         y: "-2rem",
@@ -150,7 +151,7 @@ export default function Header() {
             onClick={() => {
               setNewsOpen((prev) => !prev);
             }}
-            className="cursor-pointer  absolute news-btn right-0 top-0 z-10 rounded-full bg-white text-black w-12 h-12 flex items-center justify-center"
+            className="cursor-pointer opacity-0 absolute news-btn right-0 top-0 z-10 rounded-full bg-white text-black w-12 h-12 flex items-center justify-center"
           >
             <svg
               width="50%"
@@ -169,9 +170,11 @@ export default function Header() {
               />
             </svg>
           </div>
-          <div className="bg-white z-0 menu-body rounded-2xl h-[90vh] w-[28vw]"></div>
+          <div className="bg-white z-0 opacity-0 menu-body rounded-2xl h-[90vh] w-[28vw]">
+            <Nav isOpen={isMenuOpen} />
+          </div>
         </div>
-        <div className="news h-full overflow-y-auto flex flex-col gap-4 pr-6">
+        <div className="news overflow-y-hidden h-full flex flex-col gap-4 pr-6">
           <NewsItem
             tag="Events"
             title="B-HYPE DXB"
