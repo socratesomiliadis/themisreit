@@ -170,11 +170,21 @@ export default function Header() {
               />
             </svg>
           </div>
-          <div className="bg-white z-0 opacity-0 menu-body rounded-2xl h-[90vh] w-[28vw]">
+          <div
+            style={{
+              pointerEvents: isMenuOpen ? "auto" : "none",
+            }}
+            className="bg-white z-0 opacity-0 menu-body rounded-2xl h-[90vh] w-[28vw]"
+          >
             <Nav isOpen={isMenuOpen} />
           </div>
         </div>
-        <div className="news overflow-y-hidden h-full flex flex-col gap-4 pr-6">
+        <div
+          style={{
+            pointerEvents: isNewsOpen ? "auto" : "none",
+          }}
+          className="news overflow-y-hidden h-full flex flex-col gap-4 pr-6"
+        >
           <NewsItem
             tag="Events"
             title="B-HYPE DXB"

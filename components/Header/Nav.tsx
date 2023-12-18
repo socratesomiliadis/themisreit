@@ -3,7 +3,15 @@ import { useEffect, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import { useRouter } from "next/router";
 
-function NavItem({ text, href }: { text: string; href: string }) {
+function NavItem({
+  text,
+  href,
+  isMenuOpen,
+}: {
+  text: string;
+  href: string;
+  isMenuOpen: boolean;
+}) {
   const router = useRouter();
   const isActive = router.pathname === href;
 
@@ -11,7 +19,7 @@ function NavItem({ text, href }: { text: string; href: string }) {
     <Link
       href={href}
       style={{
-        pointerEvents: isActive ? "none" : "auto",
+        pointerEvents: isActive ? "none" : isMenuOpen ? "auto" : "none",
       }}
       className="text-black group nav-item opacity-0 w-full flex flex-col gap-4 font-semibold text-5xl tracking-tighter"
     >
@@ -116,10 +124,10 @@ export default function Nav({ isOpen }: { isOpen: boolean }) {
   return (
     <div className="w-full h-full flex flex-col justify-between pl-10 pr-16">
       <div className="flex flex-col w-full mt-24 gap-4">
-        <NavItem text="Home" href="/" />
-        <NavItem text="About" href="/about" />
-        <NavItem text="Work" href="/work" />
-        <NavItem text="Contact" href="/contact" />
+        <NavItem isMenuOpen={isOpen} text="Home" href="/" />
+        <NavItem isMenuOpen={isOpen} text="About" href="/about" />
+        <NavItem isMenuOpen={isOpen} text="Work" href="/work" />
+        <NavItem isMenuOpen={isOpen} text="Contact" href="/contact" />
       </div>
       <div className="flex flex-col w-fit gap-2 tracking-tighter pb-12">
         <span className="text-[#B9B9B9] social-item">Social</span>
