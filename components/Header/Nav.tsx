@@ -21,7 +21,7 @@ function NavItem({
       style={{
         pointerEvents: isActive ? "none" : isMenuOpen ? "auto" : "none",
       }}
-      className="text-black group nav-item opacity-0 w-full flex flex-col gap-4 font-semibold text-5xl tracking-tighter"
+      className="text-black select-none group nav-item opacity-0 w-full flex flex-col gap-4 font-semibold text-5xl tracking-tighter"
     >
       <div
         style={{
@@ -66,7 +66,10 @@ function SocialItem({ text, href }: { text: string; href: string }) {
       <span className="absolute left-0 bottom-0 group-hover:translate-y-[-100%] transition-transform duration-200 ease-out">
         {text}
       </span>
-      <span className="flex items-center gap-3 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-200 ease-out">
+      <span
+        aria-hidden
+        className="flex select-none group-hover:select-auto items-center gap-3 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-200 ease-out"
+      >
         {text}
         <span className="block w-2">
           <svg
@@ -153,7 +156,7 @@ export default function Nav({ isOpen }: { isOpen: boolean }) {
   }, [isOpen]);
 
   return (
-    <div className="w-full h-full flex flex-col justify-between pl-10 pr-16">
+    <div className="w-full relative z-10 h-full flex flex-col justify-between pl-10 pr-16">
       <div className="flex flex-col w-full mt-24 gap-4">
         <NavItem isMenuOpen={isOpen} text="Home" href="/" />
         <NavItem isMenuOpen={isOpen} text="About" href="/about" />

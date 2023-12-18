@@ -118,7 +118,7 @@ export default function Header() {
   }, [isNewsOpen]);
 
   return (
-    <header className="fixed z-[999] left-8 top-8">
+    <header className="fixed selection:bg-black selection:text-white z-[999] left-8 top-8">
       <div className="relative flex gap-6 h-[90vh] z-20">
         <div className="relative">
           <div

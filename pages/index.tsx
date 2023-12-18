@@ -9,14 +9,14 @@ export default function Home() {
     <>
       <Header />
       <main
-        className={`${inter.className} bg-black w-screen h-screen relative flex items-center justify-center`}
+        className={`${inter.className} bg-black w-screen h-screen relative flex items-center justify-center p-24`}
       >
         <Image
-          src="/static/images/gero.png"
+          src="/static/images/BgImage.png"
           width={1577}
           height={2128}
           alt=""
-          className="w-1/5"
+          className="w-full h-full object-cover rounded-2xl"
         />
       </main>
     </>
