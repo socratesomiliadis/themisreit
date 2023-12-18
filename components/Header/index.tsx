@@ -15,7 +15,7 @@ export default function Header() {
       tl.to(
         "main",
         {
-          filter: "blur(24px)",
+          filter: "blur(64px)",
         },
         0
       );
@@ -132,8 +132,8 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="fixed selection:bg-black selection:text-white z-[999] left-8 top-8">
-      <div className="relative flex gap-6 h-[90vh] z-20">
+    <header className="fixed selection:bg-black selection:text-white z-[999] left-6 top-6">
+      <div className="relative flex gap-6 h-[95vh] z-20">
         <div className="relative">
           <div
             style={{
@@ -182,7 +182,7 @@ export default function Header() {
             style={{
               pointerEvents: isMenuOpen ? "auto" : "none",
             }}
-            className="bg-white z-0 opacity-0 menu-body rounded-2xl h-[90vh] w-[28vw]"
+            className="bg-white z-0 opacity-0 menu-body rounded-2xl h-[95vh] w-[28vw]"
           >
             <Nav isOpen={isMenuOpen} />
           </div>
@@ -190,6 +190,7 @@ export default function Header() {
         <div
           style={{
             pointerEvents: isNewsOpen ? "auto" : "none",
+            maskImage: "linear-gradient(to top, transparent, black 15%)",
           }}
           className="news overflow-y-hidden h-full flex flex-col gap-4 pr-6"
         >

@@ -156,7 +156,7 @@ export default function Nav({ isOpen }: { isOpen: boolean }) {
   }, [isOpen]);
 
   return (
-    <div className="w-full relative z-10 h-full flex flex-col justify-between pl-10 pr-16">
+    <div className="w-full h-full flex flex-col justify-between pl-10 pr-16">
       <div className="flex flex-col w-full mt-24 gap-4">
         <NavItem isMenuOpen={isOpen} text="Home" href="/" />
         <NavItem isMenuOpen={isOpen} text="About" href="/about" />
