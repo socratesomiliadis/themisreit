@@ -34,7 +34,7 @@ export default function Header() {
         {
           x: "2rem",
           opacity: 0.5,
-          boxShadow: "0 0 0 0px #000",
+          // boxShadow: "0 0 0 0px #000",
           duration: 0.4,
         },
         0.2
@@ -44,11 +44,47 @@ export default function Header() {
         {
           x: 0,
           opacity: 1,
-          boxShadow: "0 0 0 14px #000",
+          // boxShadow: "0 0 0 14px #000",
           ease: "elastic.out(1.8,1)",
           duration: 1,
         },
         0.2
+      );
+      tl.set(
+        ".menu-body",
+        {
+          maskImage:
+            "radial-gradient(circle at calc(100% - 0rem) 1.5rem, transparent 0px, black 1px)",
+        },
+        0
+      );
+      tl.to(
+        ".menu-body",
+        {
+          maskImage:
+            "radial-gradient(circle at calc(100% - 1.5rem) 1.5rem, transparent 38px, black 39px)",
+          ease: "elastic.out(1.6,1)",
+          duration: 1,
+        },
+        0.2
+      );
+      tl.set(
+        ".nav-bg",
+        {
+          maskImage:
+            "radial-gradient(circle at 1.5rem 1.5rem, transparent 1px, black 2px)",
+        },
+        0
+      );
+      tl.to(
+        ".nav-bg",
+        {
+          maskImage:
+            "radial-gradient(circle at 1.5rem 1.5rem, transparent 38px, black 39px)",
+          ease: "elastic.out(1.6,1)",
+          duration: 1,
+        },
+        0
       );
       tl.call(
         () => {
@@ -136,9 +172,11 @@ export default function Header() {
       <div className="relative flex gap-6 h-[95vh] z-20">
         <div className="relative">
           <div
-            style={{
-              boxShadow: "0 0 0 14px #000",
-            }}
+            style={
+              {
+                // boxShadow: "0 0 0 14px #000",
+              }
+            }
             className="absolute left-0 top-0 z-10 rounded-full bg-white w-12 h-12 flex items-center justify-center"
           >
             <Hamburger
@@ -149,9 +187,9 @@ export default function Header() {
             />
           </div>
           <div
-            style={{
-              boxShadow: "0 0 0 14px #000",
-            }}
+            // style={{
+            //   boxShadow: "0 0 0 14px #000",
+            // }}
             onClick={() => {
               setNewsOpen((prev) => !prev);
             }}
@@ -182,9 +220,16 @@ export default function Header() {
             style={{
               pointerEvents: isMenuOpen ? "auto" : "none",
             }}
-            className="bg-white z-0 opacity-0 menu-body rounded-2xl h-[95vh] w-[28vw]"
+            className="relative z-0 opacity-0 menu-body rounded-2xl h-[95vh] w-[28vw]"
           >
             <Nav isOpen={isMenuOpen} />
+            <div
+              style={{
+                maskImage:
+                  "radial-gradient(circle at 1.5rem 1.5rem, transparent 38px, black 39px)",
+              }}
+              className="absolute nav-bg left-0 top-0 z-0 w-full h-full bg-white"
+            ></div>
           </div>
         </div>
         <div
