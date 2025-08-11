@@ -4,28 +4,40 @@ import { gsap } from "@/lib/gsap";
 import NewsItem from "./news-item";
 import Nav from "./Nav";
 import { cn } from "@/lib/utils";
+import StatusBar from "./status-bar";
+import { useLenis } from "lenis/react";
 
 export default function Header() {
+  const lenis = useLenis();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isNewsOpen, setNewsOpen] = useState(false);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      lenis?.stop();
+    } else {
+      lenis?.start();
+    }
+  }, [isMenuOpen, lenis]);
 
   useEffect(() => {
     const tl = gsap.timeline({ paused: true });
     if (isMenuOpen) {
       tl.set(".menu-body", { scale: 0.95, opacity: 0.5 }, 0);
       tl.set(".nav-overlay", { opacity: 0 }, 0);
-      // tl.to(
-      //   "main",
-      //   {
-      //     filter: "blur(64px)",
-      //   },
-      //   0
-      // );
+
       tl.to(
         ".nav-overlay",
         {
           opacity: 1,
           duration: 0.5,
+        },
+        0
+      );
+      tl.to(
+        ".status-bar",
+        {
+          opacity: 0,
         },
         0
       );
@@ -121,6 +133,13 @@ export default function Header() {
         },
         0
       );
+      tl.to(
+        ".status-bar",
+        {
+          opacity: 1,
+        },
+        0
+      );
       tl.call(
         () => {
           setNewsOpen(false);
@@ -148,18 +167,12 @@ export default function Header() {
   useEffect(() => {
     const tl = gsap.timeline({ paused: true });
     if (isNewsOpen) {
-      tl.set(".news", {
-        overflowY: "auto",
-      });
       tl.to(".news-item", {
         y: 0,
         opacity: 1,
         stagger: 0.05,
       });
     } else {
-      tl.set(".news", {
-        overflowY: "hidden",
-      });
       tl.to(".news-item", {
         y: "-2rem",
         opacity: 0,
@@ -193,8 +206,8 @@ export default function Header() {
         <div
           style={{
             pointerEvents: isNewsOpen ? "auto" : "none",
-            // maskImage: "linear-gradient(to top, transparent, black 15%)",
           }}
+          data-lenis-prevent
           className="news overflow-y-hidden h-full flex flex-col gap-4 pr-0"
         >
           <NewsItem
@@ -229,24 +242,35 @@ attending the B-Hype event in Dubai."
 attending the B-Hype event in Dubai."
             image="/static/images/bHype.png"
           />
-          <NewsItem
+          <button className="w-full news-item bg-white rounded-2xl py-4 flex justify-between items-center px-4">
+            <span>More News</span>
+            <span className="block w-4">
+              <svg
+                width="100%"
+                viewBox="0 0 14 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7.59425 0.701172L12.7529 5.85984L7.59425 11.0185M0.224708 5.85984L12.3845 5.85985"
+                  stroke="currentColor"
+                  strokeWidth="1.47391"
+                />
+              </svg>
+            </span>
+          </button>
+          {/* <NewsItem
             tag="Events"
             title="AEVA & Battlenet"
             date="Oct. 4"
             description="I organized the AEVA x Battlenet Fortnite
             OG anniversary cup with 2,000+ participants."
             image="/static/images/aeva.png"
-          />
-          <NewsItem
-            tag="Works"
-            title="Jimbo - Go (Video)"
-            date="Sep. 14"
-            description="I am pleased to inform you that I will be 
-            attending the BHype event in Dubai."
-            image="/static/images/jimmy.png"
-          />
+          /> */}
         </div>
+
         <div className="relative ">
+          <StatusBar />
           <div
             style={
               {
@@ -262,7 +286,7 @@ attending the B-Hype event in Dubai."
               toggle={setMenuOpen}
             />
           </div>
-          <div
+          <button
             // style={{
             //   boxShadow: "0 0 0 14px #000",
             // }}
@@ -272,12 +296,16 @@ attending the B-Hype event in Dubai."
             className="cursor-pointer opacity-0 absolute news-btn left-0 top-0 z-10 rounded-full bg-[#1E1E1E]/80 backdrop-blur text-white size-14 flex items-center justify-center"
           >
             <svg
-              width="50%"
+              width="35%"
               viewBox="0 0 25 20"
               fill="none"
               className={cn(
-                "transition-transform ease-out duration-200",
-                isNewsOpen ? "rotate-180" : "rotate-0"
+                "transition-transform ease-out duration-[150ms] nav-arrow",
+                isNewsOpen
+                  ? "rotate-180"
+                  : isMenuOpen
+                  ? "rotate-0"
+                  : "rotate-180"
               )}
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -287,7 +315,7 @@ attending the B-Hype event in Dubai."
                 strokeWidth="2"
               />
             </svg>
-          </div>
+          </button>
           <div
             style={{
               pointerEvents: isMenuOpen ? "auto" : "none",
@@ -310,10 +338,8 @@ attending the B-Hype event in Dubai."
         onClick={() => {
           setMenuOpen(false);
         }}
-        className="fixed left-0 top-0 z-10 w-screen h-screen"
-      >
-        <div className="w-[80%] opacity-0 h-full bg-gradient-to-l from-black via-black/80 to-transparent fixed right-0 top-0 nav-overlay"></div>
-      </div>
+        className="fixed opacity-0 left-0 top-0 z-10 w-screen h-screen nav-overlay bg-black/70"
+      ></div>
     </header>
   );
 }
