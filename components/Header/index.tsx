@@ -10,7 +10,7 @@ export default function Header() {
   const [isNewsOpen, setNewsOpen] = useState(false);
 
   useEffect(() => {
-    let tl = gsap.timeline({ paused: true });
+    const tl = gsap.timeline({ paused: true });
     if (isMenuOpen) {
       tl.set(".menu-body", { scale: 0.95, opacity: 0.5 }, 0);
       tl.set(".nav-overlay", { opacity: 0 }, 0);
@@ -146,7 +146,7 @@ export default function Header() {
   }, [isMenuOpen]);
 
   useEffect(() => {
-    let tl = gsap.timeline({ paused: true });
+    const tl = gsap.timeline({ paused: true });
     if (isNewsOpen) {
       tl.set(".news", {
         overflowY: "auto",

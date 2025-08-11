@@ -90,7 +90,7 @@ function SocialItem({ text, href }: { text: string; href: string }) {
 
 export default function Nav({ isOpen }: { isOpen: boolean }) {
   useEffect(() => {
-    let tl = gsap.timeline({ paused: true });
+    const tl = gsap.timeline({ paused: true });
     if (isOpen) {
       tl.to(
         ".nav-item",
