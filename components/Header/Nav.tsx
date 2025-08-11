@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import { useRouter } from "next/router";
+import { cn } from "@/lib/utils";
 
 function NavItem({
   text,
@@ -21,18 +22,15 @@ function NavItem({
       style={{
         pointerEvents: isActive ? "none" : isMenuOpen ? "auto" : "none",
       }}
-      className="text-black select-none group nav-item opacity-0 w-full flex flex-col gap-4 font-semibold text-5xl tracking-tighter"
+      className={cn(
+        "text-[#5B5B5B] select-none group nav-item opacity-0 w-full flex flex-col gap-4 font-[400] text-6xl tracking-tight hover:text-white transition-colors duration-200 ease-out",
+        isActive && "text-white"
+      )}
     >
-      <div
-        style={{
-          color: isActive ? "#B9B9B9" : "#000",
-        }}
-        className="flex items-center justify-between"
-      >
+      <div className="flex items-center justify-between">
         <span>{text}</span>
         <span
           style={{
-            color: isActive ? "#B9B9B9" : "#000",
             transform: isActive ? "rotate(90deg)" : "",
           }}
           className="block group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-200 ease-out w-[0.85rem]"
@@ -51,7 +49,7 @@ function NavItem({
           </svg>
         </span>
       </div>
-      <div className="w-0 nav-item-line h-[1px] bg-[#EBEBEB]" />
+      <div className="w-0 nav-item-line h-[1px] bg-[#383838]" />
     </Link>
   );
 }
@@ -61,7 +59,7 @@ function SocialItem({ text, href }: { text: string; href: string }) {
     <Link
       href={href}
       target="_blank"
-      className="text-black group social-item overflow-hidden relative"
+      className="text-white group social-item overflow-hidden relative"
     >
       <span className="absolute left-0 bottom-0 group-hover:translate-y-[-100%] transition-transform duration-200 ease-out">
         {text}
@@ -164,7 +162,9 @@ export default function Nav({ isOpen }: { isOpen: boolean }) {
         <NavItem isMenuOpen={isOpen} text="Contact" href="/contact" />
       </div>
       <div className="flex flex-col w-fit gap-2 tracking-tighter pb-12">
-        <span className="text-[#B9B9B9] social-item mb-8">Social</span>
+        <span className="text-[#B9B9B9] social-item mb-8 select-none">
+          Social
+        </span>
         <SocialItem text="LinkedIn" href="https://www.linkedin.com/" />
         <SocialItem text="Behance" href="https://www.behance.net/" />
         <SocialItem text="Instagram" href="https://www.instagram.com/" />
