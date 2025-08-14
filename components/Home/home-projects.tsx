@@ -93,40 +93,6 @@ export function ProjectItem({
   image: string;
 }) {
   const router = useRouter();
-  const { project } = router.query;
-  const ref = useRef<HTMLDivElement>(null);
-  const lenis = useLenis();
-
-  useEffect(() => {
-    const tl = gsap.timeline();
-    if (project && project === slug) {
-      ref.current?.classList.add("home-project-active");
-
-      const allElements = gsap.utils.toArray(
-        ".home-projects > * > *:not(.home-project-active)"
-      );
-
-      tl.to([".home-hero", ".home-test", ...allElements], {
-        opacity: 0,
-        stagger: 0.05,
-      });
-      tl.add(() => {
-        lenis?.scrollTo(0);
-      }, 0);
-      tl.to(
-        ".home-hero",
-        {
-          height: 0,
-          duration: 1.2,
-        },
-        0.1
-      );
-    }
-
-    return () => {
-      tl.revert();
-    };
-  }, [project, slug]);
 
   return (
     <motion.div
@@ -145,9 +111,10 @@ export function ProjectItem({
           scroll: false,
         });
       }}
-      // layoutId={`project-${slug}`}
-      ref={ref}
-      className="w-full cursor-pointer group border-y-[1px] border-white/20 flex flex-row items-center tracking-tighter relative z-10 overflow-hidden"
+      className={cn(
+        "w-full cursor-pointer group border-y-[1px] border-white/20 flex flex-row items-center tracking-tighter relative z-10 overflow-hidden",
+        `project-item-${slug}`
+      )}
     >
       <span className="w-[50%] text-white text-6xl leading-[0.75]">
         {title}

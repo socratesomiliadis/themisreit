@@ -51,6 +51,7 @@ export default function HomeHero() {
       },
     });
   }, []);
+
   return (
     <section className="relative z-10 w-screen h-screen flex items-end px-16 pb-16 home-hero overflow-hidden">
       <div className="flex flex-col gap-4 text-white tracking-tight">
