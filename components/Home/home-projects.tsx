@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react";
 import { useLenis } from "lenis/react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import ProjectHero from "../ProjectSingle/project-hero";
 
 export type ProjectInfoType = {
   title: string;
@@ -93,26 +94,97 @@ export function ProjectItem({
   image: string;
 }) {
   const router = useRouter();
+  const lenis = useLenis();
 
   return (
-    <motion.div
-      layout="position"
-      initial={{
-        opacity: 0,
-      }}
-      animate={{
-        opacity: 1,
-      }}
-      exit={{
-        opacity: 0,
-      }}
+    <div
       onClick={() => {
-        router.push(`?project=${slug}`, `/work/${slug}`, {
-          scroll: false,
+        // router.push(`/work/${slug}`, undefined, {
+        //   scroll: false,
+        // });
+        const activeItem = document.querySelector(
+          `.project-item-${slug}`
+        ) as HTMLElement;
+        router.prefetch(`/work/${slug}`);
+        lenis?.scrollTo(activeItem, {
+          offset: -128,
+          lock: true,
+          duration: 1,
+          onComplete: () => {
+            router.push(`/work/${slug}`, undefined, {
+              scroll: false,
+            });
+          },
         });
+
+        const tl = gsap.timeline();
+        // const tl2 = gsap.timeline({
+        //   scrollTrigger: {
+        //     trigger: ".home-hero",
+        //     start: "75% top",
+        //     end: "95% top",
+        //     onUpdate: (self) => {
+        //       gsap.set(".project-back-btn-fill", {
+        //         width: 100 - self.progress * 100 + "%",
+        //       });
+        //     },
+        //     // onLeaveBack: () => {
+        //     //   router.push("/", "/", {
+        //     //     scroll: false,
+        //     //   });
+        //     // },
+        //   },
+        // });
+
+        const itemParent = activeItem.parentElement;
+        const parentSibling = itemParent?.nextElementSibling;
+        const parentPreviousSibling = itemParent?.previousElementSibling;
+
+        tl.to(
+          [`.project-item:not(.project-item-${slug})`, ".project-open-hide"],
+          {
+            opacity: 0,
+            stagger: 0.05,
+          },
+          0
+        );
+        tl.to(
+          "main > *:not(.home-projects)",
+          {
+            opacity: 0,
+            duration: 1,
+          },
+          0
+        );
+
+        tl.to(
+          parentSibling ? parentSibling : parentPreviousSibling || "",
+          {
+            width: 0,
+            padding: 0,
+            duration: 1,
+          },
+          0.2
+        );
+        tl.to(
+          itemParent,
+          {
+            padding: 0,
+            duration: 1,
+          },
+          0.2
+        );
+        tl.to(
+          itemParent,
+          {
+            width: "100%",
+            duration: 1,
+          },
+          0.2
+        );
       }}
       className={cn(
-        "w-full cursor-pointer group border-y-[1px] border-white/20 flex flex-row items-center tracking-tighter relative z-10 overflow-hidden",
+        "w-full min-w-[45vw] cursor-pointer group border-y-[1px] border-white/20 flex flex-row items-center tracking-tighter relative z-10 overflow-hidden project-item",
         `project-item-${slug}`
       )}
     >
@@ -178,36 +250,54 @@ export function ProjectItem({
           </Link>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
 export default function HomeProjects() {
   const router = useRouter();
   const { project } = router.query;
+  const firstHalfOfProjects = projectInfo.slice(0, 3);
+  const secondHalfOfProjects = projectInfo.slice(3);
 
   return (
     <div className="w-screen px-16 py-16 flex flex-col home-projects">
-      <h2 className="text-white flex items-center gap-4 tracking-tight">
+      <h2 className="text-white flex items-center gap-4 tracking-tight project-open-hide">
         <span>Work</span>
         <span className="w-11 h-[1px] bg-white"></span>
         <span>Year Database © 2012-{new Date().getFullYear()}</span>
       </h2>
 
-      <motion.div
-        layout
-        className={cn(
-          "w-full grid grid-cols-2 gap-8 mt-8",
-          project && "grid-cols-1"
-        )}
-      >
-        <AnimatePresence mode="sync">
-          {projectInfo.map((projectData: ProjectInfoType) => {
-            if (project && project !== projectData.slug) return null;
+      {/* {project && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Link
+            href="/"
+            scroll={false}
+            className="text-white self-center bg-[#141414] rounded-full px-6 py-2 fixed left-1/2 -translate-x-1/2 top-10 z-[100] overflow-hidden"
+          >
+            Back
+            <div className="absolute left-0 top-0 w-0 h-full bg-[#363636] z-[-1] project-back-btn-fill"></div>
+          </Link>
+        </motion.div>
+      )} */}
+
+      <div className={cn("w-full flex flex-row gap-0 mt-8")}>
+        <div className="w-1/2 flex flex-col gap-8 overflow-hidden pr-4">
+          {firstHalfOfProjects.map((projectData: ProjectInfoType) => {
             return <ProjectItem key={projectData.slug} {...projectData} />;
           })}
-        </AnimatePresence>
-      </motion.div>
+        </div>
+        <div className="w-1/2 flex flex-col gap-8 overflow-hidden pl-4">
+          {secondHalfOfProjects.map((projectData: ProjectInfoType) => {
+            return <ProjectItem key={projectData.slug} {...projectData} />;
+          })}
+        </div>
+      </div>
     </div>
   );
 }

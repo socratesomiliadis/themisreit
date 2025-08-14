@@ -58,7 +58,7 @@ export default function HomeHero() {
         <span className="opacity-0 home-hero-anim blur translate-x-4">
           Our Studio
         </span>
-        <p className="text-4xl font-[410] home-hero-text opacity-0">
+        <p className="text-4xl home-hero-text opacity-0 tracking-tight">
           We help experience-driven companies thrive <br />
           by making their audience feel the refined <br />
           intricacies of their brand and product in the <br />

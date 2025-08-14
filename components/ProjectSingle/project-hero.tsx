@@ -1,27 +1,28 @@
-import { ProjectInfoType, ProjectItem } from "@/components/Home/home-projects";
-import { Lenis } from "lenis/react";
+import { projectInfo } from "@/components/Home/home-projects";
+import { ProjectItem } from "@/components/Home/home-projects";
 import { motion } from "motion/react";
-import { useRef } from "react";
+import Image from "next/image";
 
-export default function ProjectHero({
-  projectData,
-}: {
-  projectData: ProjectInfoType;
-}) {
+export default function ProjectHero({ projectData }: { projectData: any }) {
   return (
-    <Lenis
-      data-lenis-prevent
-      className="w-screen fixed top-0 left-0 z-[100] pt-28 px-16"
-    >
+    <section className="w-screen min-h-[150vh] pt-32 px-16">
       <ProjectItem {...projectData} />
-      <div className="h-[250vh]"></div>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full h-full bg-[#000] absolute inset-0 z-0"
-      ></motion.div>
-    </Lenis>
+        initial={{ opacity: 0, filter: "blur(16px)" }}
+        animate={{ opacity: 1, filter: "blur(0px)" }}
+        exit={{ opacity: 0, filter: "blur(16px)" }}
+        transition={{ duration: 0.4 }}
+        className="w-full mt-8"
+      >
+        <Image
+          src="/static/images/projectHero.png"
+          alt=""
+          priority
+          width={1920}
+          height={1080}
+          className="w-full h-auto object-contain"
+        />
+      </motion.div>
+    </section>
   );
 }
