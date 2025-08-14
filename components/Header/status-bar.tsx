@@ -14,7 +14,7 @@ export default function StatusBar() {
           />
         </svg>
       </span>
-      <span className="font-semibold">Currently Traveling to</span>
+      <span className="">Currently Traveling to</span>
       <span className="block w-4">
         <svg
           width="100%"
@@ -29,7 +29,7 @@ export default function StatusBar() {
           />
         </svg>
       </span>
-      <span className="font-semibold text-white">Abu Dhabi</span>
+      <span className="text-white">Abu Dhabi</span>
     </div>
   );
 }

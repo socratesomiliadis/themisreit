@@ -109,7 +109,7 @@ export function ProjectItem({
         lenis?.scrollTo(activeItem, {
           offset: -128,
           lock: true,
-          duration: 1,
+          duration: 1.3,
           onComplete: () => {
             router.push(`/work/${slug}`, undefined, {
               scroll: false,
@@ -144,7 +144,7 @@ export function ProjectItem({
           [`.project-item:not(.project-item-${slug})`, ".project-open-hide"],
           {
             opacity: 0,
-            stagger: 0.05,
+            duration: 0.05,
           },
           0
         );
@@ -152,7 +152,8 @@ export function ProjectItem({
           "main > *:not(.home-projects)",
           {
             opacity: 0,
-            duration: 1,
+            duration: 0.3,
+            stagger: 0.025,
           },
           0
         );
@@ -162,7 +163,7 @@ export function ProjectItem({
           {
             width: 0,
             padding: 0,
-            duration: 1,
+            duration: 1.3,
           },
           0.2
         );
@@ -170,7 +171,7 @@ export function ProjectItem({
           itemParent,
           {
             padding: 0,
-            duration: 1,
+            duration: 1.3,
           },
           0.2
         );
@@ -178,7 +179,7 @@ export function ProjectItem({
           itemParent,
           {
             width: "100%",
-            duration: 1,
+            duration: 1.3,
           },
           0.2
         );

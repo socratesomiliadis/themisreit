@@ -256,7 +256,7 @@ export default function Header() {
         style={{
           pointerEvents: !isMenuOpen ? "none" : "auto",
         }}
-        className="fixed selection:bg-black selection:text-white z-[999] right-6 top-8"
+        className="fixed selection:bg-black selection:text-white z-[999] right-16 top-8"
       >
         <div className="relative flex gap-4 h-[95vh] z-20">
           <div
