@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function ProjectHero({ projectData }: { projectData: any }) {
   return (
-    <section className="w-screen min-h-[150vh] pt-32 px-16">
+    <section className="w-screen min-h-[150vh] pt-32 px-16 z-10 relative">
       <ProjectItem {...projectData} />
       <motion.div
         // initial={{ opacity: 0, filter: "blur(16px)" }}

@@ -1,43 +1,63 @@
+/**
+ * GooeyBg - Interactive WebGL Shader Background Component
+ *
+ * Creates a particle field with cross/diamond shapes that appear through a gooey mask
+ * that follows mouse movement. Based on the halftone effect from the provided image.
+ *
+ * Features:
+ * - Cross/diamond particle pattern with randomized positions and sizes
+ * - Organic gooey mask that follows mouse movement
+ * - Smooth particle reveal effect with customizable colors
+ * - Full WebGL hardware acceleration
+ * - Responsive and touch-friendly
+ *
+ * Usage:
+ * ```tsx
+ * import GooeyBg from "@/components/GooeyBg";
+ *
+ * function MyComponent() {
+ *   return (
+ *     <div className="relative w-full h-screen">
+ *       <GooeyBg
+ *         className="absolute inset-0 z-0"
+ *         particleSize={0.02}
+ *         maskIntensity={2.0}
+ *         backgroundColor="#000000"
+ *         particleColor="#666666"
+ *         brushSize={200}
+ *         brushStrength={0.7}
+ *       />
+ *       <div className="relative z-10">
+ *         Your content here
+ *       </div>
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
+
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
 import * as THREE from "three";
-import { vertexShader, fluidShader, displayShader } from "@/lib/shaders";
+import { vertexShader, fluidShader, gooeyParticleShader } from "@/lib/shaders";
 
-interface ShaderConfig {
-  brushSize: number;
-  brushStrength: number;
-  distortionAmount: number;
-  fluidDecay: number;
-  trailLength: number;
-  stopDecay: number;
-  color1: string;
-  color2: string;
-  color3: string;
-  color4: string;
-  colorIntensity: number;
-  softness: number;
-}
-
-interface InteractiveShaderBackgroundProps {
+interface GooeyBgProps {
+  /** Additional CSS classes for the container */
   className?: string;
-  config?: Partial<ShaderConfig>;
+  /** Size of individual particles (0.01 - 0.05 recommended) */
+  particleSize?: number;
+  /** Intensity of the fluid mask effect (0.5 - 3.0 recommended) */
+  maskIntensity?: number;
+  /** Background color in hex format */
+  backgroundColor?: string;
+  /** Particle color in hex format */
+  particleColor?: string;
+  /** Brush size for fluid interaction (100 - 500 recommended) */
+  brushSize?: number;
+  /** Brush strength for fluid interaction (0.1 - 1.0 recommended) */
+  brushStrength?: number;
 }
-
-const defaultConfig: ShaderConfig = {
-  brushSize: 300.0,
-  brushStrength: 0.5,
-  distortionAmount: 0.5,
-  fluidDecay: 0.98,
-  trailLength: 0.8,
-  stopDecay: 0.85,
-  color1: "#000000",
-  color2: "#000000",
-  color3: "#1d1d1d",
-  color4: "#000000",
-  colorIntensity: 1.0,
-  softness: 1.0,
-};
 
 function hexToRgb(hex: string): [number, number, number] {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -46,10 +66,15 @@ function hexToRgb(hex: string): [number, number, number] {
   return [r, g, b];
 }
 
-export default function InteractiveShaderBackground({
+export default function GooeyBg({
   className = "",
-  config: userConfig = {},
-}: InteractiveShaderBackgroundProps) {
+  particleSize = 0.02,
+  maskIntensity = 2.0,
+  backgroundColor = "#000000",
+  particleColor = "#666666",
+  brushSize = 300.0,
+  brushStrength = 0.5,
+}: GooeyBgProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -66,8 +91,6 @@ export default function InteractiveShaderBackground({
   const animationIdRef = useRef<number | null>(null);
   const mouseRef = useRef({ x: 0, y: 0, prevX: 0, prevY: 0, lastMoveTime: 0 });
 
-  const config = { ...defaultConfig, ...userConfig };
-
   const initThreeJS = useCallback(() => {
     if (!containerRef.current) return;
 
@@ -79,13 +102,17 @@ export default function InteractiveShaderBackground({
     cameraRef.current = camera;
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      premultipliedAlpha: false,
+    });
     renderer.setSize(width, height);
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Render targets
+    // Render targets for fluid simulation
     const fluidTarget1 = new THREE.WebGLRenderTarget(width, height, {
       minFilter: THREE.LinearFilter,
       magFilter: THREE.LinearFilter,
@@ -105,7 +132,7 @@ export default function InteractiveShaderBackground({
     currentFluidTargetRef.current = fluidTarget1;
     previousFluidTargetRef.current = fluidTarget2;
 
-    // Materials
+    // Fluid simulation material
     const fluidMaterial = new THREE.ShaderMaterial({
       uniforms: {
         iTime: { value: 0 },
@@ -113,32 +140,36 @@ export default function InteractiveShaderBackground({
         iMouse: { value: new THREE.Vector4(0, 0, 0, 0) },
         iFrame: { value: 0 },
         iPreviousFrame: { value: null },
-        uBrushSize: { value: config.brushSize },
-        uBrushStrength: { value: config.brushStrength },
-        uFluidDecay: { value: config.fluidDecay },
-        uTrailLength: { value: config.trailLength },
-        uStopDecay: { value: config.stopDecay },
+        uBrushSize: { value: brushSize },
+        uBrushStrength: { value: brushStrength },
+        uFluidDecay: { value: 0.98 },
+        uTrailLength: { value: 0.8 },
+        uStopDecay: { value: 0.85 },
       },
       vertexShader,
       fragmentShader: fluidShader,
     });
     fluidMaterialRef.current = fluidMaterial;
 
+    // Display material for particles
     const displayMaterial = new THREE.ShaderMaterial({
       uniforms: {
         iTime: { value: 0 },
         iResolution: { value: new THREE.Vector2(width, height) },
         iFluid: { value: null },
-        uDistortionAmount: { value: config.distortionAmount },
-        uColor1: { value: new THREE.Vector3(...hexToRgb(config.color1)) },
-        uColor2: { value: new THREE.Vector3(...hexToRgb(config.color2)) },
-        uColor3: { value: new THREE.Vector3(...hexToRgb(config.color3)) },
-        uColor4: { value: new THREE.Vector3(...hexToRgb(config.color4)) },
-        uColorIntensity: { value: config.colorIntensity },
-        uSoftness: { value: config.softness },
+        iMouse: { value: new THREE.Vector2(width / 2, height / 2) },
+        uParticleSize: { value: particleSize },
+        uMaskIntensity: { value: maskIntensity },
+        uBackgroundColor: {
+          value: new THREE.Vector3(...hexToRgb(backgroundColor)),
+        },
+        uParticleColor: {
+          value: new THREE.Vector3(...hexToRgb(particleColor)),
+        },
       },
       vertexShader,
-      fragmentShader: displayShader,
+      fragmentShader: gooeyParticleShader,
+      transparent: true,
     });
     displayMaterialRef.current = displayMaterial;
 
@@ -155,10 +186,22 @@ export default function InteractiveShaderBackground({
     sceneRef.current = scene;
 
     frameCountRef.current = 0;
-  }, [config]);
+  }, [
+    particleSize,
+    maskIntensity,
+    backgroundColor,
+    particleColor,
+    brushSize,
+    brushStrength,
+  ]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!containerRef.current || !fluidMaterialRef.current) return;
+    if (
+      !containerRef.current ||
+      !fluidMaterialRef.current ||
+      !displayMaterialRef.current
+    )
+      return;
 
     const rect = containerRef.current.getBoundingClientRect();
     const mouse = mouseRef.current;
@@ -169,17 +212,22 @@ export default function InteractiveShaderBackground({
     mouse.y = rect.height - (e.clientY - rect.top);
     mouse.lastMoveTime = performance.now();
 
+    // Update fluid material (for simulation)
     fluidMaterialRef.current.uniforms.iMouse.value.set(
       mouse.x,
       mouse.y,
       mouse.prevX,
       mouse.prevY
     );
+
+    // Update display material (for distance fade effect)
+    displayMaterialRef.current.uniforms.iMouse.value.set(mouse.x, mouse.y);
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    if (!fluidMaterialRef.current) return;
+    if (!fluidMaterialRef.current || !displayMaterialRef.current) return;
     fluidMaterialRef.current.uniforms.iMouse.value.set(0, 0, 0, 0);
+    // Keep display mouse position for fade effect even when not hovering
   }, []);
 
   const animate = useCallback(() => {
@@ -191,7 +239,8 @@ export default function InteractiveShaderBackground({
       !fluidPlaneRef.current ||
       !displayPlaneRef.current ||
       !currentFluidTargetRef.current ||
-      !previousFluidTargetRef.current
+      !previousFluidTargetRef.current ||
+      !sceneRef.current
     ) {
       return;
     }
@@ -210,29 +259,16 @@ export default function InteractiveShaderBackground({
     }
 
     // Update config uniforms
-    fluidMaterialRef.current.uniforms.uBrushSize.value = config.brushSize;
-    fluidMaterialRef.current.uniforms.uBrushStrength.value =
-      config.brushStrength;
-    fluidMaterialRef.current.uniforms.uFluidDecay.value = config.fluidDecay;
-    fluidMaterialRef.current.uniforms.uTrailLength.value = config.trailLength;
-    fluidMaterialRef.current.uniforms.uStopDecay.value = config.stopDecay;
+    fluidMaterialRef.current.uniforms.uBrushSize.value = brushSize;
+    fluidMaterialRef.current.uniforms.uBrushStrength.value = brushStrength;
 
-    displayMaterialRef.current.uniforms.uDistortionAmount.value =
-      config.distortionAmount;
-    displayMaterialRef.current.uniforms.uColorIntensity.value =
-      config.colorIntensity;
-    displayMaterialRef.current.uniforms.uSoftness.value = config.softness;
-    displayMaterialRef.current.uniforms.uColor1.value.set(
-      ...hexToRgb(config.color1)
+    displayMaterialRef.current.uniforms.uParticleSize.value = particleSize;
+    displayMaterialRef.current.uniforms.uMaskIntensity.value = maskIntensity;
+    displayMaterialRef.current.uniforms.uBackgroundColor.value.set(
+      ...hexToRgb(backgroundColor)
     );
-    displayMaterialRef.current.uniforms.uColor2.value.set(
-      ...hexToRgb(config.color2)
-    );
-    displayMaterialRef.current.uniforms.uColor3.value.set(
-      ...hexToRgb(config.color3)
-    );
-    displayMaterialRef.current.uniforms.uColor4.value.set(
-      ...hexToRgb(config.color4)
+    displayMaterialRef.current.uniforms.uParticleColor.value.set(
+      ...hexToRgb(particleColor)
     );
 
     // Render fluid simulation
@@ -245,7 +281,7 @@ export default function InteractiveShaderBackground({
     displayMaterialRef.current.uniforms.iFluid.value =
       currentFluidTargetRef.current.texture;
     rendererRef.current.setRenderTarget(null);
-    rendererRef.current.render(displayPlaneRef.current, cameraRef.current);
+    rendererRef.current.render(sceneRef.current, cameraRef.current);
 
     // Swap render targets
     const temp = currentFluidTargetRef.current;
@@ -254,7 +290,14 @@ export default function InteractiveShaderBackground({
 
     frameCountRef.current++;
     animationIdRef.current = requestAnimationFrame(animate);
-  }, [config]);
+  }, [
+    particleSize,
+    maskIntensity,
+    backgroundColor,
+    particleColor,
+    brushSize,
+    brushStrength,
+  ]);
 
   const handleResize = useCallback(() => {
     if (!containerRef.current || !rendererRef.current) return;
@@ -268,6 +311,11 @@ export default function InteractiveShaderBackground({
     }
     if (displayMaterialRef.current) {
       displayMaterialRef.current.uniforms.iResolution.value.set(width, height);
+      // Reset mouse position to center on resize
+      displayMaterialRef.current.uniforms.iMouse.value.set(
+        width / 2,
+        height / 2
+      );
     }
 
     if (fluidTarget1Ref.current && fluidTarget2Ref.current) {
@@ -317,5 +365,14 @@ export default function InteractiveShaderBackground({
     };
   }, [initThreeJS, handleMouseMove, handleMouseLeave, handleResize, animate]);
 
-  return <div ref={containerRef} className={`w-full h-full ${className}`} />;
+  return (
+    <div
+      ref={containerRef}
+      className={`w-full h-full overflow-hidden ${className}`}
+      style={{
+        cursor: "none",
+        background: backgroundColor,
+      }}
+    />
+  );
 }

@@ -158,3 +158,153 @@ export const displayShader = `
     gl_FragColor = vec4(col, 1.0);
   }
 `;
+
+// New shader for the gooey background with cross/diamond particles
+export const gooeyParticleShader = `
+  uniform float iTime;
+  uniform vec2 iResolution;
+  uniform sampler2D iFluid;
+  uniform vec2 iMouse;
+  uniform float uParticleSize;
+  uniform float uMaskIntensity;
+  uniform vec3 uBackgroundColor;
+  uniform vec3 uParticleColor;
+  varying vec2 vUv;
+  
+  // Random function
+  float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+  }
+  
+  // Noise function
+  float noise(vec2 st) {
+    vec2 i = floor(st);
+    vec2 f = fract(st);
+    
+    float a = random(i);
+    float b = random(i + vec2(1.0, 0.0));
+    float c = random(i + vec2(0.0, 1.0));
+    float d = random(i + vec2(1.0, 1.0));
+    
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    
+    return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+  }
+  
+  // Pixelated X shape function
+  float pixelatedX(vec2 p, float size) {
+    p = abs(p);
+    
+    // Create a pixelated X pattern
+    // Main diagonal: when x ≈ y
+    float mainDiag = step(abs(p.x - p.y), size * 0.3);
+    
+    // Anti-diagonal: when x + y ≈ constant (around the center)
+    float center = size * 0.7071; // sqrt(2)/2 * size for proper scaling
+    float antiDiag = step(abs(p.x + p.y - center), size * 0.3);
+    
+    // Combine both diagonals, but ensure they intersect properly
+    float x = max(mainDiag, antiDiag);
+    
+    // Add pixelation by quantizing the position
+    vec2 pixelSize = vec2(size * 0.2);
+    vec2 pixelatedP = floor(p / pixelSize) * pixelSize;
+    
+    // Recalculate with pixelated coordinates for sharper edges
+    pixelatedP = abs(pixelatedP);
+    float pixelMainDiag = step(abs(pixelatedP.x - pixelatedP.y), size * 0.25);
+    float pixelAntiDiag = step(abs(pixelatedP.x + pixelatedP.y - center), size * 0.25);
+    
+    float pixelX = max(pixelMainDiag, pixelAntiDiag);
+    
+    // Ensure the X is contained within a square boundary
+    float boundary = step(max(p.x, p.y), size);
+    
+    return pixelX * boundary;
+  }
+  
+  // Create particle pattern
+  float particles(vec2 uv) {
+    vec2 grid = vec2(120.0); // Much higher density for closer particles
+    vec2 id = floor(uv * grid);
+    vec2 p = fract(uv * grid) - 0.5;
+    
+    // Add randomness to break up grid pattern
+    vec2 offset = vec2(
+      random(id) * 0.4 - 0.2,
+      random(id + 100.0) * 0.4 - 0.2
+    );
+    p += offset;
+    
+    // Wrap positions to avoid gaps
+    p = fract(p + 0.5) - 0.5;
+    
+    // Vary particle size
+    float sizeVariation = 0.5 + 0.5 * random(id + 200.0);
+    float size = uParticleSize * sizeVariation;
+    
+    // Create pixelated X shape
+    float particle = pixelatedX(p, size);
+    
+    // Random intensity variation
+    float intensity = 0.6 + 0.4 * random(id + 300.0);
+    
+    // Add a second overlapping grid for even more density
+    vec2 grid2 = vec2(100.0);
+    vec2 id2 = floor(uv * grid2 + 0.3); // Offset second grid
+    vec2 p2 = fract(uv * grid2 + 0.3) - 0.5;
+    
+    vec2 offset2 = vec2(
+      random(id2 + 500.0) * 0.35 - 0.175,
+      random(id2 + 600.0) * 0.35 - 0.175
+    );
+    p2 += offset2;
+    p2 = fract(p2 + 0.5) - 0.5;
+    
+    float sizeVariation2 = 0.4 + 0.4 * random(id2 + 700.0);
+    float size2 = uParticleSize * sizeVariation2;
+    float particle2 = pixelatedX(p2, size2);
+    float intensity2 = 0.5 + 0.3 * random(id2 + 800.0);
+    
+    // Combine both grids
+    float result = (particle * intensity) + (particle2 * intensity2 * 0.6);
+    
+    return clamp(result, 0.0, 1.0);
+  }
+  
+  void main() {
+    vec2 uv = vUv;
+    vec2 fragCoord = uv * iResolution;
+    
+    // Sample the fluid simulation texture
+    vec4 fluid = texture2D(iFluid, uv);
+    
+    // Create particle pattern
+    float particlePattern = particles(uv);
+    
+    // Use fluid simulation as reveal mask
+    float fluidMask = length(fluid.xy) * uMaskIntensity;
+    fluidMask += fluid.z * 0.4;
+    fluidMask = smoothstep(0.0, 1.0, fluidMask);
+    
+    // Calculate distance from current pixel to mouse cursor
+    vec2 mousePos = iMouse;
+    float distanceToMouse = length(fragCoord - mousePos);
+    
+    // Create distance-based fade (closer = brighter, farther = darker)
+    float maxDistance = min(iResolution.x, iResolution.y) * 0.6; // Fade distance
+    float distanceFade = 1.0 - smoothstep(0.0, maxDistance, distanceToMouse);
+    distanceFade = pow(distanceFade, 1.5); // Make the fade more dramatic
+    
+    // Apply reveal effect - particles only visible where fluid mask is active
+    float revealedParticles = particlePattern * fluidMask;
+    
+    // Apply distance fade to revealed particles
+    float fadedParticles = revealedParticles * (0.1 + distanceFade * 0.9);
+    
+    // Mix background and particle colors
+    vec3 color = mix(uBackgroundColor, uParticleColor, fadedParticles);
+    
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;

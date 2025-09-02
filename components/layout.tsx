@@ -4,7 +4,6 @@ import { Scrollbar } from "./Scrollbar";
 import { useEffect } from "react";
 import { ScrollTrigger } from "@/lib/gsap";
 import { AnimatePresence } from "motion/react";
-import InteractiveShaderBackground from "./InteractiveShaderBackground";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -23,7 +22,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       />
       <Scrollbar />
       {children}
-      <InteractiveShaderBackground className="fixed inset-0 z-0" />
     </div>
   );
 }
