@@ -217,16 +217,20 @@ export function ProjectItem({
           }}
           className="absolute w-1/2 top-1/2 h-full overflow-hidden right-0 translate-y-[100%] group-hover:-translate-y-1/2 transition-transform duration-300 ease-out"
         >
-          <SimpleMarquee direction="left">
+          <SimpleMarquee direction="left" className="gap-0">
             {Array.from({ length: 10 }).map((_, index) => (
-              <Image
+              <div
                 key={index}
-                src={image}
-                alt={title}
-                width={500}
-                height={500}
-                className="w-auto h-11"
-              />
+                className="size-11 bg-purple-600 aspect-square flex items-center justify-center"
+              >
+                <Image
+                  src={image}
+                  alt={title}
+                  width={500}
+                  height={500}
+                  className="w-2/3 h-auto max-h-2/3 object-contain"
+                />
+              </div>
             ))}
           </SimpleMarquee>
         </div>

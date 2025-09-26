@@ -65,9 +65,7 @@ const SimpleMarquee = ({
   const baseX = useMotionValue(0);
   const baseY = useMotionValue(0);
 
-  const { scrollY } = useScroll({
-    container: innerContainer,
-  });
+  const { scrollY } = useScroll();
 
   const scrollVelocity = useVelocity(scrollY);
   const smoothVelocity = useSpring(scrollVelocity, scrollSpringConfig);
