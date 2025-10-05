@@ -4,6 +4,7 @@ import { Scrollbar } from "./Scrollbar";
 import { useEffect } from "react";
 import { ScrollTrigger } from "@/lib/gsap";
 import { AnimatePresence } from "motion/react";
+import Footer from "./footer";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       />
       <Scrollbar />
       {children}
+      <Footer />
     </div>
   );
 }
