@@ -203,7 +203,7 @@ export default function Header() {
 
   return (
     <>
-      <Link href="/" className="fixed left-16 top-12 z-30 w-52">
+      <Link href="/" className="fixed left-16 top-12 z-30 w-52 z-[997]">
         <svg
           width="100%"
           viewBox="0 0 247 33"

@@ -13,8 +13,8 @@ export default function Footer() {
     footerBottomWrapper.style.height = `${footerBottom?.offsetHeight}px`;
   }, []);
   return (
-    <footer className="w-screen relative flex flex-col">
-      <div className="w-full flex flex-col gap-64 p-16 bg-[#E1FF00]">
+    <footer className="w-screen relative flex flex-col z-[998]">
+      <div className="w-full flex flex-col h-screen justify-between p-16 bg-[#E1FF00]">
         <p className="text-black text-3xl leading-none tracking-tighter">
           Client: I want a website with Gzhel fish <br />
           swiming around.
@@ -25,7 +25,7 @@ export default function Footer() {
           </p>
           <Link
             href="/contact"
-            className="text-black text-8xl underline tracking-tight"
+            className="text-black text-8xl underline tracking-tight w-fit"
           >
             Let&apos;s Work
           </Link>
@@ -80,7 +80,7 @@ export default function Footer() {
           </svg>
         </span>
       </div>
-      <SimpleMarquee className="py-6" repeat={10}>
+      {/* <SimpleMarquee className="py-6" repeat={10}>
         <div className="flex flex-row items-center gap-5 pl-5">
           <span className="text-white uppercase text-2xl tracking-tight">
             CONTINUE SCROLLING
@@ -100,14 +100,14 @@ export default function Footer() {
             </svg>
           </span>
         </div>
-      </SimpleMarquee>
+      </SimpleMarquee> */}
       <div
         style={{ clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)" }}
         className="w-full h-fit relative footer-bottom-wrapper"
       >
-        <div className="w-full footer-bottom fixed bottom-0 p-18 flex flex-row whitespace-nowrap">
+        <div className="w-full footer-bottom bg-[#101010] fixed bottom-0 px-18 py-24 flex flex-row whitespace-nowrap">
           <div className="flex flex-col">
-            <span className="text-xl text-[#E1FF00] tracking-tighter">
+            <span className="text-lg text-[#E1FF00] tracking-tighter">
               Menu
             </span>
             <Link href="/" className="text-white text-3xl tracking-tight mt-14">
@@ -135,12 +135,12 @@ export default function Footer() {
               Contact Us
             </Link>
           </div>
-          <div className="flex flex-col ml-72  justify-between">
-            <span className="text-xl text-[#E1FF00] tracking-tighter">
+          <div className="flex flex-col ml-64 justify-between">
+            <span className="text-lg text-[#E1FF00] tracking-tighter">
               Contact
             </span>
-            <div className="flex flex-col ">
-              <span className="text-white text-base tracking-tight mt-14">
+            <div className="flex flex-col mt-14">
+              <span className="text-white text-base tracking-tight ">
                 Dubai, UAE
               </span>
               <span className="text-[#5E5E5E] tracking-tighter">
@@ -162,10 +162,10 @@ export default function Footer() {
           </div>
           <div className="w-full flex justify-end">
             <div className="h-full flex flex-col items-end justify-between">
-              <button className="text-xl text-[#E1FF00] tracking-tighter">
+              <button className="text-lg text-[#E1FF00] tracking-tighter">
                 Back to top
               </button>
-              <div className="flex flex-row gap-4">
+              <div className="flex flex-row gap-8">
                 <span className="text-[#5E5E5E] tracking-tighter">
                   Cookie Settings
                 </span>
