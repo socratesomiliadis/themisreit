@@ -11,6 +11,10 @@ html {
   overflow: hidden;
 }
 
+button {
+  cursor: pointer;
+}
+
 .news-btn:active .nav-arrow {
   scale: 0.5;
 }

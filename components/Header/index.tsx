@@ -57,7 +57,6 @@ export default function Header() {
         {
           x: "-1.5rem",
           opacity: 0,
-          // boxShadow: "0 0 0 0px #000",
           duration: 0.4,
         },
         0
@@ -67,7 +66,6 @@ export default function Header() {
         {
           x: 0,
           opacity: 1,
-          // boxShadow: "0 0 0 14px #000",
           ease: "elastic.out(1.8,1)",
           duration: 1,
         },
@@ -77,48 +75,22 @@ export default function Header() {
         ".menu-body",
         {
           maskImage:
-            "radial-gradient(circle at calc(100% - 0rem) 1.75rem, transparent 0px, black 1px), radial-gradient(circle at 1.75rem 1.75rem, transparent 1px, black 2px), linear-gradient(#000 0 0)",
+            "radial-gradient(circle at 1.75rem 1.75rem, transparent 1px, black 2px), radial-gradient(circle at calc(100% - 0rem) 1.75rem, transparent 0px, black 1px)",
         },
         0
       );
-      // tl.to(
-      //   ".menu-body",
-      //   {
-      //     maskImage:
-      //       "radial-gradient(circle at calc(100% - 1.75rem) 1.75rem, transparent 42px, black 43px), radial-gradient(circle at 1.75rem 1.75rem, transparent 1px, black 2px), linear-gradient(#000 0 0)",
-      //     ease: "elastic.out(1.6,1)",
-      //     duration: 1,
-      //   },
-      //   0
-      // );
+
       tl.to(
         ".menu-body",
         {
           maskImage:
-            "radial-gradient(circle at calc(100% - 1.75rem) 1.75rem, transparent 42px, black 43px), radial-gradient(circle at 1.75rem 1.75rem, transparent 42px, black 43px), linear-gradient(#000 0 0)",
+            "radial-gradient(circle at 1.75rem 1.75rem, transparent 42px, black 43px), radial-gradient(circle at calc(100% - 1.75rem) 1.75rem, transparent 42px, black 43px)",
           ease: "elastic.out(1.6,1)",
           duration: 1,
         },
         0
       );
-      // tl.set(
-      //   ".nav-bg",
-      //   {
-      //     maskImage:
-      //       "radial-gradient(circle at 1.5rem 1.5rem, transparent 1px, black 2px)",
-      //   },
-      //   0
-      // );
-      // tl.to(
-      //   ".nav-bg",
-      //   {
-      //     maskImage:
-      //       "radial-gradient(circle at 1.5rem 1.5rem, transparent 38px, black 39px)",
-      //     ease: "elastic.out(1.6,1)",
-      //     duration: 1,
-      //   },
-      //   0.15
-      // );
+
       tl.call(
         () => {
           setNewsOpen(true);
@@ -166,7 +138,7 @@ export default function Header() {
   }, [isMenuOpen]);
 
   useEffect(() => {
-    const tl = gsap.timeline({ paused: true });
+    const tl = gsap.timeline({ paused: true, defaults: { duration: 0.6 } });
     if (isNewsOpen) {
       tl.to(".news-item", {
         y: 0,
@@ -203,7 +175,7 @@ export default function Header() {
 
   return (
     <>
-      <Link href="/" className="fixed left-16 top-12 z-30 w-52 z-[997]">
+      <Link href="/" className="fixed left-16 top-12 w-52 z-[997]">
         <svg
           width="100%"
           viewBox="0 0 247 33"
@@ -263,8 +235,7 @@ export default function Header() {
             style={{
               pointerEvents: isNewsOpen ? "auto" : "none",
             }}
-            data-lenis-prevent
-            className="news overflow-y-hidden h-full flex flex-col gap-4 pr-0"
+            className="news h-full flex flex-col gap-4 pr-0"
           >
             <NewsItem
               tag="Events"
@@ -298,7 +269,7 @@ attending the B-Hype event in Dubai."
 attending the B-Hype event in Dubai."
               image="/static/images/bHype.png"
             />
-            <button className="w-full news-item opacity-0 -translate-y-8 bg-white rounded-2xl py-4 flex justify-between items-center px-4">
+            <button className="w-full news-item opacity-0 -translate-y-8 bg-white rounded-2xl py-4 text-base leading-none flex justify-between items-center px-4">
               <span>More News</span>
               <span className="block w-4">
                 <svg
@@ -375,9 +346,9 @@ attending the B-Hype event in Dubai."
             <div
               style={{
                 pointerEvents: isMenuOpen ? "auto" : "none",
-                maskComposite: "exclude",
+                maskComposite: "intersect",
               }}
-              className="relative z-0 opacity-0 menu-body rounded-2xl h-[95vh] w-[28vw] backdrop-blur-xl"
+              className="relative z-0 opacity-0 menu-body rounded-2xl h-[95vh] w-[28vw] backdrop-blur-xl will-change-auto"
             >
               <Nav isOpen={isMenuOpen} />
               <div

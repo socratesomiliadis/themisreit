@@ -1,17 +1,19 @@
 import Link from "next/link";
 import SimpleMarquee from "./simple-marquee";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
+import { useLenis } from "lenis/react";
 
 export default function Footer() {
-  useIsomorphicLayoutEffect(() => {
-    const footerBottom = document.querySelector(
-      ".footer-bottom"
-    ) as HTMLElement;
-    const footerBottomWrapper = document.querySelector(
-      ".footer-bottom-wrapper"
-    ) as HTMLElement;
-    footerBottomWrapper.style.height = `${footerBottom?.offsetHeight}px`;
-  }, []);
+  const lenis = useLenis();
+  // useIsomorphicLayoutEffect(() => {
+  //   const footerBottom = document.querySelector(
+  //     ".footer-bottom"
+  //   ) as HTMLElement;
+  //   const footerBottomWrapper = document.querySelector(
+  //     ".footer-bottom-wrapper"
+  //   ) as HTMLElement;
+  //   footerBottomWrapper.style.height = `${footerBottom?.offsetHeight}px`;
+  // }, []);
   return (
     <footer className="w-screen relative flex flex-col z-[998]">
       <div className="w-full flex flex-col h-screen justify-between p-16 bg-[#E1FF00]">
@@ -103,88 +105,120 @@ export default function Footer() {
       </SimpleMarquee> */}
       <div
         style={{ clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)" }}
-        className="w-full h-fit relative footer-bottom-wrapper"
+        className="w-full h-[50vh] relative footer-bottom-wrapper"
       >
-        <div className="w-full footer-bottom bg-[#101010] fixed bottom-0 px-18 py-24 flex flex-row whitespace-nowrap">
-          <div className="flex flex-col">
-            <span className="text-lg text-[#E1FF00] tracking-tighter">
-              Menu
-            </span>
-            <Link href="/" className="text-white text-3xl tracking-tight mt-14">
-              Home
-            </Link>
-            <Link href="/about" className="text-white text-3xl tracking-tight">
-              About Us
-            </Link>
-            <Link
-              href="/projects"
-              className="text-white text-3xl tracking-tight"
-            >
-              Projects
-            </Link>
-            <Link
-              href="/universe"
-              className="text-white text-3xl tracking-tight"
-            >
-              Universe
-            </Link>
-            <Link
-              href="/contact"
-              className="text-white text-3xl tracking-tight"
-            >
-              Contact Us
-            </Link>
-          </div>
-          <div className="flex flex-col ml-64 justify-between">
-            <span className="text-lg text-[#E1FF00] tracking-tighter">
-              Contact
-            </span>
-            <div className="flex flex-col mt-14">
-              <span className="text-white text-base tracking-tight ">
-                Dubai, UAE
-              </span>
-              <span className="text-[#5E5E5E] tracking-tighter">
-                Palm Jumeirah, Villa 0810,
-              </span>
-              <span className="text-[#5E5E5E] tracking-tighter">
-                +971 69 69 88 69
-              </span>
-            </div>
+        <div className="w-full h-[50vh] footer-bottom bg-[#101010] fixed bottom-0 px-18 py-24 flex flex-row items-center justify-center whitespace-nowrap">
+          <div className="w-full flex">
             <div className="flex flex-col">
-              <span className="text-white text-base tracking-tight">Jobs</span>
-              <span className="text-[#5E5E5E] tracking-tighter">
-                hello@themisreit.com
+              <span className="text-lg text-[#E1FF00] tracking-tighter">
+                Menu
               </span>
-              <span className="text-[#5E5E5E] tracking-tighter">
-                jobs@themisreit.com
-              </span>
+              <Link
+                href="/"
+                className="text-white text-3xl tracking-tight mt-14"
+              >
+                Home
+              </Link>
+              <Link
+                href="/about"
+                className="text-white text-3xl tracking-tight"
+              >
+                About Us
+              </Link>
+              <Link
+                href="/projects"
+                className="text-white text-3xl tracking-tight"
+              >
+                Projects
+              </Link>
+              <Link
+                href="/universe"
+                className="text-white text-3xl tracking-tight"
+              >
+                Universe
+              </Link>
+              <Link
+                href="/contact"
+                className="text-white text-3xl tracking-tight"
+              >
+                Contact Us
+              </Link>
             </div>
-          </div>
-          <div className="w-full flex justify-end">
-            <div className="h-full flex flex-col items-end justify-between">
-              <button className="text-lg text-[#E1FF00] tracking-tighter">
-                Back to top
-              </button>
-              <div className="flex flex-row gap-8">
-                <span className="text-[#5E5E5E] tracking-tighter">
-                  Cookie Settings
-                </span>
-                <span className="text-[#5E5E5E] tracking-tighter">
-                  Cookie Policy
-                </span>
-                <span className="text-[#5E5E5E] tracking-tighter">
-                  Privacy Policy
-                </span>
-                <span className="text-[#5E5E5E] tracking-tighter">
-                  ©2025 All Copyrights Reserved by{" "}
-                  <Link
-                    href="https://aeva.ae"
-                    target="_blank"
-                    className="text-[#5E5E5E] tracking-tighter underline"
-                  >
-                    Aeva
-                  </Link>
-                </span>
+            <div className="flex flex-col ml-64">
+              <span className="text-lg text-[#E1FF00] tracking-tighter">
+                Contact
+              </span>
+              <div className="mt-14 h-full flex flex-col justify-between">
+                <div className="flex flex-col">
+                  <span className="text-white text-base tracking-tight ">
+                    Dubai, UAE
+                  </span>
+                  <span className="text-[#5E5E5E] tracking-tighter">
+                    Palm Jumeirah, Villa 0810,
+                  </span>
+                  <span className="text-[#5E5E5E] tracking-tighter">
+                    +971 69 69 88 69
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-white text-base tracking-tight">
+                    Jobs
+                  </span>
+                  <span className="text-[#5E5E5E] tracking-tighter">
+                    hello@themisreit.com
+                  </span>
+                  <span className="text-[#5E5E5E] tracking-tighter">
+                    jobs@themisreit.com
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="w-full flex justify-end">
+              <div className="h-full flex flex-col items-end justify-between">
+                <button
+                  onClick={() => {
+                    lenis?.scrollTo(0);
+                  }}
+                  className="text-lg text-[#E1FF00] tracking-tighter flex flex-row items-center gap-3 group"
+                >
+                  <span>Back to top</span>
+                  <span className="block w-0 group-hover:w-3 transition-width duration-200 ease-out">
+                    <svg
+                      width="100%"
+                      viewBox="0 0 17 20"
+                      fill="none"
+                      className="rotate-180"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M15.5872 11.0315L8.44038 18.1783L1.29356 11.0315M8.44038 0.821832L8.44036 17.6679"
+                        stroke="currentColor"
+                        strokeWidth="2.04194"
+                      />
+                    </svg>
+                  </span>
+                </button>
+                <div className="flex flex-row gap-8">
+                  <span className="text-[#5E5E5E] tracking-tighter">
+                    Cookie Settings
+                  </span>
+                  <span className="text-[#5E5E5E] tracking-tighter">
+                    Cookie Policy
+                  </span>
+                  <span className="text-[#5E5E5E] tracking-tighter">
+                    Privacy Policy
+                  </span>
+                  <span className="text-[#5E5E5E] tracking-tighter">
+                    ©2025 All Copyrights Reserved by{" "}
+                    <Link
+                      href="https://aeva.ae"
+                      target="_blank"
+                      className="text-[#5E5E5E] tracking-tighter underline"
+                    >
+                      Aeva
+                    </Link>
+                  </span>
+                </div>
               </div>
             </div>
           </div>

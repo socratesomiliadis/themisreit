@@ -92,6 +92,29 @@ export default function Nav({ isOpen }: { isOpen: boolean }) {
   useEffect(() => {
     const tl = gsap.timeline({ paused: true });
     if (isOpen) {
+      tl.set(
+        ".nav-item",
+        {
+          y: "-2rem",
+          opacity: 0,
+        },
+        0
+      );
+      tl.set(
+        ".social-item",
+        {
+          y: "-2rem",
+          opacity: 0,
+        },
+        0
+      );
+      tl.set(
+        ".nav-item-line",
+        {
+          width: "0%",
+        },
+        0
+      );
       tl.to(
         ".nav-item",
         {
