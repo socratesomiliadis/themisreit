@@ -30,6 +30,11 @@ button {
   border-radius: 10px;
 }
 
+::selection {
+  background: #e1ff00;
+  color: #000;
+}
+
 html.lenis,
 html.lenis body {
   height: auto;
@@ -51,4 +56,11 @@ html.lenis body {
   transition-property: overflow;
   transition-duration: 1ms;
   transition-behavior: allow-discrete;
+}
+
+html.scrollbar-grabbing,
+html.scrollbar-grabbing * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  cursor: grabbing !important;
 }

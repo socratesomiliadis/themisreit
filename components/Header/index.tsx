@@ -35,12 +35,12 @@ export default function Header() {
         },
         0
       );
-      tl.to(
+      tl.set(
         ".status-bar",
         {
           opacity: 0,
         },
-        0
+        0.1
       );
       tl.to(
         ".menu-body",

@@ -2,32 +2,147 @@ import Link from "next/link";
 import SimpleMarquee from "./simple-marquee";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 import { useLenis } from "lenis/react";
+import { cn } from "@/lib/utils";
+import { gsap, SplitText } from "@/lib/gsap";
+
+function FooterSmallLink({ href, text }: { href: string; text: string }) {
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      className="text-[#5E5E5E] hover:text-[#E1FF00] tracking-tighter flex flex-row items-center group transition-[color] duration-200 ease-out"
+    >
+      <span className="flex items-center justify-center w-3 h-[1lh] scale-0 group-hover:scale-100 transition-scale duration-200 ease-out origin-left">
+        <svg
+          width="100%"
+          viewBox="0 0 20 17"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M10.6783 1.53149L17.8251 8.67827L10.6783 15.8251M0.468561 8.67827L17.3146 8.67829"
+            stroke="currentColor"
+            strokeWidth="2.04194"
+          />
+        </svg>
+      </span>
+      <span className="-translate-x-3 group-hover:translate-x-1.5 transition-translate duration-200 ease-out">
+        {text}
+      </span>
+    </Link>
+  );
+}
+
+function FooterNavLink({
+  href,
+  text,
+  className,
+}: {
+  href: string;
+  text: string;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "text-white text-3xl tracking-tight flex flex-row items-center gap-0 group",
+        className
+      )}
+    >
+      <span className="block w-3 scale-0 group-hover:scale-100 transition-scale duration-200 ease-out text-[#5E5E5E] origin-left">
+        <svg
+          width="100%"
+          viewBox="0 0 14 15"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M3.06978 1.94975L12.9693 1.94973L12.9693 11.8492M0.948451 13.9705L12.6157 2.3033"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+        </svg>
+      </span>
+      <span className="-translate-x-3 group-hover:translate-x-2 transition-translate duration-200 ease-out">
+        {text}
+      </span>
+    </Link>
+  );
+}
 
 export default function Footer() {
   const lenis = useLenis();
-  // useIsomorphicLayoutEffect(() => {
-  //   const footerBottom = document.querySelector(
-  //     ".footer-bottom"
-  //   ) as HTMLElement;
-  //   const footerBottomWrapper = document.querySelector(
-  //     ".footer-bottom-wrapper"
-  //   ) as HTMLElement;
-  //   footerBottomWrapper.style.height = `${footerBottom?.offsetHeight}px`;
-  // }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    const split = SplitText.create(".footer-split-text", {
+      type: "words, lines",
+      linesClass: "footer-split-line",
+      wordsClass: "footer-split-word",
+      autoSplit: true,
+      onSplit: (self) => {
+        self.lines.forEach((line) => {
+          gsap.set(line, {
+            x: "1rem",
+          });
+        });
+        self.words.forEach((word) => {
+          gsap.set(word, {
+            opacity: 0,
+            filter: "blur(10px)",
+          });
+        });
+        const tl = gsap.timeline({
+          defaults: {
+            duration: 1.2,
+            ease: "power2.out",
+          },
+          scrollTrigger: {
+            trigger: "footer",
+            start: "top 75%",
+            end: "top 20%",
+            scrub: true,
+          },
+        });
+        tl.set(".footer-split-text", {
+          opacity: 1,
+        });
+        tl.to(
+          self.lines,
+          {
+            x: 0,
+            stagger: 0.1,
+          },
+          0
+        );
+        tl.to(
+          [self.words, ".footer-anim"],
+          {
+            x: 0,
+            opacity: 1,
+            filter: "blur(0px)",
+            stagger: 0.05,
+          },
+          0.1
+        );
+      },
+    });
+  }, []);
+
   return (
     <footer className="w-screen relative flex flex-col z-[998]">
-      <div className="w-full flex flex-col h-screen justify-between p-16 bg-[#E1FF00]">
-        <p className="text-black text-3xl leading-none tracking-tighter">
+      <div className="w-full flex flex-col h-screen justify-between p-16 bg-[#E1FF00] select-none">
+        <p className="text-black text-3xl leading-none tracking-tighter footer-split-text">
           Client: I want a website with Gzhel fish <br />
           swiming around.
         </p>
         <div className="flex flex-col">
-          <p className="text-black text-3xl leading-none tracking-tighter">
+          <p className="text-black text-3xl leading-none tracking-tighter footer-split-text">
             Got a crazy idea?
           </p>
           <Link
             href="/contact"
-            className="text-black text-8xl underline tracking-tight w-fit"
+            className="text-black text-8xl underline tracking-tight w-fit footer-anim opacity-0 translate-x-4 blur"
           >
             Let&apos;s Work
           </Link>
@@ -107,42 +222,18 @@ export default function Footer() {
         style={{ clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)" }}
         className="w-full h-[50vh] relative footer-bottom-wrapper"
       >
-        <div className="w-full h-[50vh] footer-bottom bg-[#101010] fixed bottom-0 px-18 py-24 flex flex-row items-center justify-center whitespace-nowrap">
+        <div className="w-full h-[50vh] footer-bottom fixed bottom-0 px-18 py-24 flex flex-row items-center justify-center whitespace-nowrap">
           <div className="w-full flex">
             <div className="flex flex-col">
               <span className="text-lg text-[#E1FF00] tracking-tighter">
                 Menu
               </span>
-              <Link
-                href="/"
-                className="text-white text-3xl tracking-tight mt-14"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="text-white text-3xl tracking-tight"
-              >
-                About Us
-              </Link>
-              <Link
-                href="/projects"
-                className="text-white text-3xl tracking-tight"
-              >
-                Projects
-              </Link>
-              <Link
-                href="/universe"
-                className="text-white text-3xl tracking-tight"
-              >
-                Universe
-              </Link>
-              <Link
-                href="/contact"
-                className="text-white text-3xl tracking-tight"
-              >
-                Contact Us
-              </Link>
+              <FooterNavLink href="/" text="Home" className="mt-14" />
+              <FooterNavLink href="/about" text="About Us" />
+              <FooterNavLink href="/projects" text="Projects" />
+              <FooterNavLink href="/universe" text="Universe" />
+
+              <FooterNavLink href="/contact" text="Contact Us" />
             </div>
             <div className="flex flex-col ml-64">
               <span className="text-lg text-[#E1FF00] tracking-tighter">
@@ -153,23 +244,28 @@ export default function Footer() {
                   <span className="text-white text-base tracking-tight ">
                     Dubai, UAE
                   </span>
-                  <span className="text-[#5E5E5E] tracking-tighter">
-                    Palm Jumeirah, Villa 0810,
-                  </span>
-                  <span className="text-[#5E5E5E] tracking-tighter">
-                    +971 69 69 88 69
-                  </span>
+
+                  <FooterSmallLink
+                    href="https://maps.app.goo.gl/ZiFDhvea1pHsptuQ6"
+                    text="Building A1, Dubai Digital Park"
+                  />
+                  <FooterSmallLink
+                    href="tel:+971 69 69 88 69"
+                    text="+971 69 69 88 69"
+                  />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-white text-base tracking-tight">
                     Jobs
                   </span>
-                  <span className="text-[#5E5E5E] tracking-tighter">
-                    hello@themisreit.com
-                  </span>
-                  <span className="text-[#5E5E5E] tracking-tighter">
-                    jobs@themisreit.com
-                  </span>
+                  <FooterSmallLink
+                    href="mailto:hello@themisreit.com"
+                    text="hello@themisreit.com"
+                  />
+                  <FooterSmallLink
+                    href="mailto:jobs@themisreit.com"
+                    text="jobs@themisreit.com"
+                  />
                 </div>
               </div>
             </div>
@@ -179,12 +275,12 @@ export default function Footer() {
                   onClick={() => {
                     lenis?.scrollTo(0);
                   }}
-                  className="text-lg text-[#E1FF00] tracking-tighter flex flex-row items-center gap-3 group"
+                  className="text-lg text-[#E1FF00] tracking-tighter flex flex-row items-center gap-2 group"
                 >
                   <span>Back to top</span>
-                  <span className="block w-0 group-hover:w-3 transition-width duration-200 ease-out">
+                  <span className="size-0 group-hover:size-6 transition-size duration-200 ease-out rounded-full bg-[#E1FF00] flex items-center justify-center text-black">
                     <svg
-                      width="100%"
+                      width="45%"
                       viewBox="0 0 17 20"
                       fill="none"
                       className="rotate-180"
@@ -199,15 +295,24 @@ export default function Footer() {
                   </span>
                 </button>
                 <div className="flex flex-row gap-8">
-                  <span className="text-[#5E5E5E] tracking-tighter">
+                  <Link
+                    href="/cookie-settings"
+                    className="text-[#5E5E5E] tracking-tighter hover:text-white transition-colors duration-200 ease-out"
+                  >
                     Cookie Settings
-                  </span>
-                  <span className="text-[#5E5E5E] tracking-tighter">
+                  </Link>
+                  <Link
+                    href="/cookie-policy"
+                    className="text-[#5E5E5E] tracking-tighter hover:text-white transition-colors duration-200 ease-out"
+                  >
                     Cookie Policy
-                  </span>
-                  <span className="text-[#5E5E5E] tracking-tighter">
+                  </Link>
+                  <Link
+                    href="/privacy-policy"
+                    className="text-[#5E5E5E] tracking-tighter hover:text-white transition-colors duration-200 ease-out"
+                  >
                     Privacy Policy
-                  </span>
+                  </Link>
                   <span className="text-[#5E5E5E] tracking-tighter">
                     ©2025 All Copyrights Reserved by{" "}
                     <Link

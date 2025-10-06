@@ -60,6 +60,7 @@ export function Scrollbar() {
     }
 
     function onPointerDown(e: PointerEvent) {
+      e.preventDefault();
       start = e.offsetY;
       document.documentElement.classList.add("scrollbar-grabbing");
     }
@@ -88,7 +89,7 @@ export function Scrollbar() {
     <div className="fixed right-0 top-0 bottom-0 z-[1000]">
       <div ref={innerMeasureRef} className="inner h-full relative">
         <div
-          className="thumb w-2 bg-[#c8c8c8]/50 backdrop-blur rounded-full absolute right-0 cursor-grab will-change-transform"
+          className="thumb w-2 bg-[#c8c8c8]/50 backdrop-blur rounded-full absolute right-0 cursor-grab will-change-transform select-none"
           ref={(node) => {
             if (!node) return;
             thumbRef.current = node;
