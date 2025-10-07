@@ -19,6 +19,7 @@ const wrap = (min: number, max: number, value: number): number => {
 };
 
 interface SimpleMarqueeProps {
+  style?: React.CSSProperties; // The style of the marquee
   children: React.ReactNode; // The elements to be scrolled
   className?: string; // Additional CSS classes for the container
   direction?: "left" | "right" | "up" | "down"; // The direction of the marquee
@@ -41,6 +42,7 @@ interface SimpleMarqueeProps {
 }
 
 const SimpleMarquee = ({
+  style,
   children,
   className,
   direction = "right",
@@ -240,6 +242,7 @@ const SimpleMarquee = ({
 
   return (
     <motion.div
+      style={style}
       className={cn("flex", isHorizontal ? "flex-row" : "flex-col", className)}
       onHoverStart={() => (isHovered.current = true)}
       onHoverEnd={() => (isHovered.current = false)}

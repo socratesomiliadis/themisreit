@@ -59,11 +59,10 @@ export default function HomeHero() {
           Our Studio
         </span>
         <p className="text-4xl font-[300] home-hero-text opacity-0 tracking-tight">
-          We help experience-driven companies thrive <br />
-          by making their audience feel the refined <br />
-          intricacies of their brand and product in the <br />
-          digital space. Unforgettable journeys start <br />
-          with a click.
+          We help visionary brands flourish <br />
+          by crafting digital experiences that let <br />
+          audiences feel the depth, elegance, and <br />
+          essence of their products.
         </p>
       </div>
       <Image

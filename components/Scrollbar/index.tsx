@@ -1,101 +1,121 @@
 "use client";
 
-import { useRect } from "hamo";
 import { useLenis } from "lenis/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function Scrollbar() {
-  const thumbRef = useRef<HTMLDivElement>(null!);
+  const pillRef = useRef<HTMLDivElement>(null!);
+  const trackRef = useRef<HTMLDivElement>(null!);
   const lenis = useLenis();
-  const [innerMeasureRef, { height: innerHeight = 0 }] = useRect();
+  const [isVisible, setIsVisible] = useState(false);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  const MIN_THUMB_PX = 48; // minimum visible size for usability
+  const trackHeight = 176; // h-64 = 256px
+  const pillHeight = 48; // h-12 = 48px
 
-  function computeThumbHeight(trackHeight: number, scrollLimit: number) {
-    const contentHeight = scrollLimit + trackHeight; // total scrollable content height
-    if (contentHeight <= 0 || trackHeight <= 0) return MIN_THUMB_PX;
-    const ratio = trackHeight / contentHeight; // viewport/content
-    return Math.max(MIN_THUMB_PX, Math.round(ratio * trackHeight));
-  }
-
-  useLenis(
-    ({ scroll, limit }) => {
-      const progress = limit > 0 ? scroll / limit : 0;
-
-      const thumbHeight = computeThumbHeight(innerHeight, limit);
-      if (thumbRef.current) {
-        thumbRef.current.style.height = `${thumbHeight}px`;
-        thumbRef.current.style.transform = `translate3d(0,${
-          progress * Math.max(0, innerHeight - thumbHeight)
-        }px,0)`;
-      }
-    },
-    [innerHeight]
-  );
-
-  useEffect(() => {
-    // Set initial thumb height when sizes are known
-    if (!thumbRef.current || !lenis) return;
-    const thumbHeight = computeThumbHeight(innerHeight, lenis.limit);
-    thumbRef.current.style.height = `${thumbHeight}px`;
-  }, [lenis, innerHeight]);
-
-  useEffect(() => {
-    let start: null | number = null;
-
-    function onPointerMove(e: PointerEvent) {
-      if (start === null || !lenis) return;
-
-      e.preventDefault();
-
-      const thumbHeight = computeThumbHeight(innerHeight, lenis.limit);
-      const trackRange = Math.max(1, innerHeight - thumbHeight);
-
-      // Current thumb top in track coordinates (track starts at viewport top)
-      const thumbTop = Math.min(Math.max(0, e.clientY - start), trackRange);
-      const progress = thumbTop / trackRange;
-      const scroll = progress * lenis.limit;
-
-      lenis.scrollTo(scroll, { lerp: 0.2 });
+  const showScrollbar = () => {
+    setIsVisible(true);
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
     }
+    hideTimeoutRef.current = setTimeout(() => {
+      setIsVisible(false);
+    }, 500); // Hide after 1.5 seconds of inactivity
+  };
+
+  useLenis(({ scroll, limit }) => {
+    const progress = limit > 0 ? scroll / limit : 0;
+    const maxTravel = trackHeight - pillHeight;
+
+    if (pillRef.current) {
+      pillRef.current.style.transform = `translateY(${progress * maxTravel}px)`;
+    }
+
+    // Show on scroll
+    showScrollbar();
+  });
+
+  useEffect(() => {
+    let isDragging = false;
+    let startY = 0;
+    let startScrollProgress = 0;
 
     function onPointerDown(e: PointerEvent) {
+      if (!lenis) return;
       e.preventDefault();
-      start = e.offsetY;
+      isDragging = true;
+      startY = e.clientY;
+      startScrollProgress = lenis.limit > 0 ? lenis.scroll / lenis.limit : 0;
       document.documentElement.classList.add("scrollbar-grabbing");
+      pillRef.current?.setPointerCapture(e.pointerId);
+      showScrollbar();
     }
 
-    function onPointerUp() {
-      start = null;
+    function onPointerMove(e: PointerEvent) {
+      // Check proximity to scrollbar
+      if (!isDragging && trackRef.current) {
+        const rect = trackRef.current.getBoundingClientRect();
+        const distance = Math.abs(e.clientX - rect.left);
+        const proximityThreshold = 150; // Show when within 150px
+
+        if (distance < proximityThreshold) {
+          showScrollbar();
+        }
+      }
+
+      if (!isDragging || !lenis || !trackRef.current) return;
+      e.preventDefault();
+
+      const deltaY = e.clientY - startY;
+      const maxTravel = trackHeight - pillHeight;
+      const progressDelta = deltaY / maxTravel;
+      const newProgress = Math.max(
+        0,
+        Math.min(1, startScrollProgress + progressDelta)
+      );
+      const newScroll = newProgress * lenis.limit;
+
+      lenis.scrollTo(newScroll, { immediate: true });
+    }
+
+    function onPointerUp(e: PointerEvent) {
+      if (!isDragging) return;
+      e.preventDefault();
+      isDragging = false;
       document.documentElement.classList.remove("scrollbar-grabbing");
+      pillRef.current?.releasePointerCapture(e.pointerId);
     }
 
-    thumbRef.current?.addEventListener("pointerdown", onPointerDown, false);
-    window.addEventListener("pointermove", onPointerMove, false);
-    window.addEventListener("pointerup", onPointerUp, false);
+    const pill = pillRef.current;
+    pill?.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
 
     return () => {
-      thumbRef.current?.removeEventListener(
-        "pointerdown",
-        onPointerDown,
-        false
-      );
-      window.removeEventListener("pointermove", onPointerMove, false);
-      window.removeEventListener("pointerup", onPointerUp, false);
+      pill?.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
     };
-  }, [lenis, innerHeight]);
+  }, [lenis, trackHeight, pillHeight]);
 
   return (
-    <div className="fixed right-0 top-0 bottom-0 z-[1000]">
-      <div ref={innerMeasureRef} className="inner h-full relative">
-        <div
-          className="thumb w-2 bg-[#c8c8c8]/50 backdrop-blur rounded-full absolute right-0 cursor-grab will-change-transform select-none"
-          ref={(node) => {
-            if (!node) return;
-            thumbRef.current = node;
-          }}
-        />
-      </div>
+    <div
+      ref={trackRef}
+      className={`fixed right-4 top-1/2 -translate-y-1/2 z-[1000] w-1 h-44 transition-opacity duration-300 mix-blend-exclusion ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      {/* Track/Background line */}
+      <div className="absolute inset-0 bg-white/20 rounded-full" />
+
+      {/* Moving pill indicator */}
+      <div
+        ref={pillRef}
+        className="absolute left-1/2 -translate-x-1/2 top-0 w-1 h-12 bg-white rounded-full will-change-transform cursor-grab active:cursor-grabbing"
+      />
     </div>
   );
 }

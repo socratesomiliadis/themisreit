@@ -8,80 +8,8 @@ import { useLenis } from "lenis/react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import ProjectHero from "../ProjectSingle/project-hero";
-
-export type ProjectInfoType = {
-  title: string;
-  type: string;
-  subbrand: string;
-  category: string;
-  year: string;
-  image: string;
-  slug: string;
-  mainImage: string;
-};
-
-export const projectInfo: ProjectInfoType[] = [
-  {
-    title: "Nike",
-    type: "Commission",
-    subbrand: "1UP Nova",
-    category: "Corporate",
-    year: "2025",
-    image: "/static/images/logo/tacoBell.png",
-    slug: "nike",
-    mainImage: "/static/images/projectHero.png",
-  },
-  {
-    title: "Chrome Hearts",
-    type: "Concept",
-    subbrand: "1UP Nova",
-    category: "Corporate",
-    year: "2025",
-    image: "/static/images/logo/ch.png",
-    slug: "chrome-hearts",
-    mainImage: "/static/images/projectHero.png",
-  },
-  {
-    title: "Taco Bell",
-    type: "Commission",
-    subbrand: "1UP Nova",
-    category: "Corporate",
-    year: "2025",
-    image: "/static/images/logo/tacoBell.png",
-    slug: "taco-bell",
-    mainImage: "/static/images/projectHero.png",
-  },
-  {
-    title: "McDonalds",
-    type: "Commission",
-    subbrand: "1UP Nova",
-    category: "Corporate",
-    year: "2025",
-    image: "/static/images/logo/tacoBell.png",
-    slug: "mcdonalds",
-    mainImage: "/static/images/projectHero.png",
-  },
-  {
-    title: "Binance",
-    type: "Commission",
-    subbrand: "1UP Nova",
-    category: "Corporate",
-    year: "2025",
-    image: "/static/images/logo/tacoBell.png",
-    slug: "binance",
-    mainImage: "/static/images/projectHero.png",
-  },
-  {
-    title: "Microsoft",
-    type: "Commission",
-    subbrand: "1UP Nova",
-    category: "Corporate",
-    year: "2025",
-    image: "/static/images/logo/tacoBell.png",
-    slug: "microsoft",
-    mainImage: "/static/images/projectHero.png",
-  },
-];
+import { Project, ProjectsQueryResult } from "@/sanity.types";
+import { urlForImage } from "@/lib/sanity/sanity.image";
 
 export function ProjectItem({
   title,
@@ -90,8 +18,11 @@ export function ProjectItem({
   category,
   year,
   slug,
-  image,
+  logo,
   mainImage,
+  marqueeLogo,
+  brandColor,
+  isProjectPage,
 }: {
   title: string;
   type: string;
@@ -99,8 +30,11 @@ export function ProjectItem({
   category: string;
   year: string;
   slug: string;
-  image: string;
+  logo: string;
   mainImage: string;
+  marqueeLogo: string;
+  brandColor: string;
+  isProjectPage: boolean;
 }) {
   const router = useRouter();
   const lenis = useLenis();
@@ -108,6 +42,9 @@ export function ProjectItem({
   return (
     <div
       onClick={() => {
+        if (isProjectPage) {
+          return;
+        }
         // router.push(`/work/${slug}`, undefined, {
         //   scroll: false,
         // });
@@ -115,13 +52,16 @@ export function ProjectItem({
           `.project-item-${slug}`
         ) as HTMLElement;
         router.prefetch(`/work/${slug}`);
+        lenis?.stop();
         lenis?.scrollTo(activeItem, {
           offset: -128,
           lock: true,
           duration: 1.3,
+          force: true,
           onComplete: () => {
             router.push(`/work/${slug}`, undefined, {
               scroll: false,
+              shallow: true,
             });
           },
         });
@@ -207,25 +147,29 @@ export function ProjectItem({
         `project-item-${slug}`
       )}
     >
+      <span className="text-white text-6xl leading-[0.75] absolute left-0">
+        {title}
+      </span>
       <div className="w-full border-y-[1px] border-white/20 flex flex-row items-center relative overflow-hidden">
-        <span className="w-[50%] text-white text-6xl leading-[0.75]">
+        <span className="w-[52%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
           {title}
         </span>
         <div
           style={{
-            mask: "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
+            mask: "linear-gradient(to right, transparent 0%, black 15%, black 100%)",
           }}
-          className="absolute w-1/2 top-1/2 h-full overflow-hidden right-0 translate-y-[100%] group-hover:-translate-y-1/2 transition-transform duration-300 ease-out"
+          className="absolute w-[48%] h-full z-10 overflow-hidden right-0 translate-y-[100%] group-hover:-translate-y-0 transition-transform duration-300 ease-out"
         >
           <SimpleMarquee
             baseVelocity={70}
             repeat={20}
+            style={{ backgroundColor: brandColor }}
             direction="left"
-            className="gap-0 bg-purple-600"
+            className={cn("h-full")}
           >
-            <div className="size-11 aspect-square flex items-center justify-center">
+            <div className="h-full w-auto aspect-square flex items-center justify-center pr-3 box-content">
               <Image
-                src={image}
+                src={marqueeLogo}
                 alt={title}
                 width={500}
                 height={500}
@@ -234,15 +178,15 @@ export function ProjectItem({
             </div>
           </SimpleMarquee>
         </div>
-        <div className="w-[50%] relative flex flex-row items-center justify-between gap-4 text-white text-sm overflow-hidden group-hover:translate-y-[100%] transition-transform duration-300 ease-out">
-          <div className="flex-col">
+        <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-white text-sm overflow-hidden group-hover:translate-y-[100%] transition-transform duration-300 ease-out">
+          <div className="flex-col col-span-2">
             <span className="text-[#5E5E5E]">({type}) </span>
             <span className="text-white">{subbrand}</span>
           </div>
           <span className="">{category}</span>
-          <div className="flex flex-row items-center gap-4">
+          <div className="flex flex-row items-center gap-6 justify-center relative">
             <Image
-              src={image}
+              src={logo}
               alt={title}
               width={500}
               height={500}
@@ -250,10 +194,9 @@ export function ProjectItem({
             />
             <Link
               href={`/work/${slug}`}
-              className="flex flex-row items-center gap-2 justify-self-end"
+              className="flex flex-row items-center gap-2 justify-self-end absolute right-0"
             >
-              <span className="justify-self-end">{year}</span>
-              <span className="block w-3">
+              <span className="block w-3 text-[#5E5E5E]">
                 <svg
                   width="100%"
                   viewBox="0 0 10 9"
@@ -264,8 +207,8 @@ export function ProjectItem({
                     fill-rule="evenodd"
                     clip-rule="evenodd"
                     d="M9.37205 0.379864L9.37025 7.14139L8.7499 7.14156L8.75066 4.2903L8.75142 1.43904L1.60255 8.5879L1.16401 8.14936L8.31288 1.0005L2.61036 1.00202L2.61052 0.381663L9.37205 0.379864Z"
-                    fill="white"
-                    stroke="white"
+                    fill="currentColor"
+                    stroke="currentColor"
                     stroke-width="0.5"
                     stroke-linecap="square"
                   />
@@ -288,11 +231,15 @@ export function ProjectItem({
   );
 }
 
-export default function HomeProjects() {
+export default function HomeProjects({
+  projects,
+}: {
+  projects: ProjectsQueryResult;
+}) {
   const router = useRouter();
   const { project } = router.query;
-  const firstHalfOfProjects = projectInfo.slice(0, 3);
-  const secondHalfOfProjects = projectInfo.slice(3);
+  const firstHalfOfProjects = projects.slice(0, 3);
+  const secondHalfOfProjects = projects.slice(3);
 
   return (
     <div className="w-screen px-16 py-16 flex flex-col home-projects">
@@ -322,13 +269,43 @@ export default function HomeProjects() {
 
       <div className={cn("w-full flex flex-row gap-0 mt-8")}>
         <div className="w-1/2 flex flex-col gap-8 pr-4">
-          {firstHalfOfProjects.map((projectData: ProjectInfoType) => {
-            return <ProjectItem key={projectData.slug} {...projectData} />;
+          {firstHalfOfProjects.map((projectData: ProjectsQueryResult[0]) => {
+            return (
+              <ProjectItem
+                key={projectData.slug?.current}
+                title={projectData.title ?? ""}
+                type={projectData.projectOrigin?.type ?? ""}
+                subbrand={projectData.projectOrigin?.subbrand ?? ""}
+                category={projectData.category?.title ?? ""}
+                year={projectData.year ?? ""}
+                slug={projectData.slug?.current ?? ""}
+                logo={urlForImage(projectData.logo)?.url() ?? ""}
+                mainImage={urlForImage(projectData.mainImage)?.url() ?? ""}
+                marqueeLogo={urlForImage(projectData.logoMarquee)?.url() ?? ""}
+                brandColor={projectData.brandColor ?? ""}
+                isProjectPage={false}
+              />
+            );
           })}
         </div>
         <div className="w-1/2 flex flex-col gap-8 pl-4">
-          {secondHalfOfProjects.map((projectData: ProjectInfoType) => {
-            return <ProjectItem key={projectData.slug} {...projectData} />;
+          {secondHalfOfProjects.map((projectData: ProjectsQueryResult[0]) => {
+            return (
+              <ProjectItem
+                key={projectData.slug?.current}
+                title={projectData.title ?? ""}
+                type={projectData.projectOrigin?.type ?? ""}
+                subbrand={projectData.projectOrigin?.subbrand ?? ""}
+                category={projectData.category?.title ?? ""}
+                year={projectData.year ?? ""}
+                slug={projectData.slug?.current ?? ""}
+                logo={urlForImage(projectData.logo)?.url() ?? ""}
+                mainImage={urlForImage(projectData.mainImage)?.url() ?? ""}
+                marqueeLogo={urlForImage(projectData.logoMarquee)?.url() ?? ""}
+                brandColor={projectData.brandColor ?? ""}
+                isProjectPage={false}
+              />
+            );
           })}
         </div>
       </div>
