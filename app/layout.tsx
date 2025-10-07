@@ -10,7 +10,7 @@ const helveticaNow = localFont({
 });
 
 export const metadata = {
-  title: "Themis Reit — Home",
+  title: "Themis Reit",
   description:
     "We help visionary brands flourish by crafting digital experiences that let audiences feel the depth, elegance, and essence of their products.",
   icons: {

@@ -41,7 +41,7 @@ export async function generateMetadata({
       icon: "/favicon.ico",
     },
     openGraph: {
-      title: "Themis Reit",
+      title: `Themis Reit — ${project.title}`,
       type: "website",
       description:
         "We help visionary brands flourish by crafting digital experiences that let audiences feel the depth, elegance, and essence of their products.",
