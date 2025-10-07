@@ -18,10 +18,10 @@ export function slideOutIn() {
   document.documentElement.animate(
     [
       {
-        transform: "translateX(0) scale(0.85)",
+        transform: "translateY(0) scale(0.85)",
       },
       {
-        transform: "translateX(-100%) scale(0.85)",
+        transform: "translateY(-100%) scale(0.85)",
       },
     ],
     {
@@ -36,10 +36,10 @@ export function slideOutIn() {
   document.documentElement.animate(
     [
       {
-        transform: "translateX(100%) scale(0.85)",
+        transform: "translateY(100%) scale(0.85)",
       },
       {
-        transform: "translateX(0) scale(0.85)",
+        transform: "translateY(0) scale(0.85)",
       },
     ],
     {

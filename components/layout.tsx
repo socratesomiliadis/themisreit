@@ -21,6 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       immediate: true,
       force: true,
     });
+    ScrollTrigger.refresh();
   }, [pathname]);
   return (
     <div className="layout-wrapper w-screen relative bg-black">

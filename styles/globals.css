@@ -94,6 +94,7 @@ html.scrollbar-grabbing * {
 ::view-transition-new(root) {
   z-index: 10000;
   animation: none !important;
+  transform: translateY(100%);
 }
 
 ::view-transition-old(root) {

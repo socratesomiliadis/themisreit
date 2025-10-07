@@ -11,30 +11,13 @@ import { ProjectsQueryResult } from "@/sanity.types";
 import { urlForImage } from "@/lib/sanity/sanity.image";
 
 export function ProjectItem({
-  title,
-  type,
-  subbrand,
-  category,
-  year,
-  slug,
-  logo,
-  mainImage,
-  marqueeLogo,
-  brandColor,
+  projectData,
   isProjectPage,
 }: {
-  title: string;
-  type: string;
-  subbrand: string;
-  category: string;
-  year: string;
-  slug: string;
-  logo: string;
-  mainImage: string;
-  marqueeLogo: string;
-  brandColor: string;
+  projectData: ProjectsQueryResult[0];
   isProjectPage: boolean;
 }) {
+  const slug = projectData.slug.current;
   const router = useRouter();
   const lenis = useLenis();
 
@@ -125,11 +108,11 @@ export function ProjectItem({
       )}
     >
       <span className="text-white text-6xl leading-[0.75] absolute left-0">
-        {title}
+        {projectData.title}
       </span>
       <div className="w-full border-y-[1px] border-white/20 flex flex-row items-center relative overflow-hidden">
         <span className="w-[52%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
-          {title}
+          {projectData.title}
         </span>
         <div
           style={{
@@ -140,14 +123,14 @@ export function ProjectItem({
           <SimpleMarquee
             baseVelocity={70}
             repeat={20}
-            style={{ backgroundColor: brandColor }}
+            style={{ backgroundColor: projectData.brandColor }}
             direction="left"
             className={cn("h-full")}
           >
             <div className="h-full w-auto aspect-square flex items-center justify-center pr-3 box-content">
               <Image
-                src={marqueeLogo}
-                alt={title}
+                src={urlForImage(projectData.logoMarquee)?.url() ?? ""}
+                alt={projectData.title}
                 width={500}
                 height={500}
                 className="w-2/3 h-auto max-h-2/3 object-contain"
@@ -157,14 +140,18 @@ export function ProjectItem({
         </div>
         <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-white text-sm overflow-hidden group-hover:translate-y-[100%] transition-transform duration-300 ease-out">
           <div className="flex-col col-span-2">
-            <span className="text-[#5E5E5E]">({type}) </span>
-            <span className="text-white">{subbrand}</span>
+            <span className="text-[#5E5E5E]">
+              ({projectData.projectOrigin.type}){" "}
+            </span>
+            <span className="text-white">
+              {projectData.projectOrigin.subbrand}
+            </span>
           </div>
-          <span className="">{category}</span>
+          <span className="">{projectData.category.title}</span>
           <div className="flex flex-row items-center gap-6 justify-center relative">
             <Image
-              src={logo}
-              alt={title}
+              src={urlForImage(projectData.logo)?.url() ?? ""}
+              alt={projectData.title}
               width={500}
               height={500}
               className="w-auto h-11"
@@ -197,11 +184,11 @@ export function ProjectItem({
       </div>
       <div className="absolute left-1/2 -translate-x-1/2 top-20 w-screen max-w-none px-16 project-item-image opacity-0 pointer-events-none">
         <Image
-          src={mainImage}
-          alt={title}
+          src={urlForImage(projectData.mainImage)?.url() ?? ""}
+          alt={projectData.title}
           width={1920}
           height={1080}
-          className="w-full object-cover  "
+          className="w-full object-cover"
         />
       </div>
     </div>
@@ -229,17 +216,8 @@ export default function HomeProjects({
           {firstHalfOfProjects.map((projectData: ProjectsQueryResult[0]) => {
             return (
               <ProjectItem
-                key={projectData.slug?.current}
-                title={projectData.title ?? ""}
-                type={projectData.projectOrigin?.type ?? ""}
-                subbrand={projectData.projectOrigin?.subbrand ?? ""}
-                category={projectData.category?.title ?? ""}
-                year={projectData.year ?? ""}
-                slug={projectData.slug?.current ?? ""}
-                logo={urlForImage(projectData.logo)?.url() ?? ""}
-                mainImage={urlForImage(projectData.mainImage)?.url() ?? ""}
-                marqueeLogo={urlForImage(projectData.logoMarquee)?.url() ?? ""}
-                brandColor={projectData.brandColor ?? ""}
+                key={projectData.slug.current}
+                projectData={projectData}
                 isProjectPage={false}
               />
             );
@@ -249,17 +227,8 @@ export default function HomeProjects({
           {secondHalfOfProjects.map((projectData: ProjectsQueryResult[0]) => {
             return (
               <ProjectItem
-                key={projectData.slug?.current}
-                title={projectData.title ?? ""}
-                type={projectData.projectOrigin?.type ?? ""}
-                subbrand={projectData.projectOrigin?.subbrand ?? ""}
-                category={projectData.category?.title ?? ""}
-                year={projectData.year ?? ""}
-                slug={projectData.slug?.current ?? ""}
-                logo={urlForImage(projectData.logo)?.url() ?? ""}
-                mainImage={urlForImage(projectData.mainImage)?.url() ?? ""}
-                marqueeLogo={urlForImage(projectData.logoMarquee)?.url() ?? ""}
-                brandColor={projectData.brandColor ?? ""}
+                key={projectData.slug.current}
+                projectData={projectData}
                 isProjectPage={false}
               />
             );
