@@ -1,6 +1,5 @@
 import SimpleMarquee from "../simple-marquee";
 import LogosMarquee from "../SVGs/logos-marquee";
-import { useRef } from "react";
 
 export default function HomeProof() {
   return (

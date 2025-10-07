@@ -1,7 +1,9 @@
-import Link from "next/link";
+"use client";
+
+import Link from "@/components/transition-link";
 import { useEffect, useState } from "react";
 import { gsap } from "@/lib/gsap";
-import { useRouter } from "next/router";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 function NavItem({
@@ -13,8 +15,8 @@ function NavItem({
   href: string;
   isMenuOpen: boolean;
 }) {
-  const router = useRouter();
-  const isActive = router.pathname === href;
+  const pathname = usePathname();
+  const isActive = pathname === href;
 
   return (
     <Link

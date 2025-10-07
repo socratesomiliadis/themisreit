@@ -200,75 +200,25 @@ export type SanityAssetSourceData = {
   url?: string;
 };
 
-export type AllSanitySchemaTypes = Project | Category | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
+export type AllSanitySchemaTypes =
+  | Project
+  | Category
+  | SanityImagePaletteSwatch
+  | SanityImagePalette
+  | SanityImageDimensions
+  | SanityImageHotspot
+  | SanityImageCrop
+  | SanityFileAsset
+  | SanityImageAsset
+  | SanityImageMetadata
+  | Geopoint
+  | Slug
+  | SanityAssetSourceData;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: lib/sanity/sanity.queries.ts
 // Variable: projectsQuery
 // Query: *[_type == "project" && defined(slug.current)]{  ...,  category->} | order(orderRank)
 export type ProjectsQueryResult = Array<{
-  _id: string;
-  _type: "project";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  orderRank?: string;
-  title: string;
-  slug: Slug;
-  category: {
-    _id: string;
-    _type: "category";
-    _createdAt: string;
-    _updatedAt: string;
-    _rev: string;
-    title: string;
-    slug: Slug;
-  };
-  projectOrigin: {
-    type: "Commission" | "Concept";
-    subbrand: string;
-  };
-  mainImage: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  logo: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  logoMarquee: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
-  brandColor: string;
-  year: string;
-}>;
-// Variable: projectsQueryTest
-// Query: *[_type == "project" && defined(slug.current)]{  ...,  category->} | order(orderRank)
-export type ProjectsQueryTestResult = Array<{
   _id: string;
   _type: "project";
   _createdAt: string;
@@ -411,9 +361,9 @@ export type CategoriesQueryResult = Array<{
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "*[_type == \"project\" && defined(slug.current)]{\n  ...,\n  category->\n} | order(orderRank)": ProjectsQueryResult | ProjectsQueryTestResult;
-    "*[_type == \"project\" && slug.current == $slug]{\n  ...,\n  category->\n}[0]": ProjectBySlugQueryResult;
-    "\n*[_type == \"project\" && defined(slug.current)][].slug.current\n": ProjectSlugsQueryResult;
-    "\n  *[_type == \"category\"] | order(lower(title))\n": CategoriesQueryResult;
+    '*[_type == "project" && defined(slug.current)]{\n  ...,\n  category->\n} | order(orderRank)': ProjectsQueryResult;
+    '*[_type == "project" && slug.current == $slug]{\n  ...,\n  category->\n}[0]': ProjectBySlugQueryResult;
+    '\n*[_type == "project" && defined(slug.current)][].slug.current\n': ProjectSlugsQueryResult;
+    '\n  *[_type == "category"] | order(lower(title))\n': CategoriesQueryResult;
   }
 }

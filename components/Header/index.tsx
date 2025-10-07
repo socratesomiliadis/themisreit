@@ -1,3 +1,5 @@
+"use client";
+
 import { Cross as Hamburger } from "hamburger-react";
 import { useEffect, useState } from "react";
 import { gsap } from "@/lib/gsap";
@@ -6,7 +8,8 @@ import Nav from "./Nav";
 import { cn } from "@/lib/utils";
 import StatusBar from "./status-bar";
 import { useLenis } from "lenis/react";
-import Link from "next/link";
+import Link from "@/components/transition-link";
+import useNavigateTransition from "@/hooks/useNavigateTransition";
 
 export default function Header() {
   const lenis = useLenis();
@@ -173,9 +176,18 @@ export default function Header() {
     };
   }, []);
 
+  const { navigateTo } = useNavigateTransition();
+
   return (
     <>
-      <Link href="/" className="fixed left-16 top-12 w-52 z-[997] text-white">
+      <Link
+        href="/"
+        className="fixed left-16 top-12 w-52 z-[997] text-white"
+        onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+          e.preventDefault();
+          navigateTo("/");
+        }}
+      >
         <svg
           width="100%"
           viewBox="0 0 1533 196"
