@@ -35,6 +35,10 @@ button {
   color: #000;
 }
 
+.demo {
+  view-transition-name: demo-title;
+}
+
 html.lenis,
 html.lenis body {
   height: auto;
@@ -63,4 +67,36 @@ html.scrollbar-grabbing * {
   user-select: none !important;
   -webkit-user-select: none !important;
   cursor: grabbing !important;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none !important;
+  transform-origin: center;
+  overflow: hidden;
+  /* border-radius: 4rem; */
+}
+
+::view-transition-group(root) {
+  z-index: auto !important;
+}
+
+::view-transition-image-pair(root) {
+  isolation: isolate;
+  will-change: transform, opacity, clip-path;
+  z-index: 1;
+}
+
+::view-transition {
+  background-color: #141414;
+}
+
+::view-transition-new(root) {
+  z-index: 10000;
+  animation: none !important;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+  animation: none !important;
 }

@@ -1,14 +1,13 @@
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/transition-link";
 import SimpleMarquee from "@/components/simple-marquee";
 import { gsap } from "@/lib/gsap";
-import { useRouter } from "next/router";
-import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useLenis } from "lenis/react";
-import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import ProjectHero from "../ProjectSingle/project-hero";
-import { Project, ProjectsQueryResult } from "@/sanity.types";
+import { ProjectsQueryResult } from "@/sanity.types";
 import { urlForImage } from "@/lib/sanity/sanity.image";
 
 export function ProjectItem({
@@ -45,9 +44,7 @@ export function ProjectItem({
         if (isProjectPage) {
           return;
         }
-        // router.push(`/work/${slug}`, undefined, {
-        //   scroll: false,
-        // });
+
         const activeItem = document.querySelector(
           `.project-item-${slug}`
         ) as HTMLElement;
@@ -56,34 +53,14 @@ export function ProjectItem({
         lenis?.scrollTo(activeItem, {
           offset: -128,
           lock: true,
-          duration: 1.3,
+          duration: 1,
           force: true,
           onComplete: () => {
-            router.push(`/work/${slug}`, undefined, {
-              scroll: false,
-              shallow: true,
-            });
+            router.push(`/work/${slug}`);
           },
         });
 
         const tl = gsap.timeline();
-        // const tl2 = gsap.timeline({
-        //   scrollTrigger: {
-        //     trigger: ".home-hero",
-        //     start: "75% top",
-        //     end: "95% top",
-        //     onUpdate: (self) => {
-        //       gsap.set(".project-back-btn-fill", {
-        //         width: 100 - self.progress * 100 + "%",
-        //       });
-        //     },
-        //     // onLeaveBack: () => {
-        //     //   router.push("/", "/", {
-        //     //     scroll: false,
-        //     //   });
-        //     // },
-        //   },
-        // });
 
         const itemParent = activeItem.parentElement;
         const itemImage = activeItem.querySelector(".project-item-image");
@@ -121,7 +98,7 @@ export function ProjectItem({
           {
             width: 0,
             padding: 0,
-            duration: 1.3,
+            duration: 1,
           },
           0.2
         );
@@ -129,17 +106,17 @@ export function ProjectItem({
           itemParent,
           {
             padding: 0,
-            duration: 1.3,
+            duration: 1,
           },
-          0.2
+          0.1
         );
         tl.to(
           itemParent,
           {
             width: "100%",
-            duration: 1.3,
+            duration: 1,
           },
-          0.2
+          0.1
         );
       }}
       className={cn(
@@ -204,13 +181,13 @@ export function ProjectItem({
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
                     d="M9.37205 0.379864L9.37025 7.14139L8.7499 7.14156L8.75066 4.2903L8.75142 1.43904L1.60255 8.5879L1.16401 8.14936L8.31288 1.0005L2.61036 1.00202L2.61052 0.381663L9.37205 0.379864Z"
                     fill="currentColor"
                     stroke="currentColor"
-                    stroke-width="0.5"
-                    stroke-linecap="square"
+                    strokeWidth="0.5"
+                    strokeLinecap="square"
                   />
                 </svg>
               </span>
@@ -236,8 +213,6 @@ export default function HomeProjects({
 }: {
   projects: ProjectsQueryResult;
 }) {
-  const router = useRouter();
-  const { project } = router.query;
   const firstHalfOfProjects = projects.slice(0, 3);
   const secondHalfOfProjects = projects.slice(3);
 
@@ -248,24 +223,6 @@ export default function HomeProjects({
         <span className="w-11 h-[1px] bg-white"></span>
         <span>Year Database © 2012-{new Date().getFullYear()}</span>
       </h2>
-
-      {/* {project && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Link
-            href="/"
-            scroll={false}
-            className="text-white self-center bg-[#141414] rounded-full px-6 py-2 fixed left-1/2 -translate-x-1/2 top-10 z-[100] overflow-hidden"
-          >
-            Back
-            <div className="absolute left-0 top-0 w-0 h-full bg-[#363636] z-[-1] project-back-btn-fill"></div>
-          </Link>
-        </motion.div>
-      )} */}
 
       <div className={cn("w-full flex flex-row gap-0 mt-8")}>
         <div className="w-1/2 flex flex-col gap-8 pr-4">

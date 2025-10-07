@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { gsap, SplitText } from "@/lib/gsap";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";

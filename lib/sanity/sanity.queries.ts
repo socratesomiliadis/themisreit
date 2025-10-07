@@ -6,11 +6,6 @@ export const projectsQuery = groq`*[_type == "project" && defined(slug.current)]
   category->
 } | order(orderRank)`;
 
-const projectsQueryTest = groq`*[_type == "project" && defined(slug.current)]{
-  ...,
-  category->
-} | order(orderRank)`;
-
 export async function getProjects(client: SanityClient): Promise<any[]> {
   return await client.fetch(projectsQuery);
 }
