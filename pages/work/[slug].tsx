@@ -16,6 +16,7 @@ export default function ProjectPage({
   useLayoutEffect(() => {
     lenis?.scrollTo(0, {
       immediate: true,
+      force: true,
     });
     lenis?.start();
   }, [lenis]);
