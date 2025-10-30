@@ -5,6 +5,7 @@
   --color-foreground: var(--foreground);
   --font-helvetica-now: var(--font-helvetica-now);
   --font-normal: 400;
+  --font-ballet: var(--font-ballet);
 }
 
 html {

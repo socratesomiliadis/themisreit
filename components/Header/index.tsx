@@ -182,7 +182,7 @@ export default function Header() {
     <>
       <Link
         href="/"
-        className="fixed left-16 top-12 w-52 z-[997] text-white"
+        className="fixed left-16 top-12 w-28 z-[997] text-white opacity-0 home-hero-anim blur mix-blend-difference"
         onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
           e.preventDefault();
           navigateTo("/");
@@ -240,7 +240,7 @@ export default function Header() {
         style={{
           pointerEvents: !isMenuOpen ? "none" : "auto",
         }}
-        className="fixed selection:bg-black selection:text-white z-[999] right-16 top-8"
+        className="fixed selection:bg-black selection:text-white z-[999] right-16 top-8 opacity-0 home-hero-anim-noblur"
       >
         <div className="relative flex gap-4 h-[95vh] z-20">
           <div
@@ -343,8 +343,8 @@ attending the B-Hype event in Dubai."
                   isNewsOpen
                     ? "rotate-180"
                     : isMenuOpen
-                    ? "rotate-0"
-                    : "rotate-180"
+                      ? "rotate-0"
+                      : "rotate-180"
                 )}
                 xmlns="http://www.w3.org/2000/svg"
               >

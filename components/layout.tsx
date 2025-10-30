@@ -8,6 +8,7 @@ import { ScrollTrigger } from "@/lib/gsap";
 import Footer from "./footer";
 import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
+import FaultyTerminal from "./faulty-terminal";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -24,7 +25,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     ScrollTrigger.refresh();
   }, [pathname]);
   return (
-    <div className="layout-wrapper w-screen relative bg-black">
+    <div className="layout-wrapper w-screen relative bg-[#111111]">
       <Header />
       <Lenis
         root
@@ -35,6 +36,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       />
       <Scrollbar />
       {children}
+      {/* <div className="fixed bottom-0 left-0 w-full h-full z-[0]">
+        <FaultyTerminal />
+      </div> */}
       <Footer />
     </div>
   );

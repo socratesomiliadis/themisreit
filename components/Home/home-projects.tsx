@@ -9,6 +9,7 @@ import { useLenis } from "lenis/react";
 import { cn } from "@/lib/utils";
 import { ProjectsQueryResult } from "@/sanity.types";
 import { urlForImage } from "@/lib/sanity/sanity.image";
+import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 
 export function ProjectItem({
   projectData,
@@ -110,7 +111,7 @@ export function ProjectItem({
       <span className="text-white text-6xl leading-[0.75] absolute left-0">
         {projectData.title}
       </span>
-      <div className="w-full border-y-[1px] border-white/20 flex flex-row items-center relative overflow-hidden">
+      <div className="w-full border-y-[1px] border-[#303030]/30 flex flex-row items-center relative overflow-hidden">
         <span className="w-[52%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
           {projectData.title}
         </span>
@@ -203,38 +204,82 @@ export default function HomeProjects({
   const firstHalfOfProjects = projects.slice(0, 3);
   const secondHalfOfProjects = projects.slice(3);
 
-  return (
-    <div className="w-screen px-16 py-16 flex flex-col home-projects">
-      <h2 className="text-white flex items-center gap-4 tracking-tight project-open-hide">
-        <span>Work</span>
-        <span className="w-11 h-[1px] bg-white"></span>
-        <span>Year Database © 2012-{new Date().getFullYear()}</span>
-      </h2>
+  useIsomorphicLayoutEffect(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".markos",
+        start: "-10px bottom",
+        end: "bottom top",
+        scrub: 1,
+      },
+    });
+    tl.fromTo(
+      ".markos",
+      {
+        scale: 1,
+      },
+      {
+        scale: 2,
+        ease: "linear",
+      }
+    );
 
-      <div className={cn("w-full flex flex-row gap-0 mt-8")}>
-        <div className="w-1/2 flex flex-col gap-8 pr-4">
-          {firstHalfOfProjects.map((projectData: ProjectsQueryResult[0]) => {
-            return (
-              <ProjectItem
-                key={projectData.slug.current}
-                projectData={projectData}
-                isProjectPage={false}
-              />
-            );
-          })}
-        </div>
-        <div className="w-1/2 flex flex-col gap-8 pl-4">
-          {secondHalfOfProjects.map((projectData: ProjectsQueryResult[0]) => {
-            return (
-              <ProjectItem
-                key={projectData.slug.current}
-                projectData={projectData}
-                isProjectPage={false}
-              />
-            );
-          })}
+    return () => {
+      tl.kill();
+    };
+  }, []);
+
+  return (
+    <>
+      <div className="mt-44 w-screen relative z-[1]">
+        <SimpleMarquee
+          direction="left"
+          className="py-0 text-white markos border-y-[1px] border-[#303030]/30 h-[2.9rem] items-center"
+        >
+          <div className="relative font-ballet text-6xl mt-5 pr-2">
+            Works{" "}
+            <span className="text-[#5E5E5E] font-helvetica-now text-lg absolute -top-2 -right-8">
+              (01)
+            </span>
+          </div>
+          <div className="text-6xl px-10 flex items-center gap-6">
+            <span className="w-12 h-[6px] bg-white"></span>
+            BY THEMIS REIT<span className="w-12 h-[6px] bg-white"></span>
+          </div>
+        </SimpleMarquee>
+      </div>
+      <div className="w-screen px-16 pt-32 pb-40 flex flex-col home-projects">
+        {/* <h2 className="text-white flex items-center gap-4 tracking-tight project-open-hide">
+          <span>Work</span>
+          <span className="w-11 h-[1px] bg-white"></span>
+          <span>Year Database © 2012-{new Date().getFullYear()}</span>
+        </h2> */}
+
+        <div className={cn("w-full flex flex-row gap-0 mt-8")}>
+          <div className="w-1/2 flex flex-col gap-8 pr-4">
+            {firstHalfOfProjects.map((projectData: ProjectsQueryResult[0]) => {
+              return (
+                <ProjectItem
+                  key={projectData.slug.current}
+                  projectData={projectData}
+                  isProjectPage={false}
+                />
+              );
+            })}
+          </div>
+          <div className="w-1/2 flex flex-col gap-8 pl-4">
+            {secondHalfOfProjects.map((projectData: ProjectsQueryResult[0]) => {
+              return (
+                <ProjectItem
+                  key={projectData.slug.current}
+                  projectData={projectData}
+                  isProjectPage={false}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

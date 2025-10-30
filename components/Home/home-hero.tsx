@@ -6,6 +6,7 @@ import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 
 export default function HomeHero() {
   useIsomorphicLayoutEffect(() => {
+    let tl: GSAPTimeline;
     const split = SplitText.create(".home-hero-text", {
       type: "words, lines",
       linesClass: "home-hero-line",
@@ -23,7 +24,8 @@ export default function HomeHero() {
             filter: "blur(10px)",
           });
         });
-        const tl = gsap.timeline({
+        tl = gsap.timeline({
+          delay: 1,
           defaults: {
             duration: 1.2,
             ease: "power2.out",
@@ -50,17 +52,30 @@ export default function HomeHero() {
           },
           0
         );
+        tl.to(
+          [".home-hero-anim-noblur"],
+          {
+            opacity: 1,
+            stagger: 0.02,
+          },
+          0
+        );
       },
     });
+
+    return () => {
+      split.revert();
+      tl?.kill();
+    };
   }, []);
 
   return (
-    <section className="relative z-10 w-screen h-screen flex items-end px-16 pb-16 home-hero overflow-hidden">
+    <section className="relative z-10 w-screen h-[110vh] flex items-end px-16 pb-[8%] home-hero overflow-hidden">
       <div className="flex flex-col gap-4 text-white tracking-tight">
-        <span className="opacity-0 home-hero-anim blur translate-x-4">
+        <span className="opacity-0 home-hero-anim blur translate-x-4 text-sm">
           Our Studio
         </span>
-        <p className="text-4xl font-[300] home-hero-text opacity-0 tracking-tight">
+        <p className="text-4xl font-[300] home-hero-text opacity-0 tracking-tight leading-none">
           We help visionary brands flourish <br />
           by crafting digital experiences that let <br />
           audiences feel the depth, elegance, and <br />
@@ -70,13 +85,13 @@ export default function HomeHero() {
       <Image
         src="/static/images/flags.png"
         alt="BGImage"
-        width={1238}
+        width={1490}
         height={1201}
         priority
         className="absolute top-0 right-0 w-auto h-full object-contain z-10"
       />
 
-      <div className="size-72 rounded-full bg-[#0E1012] shadow-[0_4px_223px_435px_#0E1012] absolute top-[10%] right-[15%] z-[5]"></div>
+      {/* <div className="size-72 rounded-full bg-[#0E1012] shadow-[0_4px_223px_435px_#0E1012] absolute top-[10%] right-[15%] z-[5]"></div> */}
     </section>
   );
 }

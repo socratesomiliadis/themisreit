@@ -14,13 +14,13 @@ export default function NewsItem({
   image: string;
 }) {
   return (
-    <div className="bg-[#1e1e1e]/80 hover:bg-[#1e1e1e]/60 transition-colors duration-200 ease-out cursor-pointer news-item opacity-0 -translate-y-8 rounded-2xl  backdrop-blur-xl gap-12 flex justify-between overflow-hidden p-5 basis-1/4">
+    <div className="bg-[#1e1e1e]/80 w-max hover:bg-[#1e1e1e]/60 transition-colors duration-200 ease-out cursor-pointer news-item opacity-0 -translate-y-8 rounded-2xl backdrop-blur-xl gap-12 flex justify-between overflow-hidden p-5 basis-1/4">
       <div className="flex flex-col justify-between">
         <span className="text-[#5E5E5E] text-sm tracking-tighter font-medium">
           ({tag})
         </span>
         <div className="flex flex-col">
-          <div className="flex flex-row items-center text-white font-semibold text-xl gap-3">
+          <div className="flex flex-row items-center text-white font-semibold text-xl gap-3 whitespace-nowrap">
             <span>{title}</span>
             <span className="w-4 block">
               <svg
