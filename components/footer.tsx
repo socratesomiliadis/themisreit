@@ -76,10 +76,10 @@ function FooterNavLink({
 }
 
 export default function Footer() {
-  const [isScrolling, setIsScrolling] = useState(false);
   const lenis = useLenis();
 
   useIsomorphicLayoutEffect(() => {
+    let tl: GSAPTimeline;
     const split = SplitText.create(".footer-split-text", {
       type: "words, lines",
       linesClass: "footer-split-line",
@@ -97,7 +97,7 @@ export default function Footer() {
             filter: "blur(10px)",
           });
         });
-        const tl = gsap.timeline({
+        tl = gsap.timeline({
           defaults: {
             duration: 1.2,
             ease: "power2.out",
@@ -132,13 +132,18 @@ export default function Footer() {
         );
       },
     });
+
+    return () => {
+      split.revert();
+      tl?.kill();
+    };
   }, []);
 
   return (
     <>
       <footer className="w-screen relative flex flex-col z-[998]">
         <div className="w-full relative flex items-center justify-center">
-          <div className="w-full absolute flex flex-col items-center -translate-y-[45%]">
+          <div className="w-full absolute flex flex-col items-center -translate-y-[46%]">
             <svg
               width="94%"
               className="-mb-px"
@@ -270,14 +275,7 @@ export default function Footer() {
               <div className="h-full flex flex-col items-end justify-between">
                 <button
                   onClick={() => {
-                    setIsScrolling(true);
-                    lenis?.scrollTo(0, {
-                      duration: 9,
-                      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -7 * t)),
-                      onComplete: () => {
-                        setIsScrolling(false);
-                      },
-                    });
+                    lenis?.scrollTo(0);
                   }}
                   className="text-lg text-[#28F300] tracking-tighter flex flex-row items-center gap-2 group"
                 >

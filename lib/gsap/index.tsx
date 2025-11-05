@@ -2,8 +2,9 @@ import gsap from "gsap";
 import { CustomEase } from "gsap/dist/CustomEase";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import { SplitText } from "gsap/dist/SplitText";
+import { DrawSVGPlugin } from "gsap/dist/DrawSVGPlugin";
 
-gsap.registerPlugin(CustomEase, ScrollTrigger, SplitText);
+gsap.registerPlugin(CustomEase, ScrollTrigger, SplitText, DrawSVGPlugin);
 
 const GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
 const RECIPROCAL_GR = 1 / GOLDEN_RATIO;
