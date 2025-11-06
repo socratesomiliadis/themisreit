@@ -14,6 +14,11 @@ const ballet = localFont({
   variable: "--font-ballet",
 });
 
+const ppEditorial = localFont({
+  src: "../fonts/ppeditorialold.woff2",
+  variable: "--font-pp-editorial",
+});
+
 export const metadata = {
   title: "Themis Reit",
   description:
@@ -58,7 +63,7 @@ export default function RootLayout({
     <ViewTransitions>
       <html suppressHydrationWarning lang="en">
         <body
-          className={`font-wrapper font-helvetica-now ${helveticaNow.variable} ${ballet.variable}`}
+          className={`font-wrapper font-helvetica-now ${ppEditorial.variable} ${helveticaNow.variable} ${ballet.variable}`}
         >
           <Layout>{children}</Layout>
         </body>

@@ -14,7 +14,7 @@ export default function NewsItem({
   image: string;
 }) {
   return (
-    <div className="bg-[#1e1e1e]/80 w-max hover:bg-[#1e1e1e]/60 transition-colors duration-200 ease-out cursor-pointer news-item opacity-0 -translate-y-8 rounded-2xl backdrop-blur-xl gap-12 flex justify-between overflow-hidden p-5 basis-1/4">
+    <div className="bg-[#1e1e1e]/80 min-w-max hover:bg-[#1e1e1e]/60 transition-colors duration-200 ease-out cursor-pointer news-item opacity-0 -translate-y-8 rounded-2xl backdrop-blur-xl flex gap-8 justify-between overflow-hidden p-5 basis-1/4">
       <div className="flex flex-col justify-between">
         <span className="text-[#5E5E5E] text-sm tracking-tighter font-medium">
           ({tag})
@@ -38,7 +38,9 @@ export default function NewsItem({
             </span>
             <span>{date}</span>
           </div>
-          <p className="text-[#B9B9B9] max-w-[18vw]">{description}</p>
+          <p className="text-[#B9B9B9] max-w-[16vw] text-balance">
+            {description}
+          </p>
         </div>
       </div>
       <div className="w-auto h-auto aspect-square">

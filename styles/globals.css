@@ -6,6 +6,7 @@
   --font-helvetica-now: var(--font-helvetica-now);
   --font-normal: 400;
   --font-ballet: var(--font-ballet);
+  --font-pp-editorial: var(--font-pp-editorial);
 }
 
 html {
@@ -32,7 +33,7 @@ button {
 }
 
 ::selection {
-  background: #e1ff00;
+  background: #28f300;
   color: #000;
 }
 

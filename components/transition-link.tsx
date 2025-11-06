@@ -8,11 +8,16 @@ export default function Link({
   ...props
 }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
   const { navigateTo } = useNavigateTransition();
+  const isExternal = props.target === "_blank";
 
   return (
     <NextLink
       href={href}
+      target={props.target}
       onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (isExternal) {
+          return;
+        }
         e.preventDefault();
         navigateTo(href);
       }}

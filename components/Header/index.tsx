@@ -247,7 +247,7 @@ export default function Header() {
             style={{
               pointerEvents: isNewsOpen ? "auto" : "none",
             }}
-            className="news h-full flex flex-col gap-4 pr-0"
+            className="news h-full flex flex-col gap-4 pr-0 min-w-[30vw]"
           >
             <NewsItem
               tag="Events"

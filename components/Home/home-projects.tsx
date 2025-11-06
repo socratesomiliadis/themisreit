@@ -234,6 +234,7 @@ export default function HomeProjects({
       <div className="mt-44 w-screen relative z-[1]">
         <SimpleMarquee
           direction="left"
+          repeat={6}
           className="py-0 text-white markos border-y-[1px] border-[#303030]/30 h-[2.9rem] items-center"
         >
           <div className="relative font-ballet text-6xl mt-5 pr-2">
