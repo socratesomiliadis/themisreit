@@ -24,6 +24,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     });
     ScrollTrigger.refresh();
   }, [pathname]);
+
   return (
     <div className="layout-wrapper w-screen relative bg-[#111111]">
       <Header />

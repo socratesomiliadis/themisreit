@@ -114,7 +114,7 @@ export function Scrollbar() {
       {/* Moving pill indicator */}
       <div
         ref={pillRef}
-        className="absolute left-1/2 -translate-x-1/2 top-0 w-1 h-12 bg-white rounded-full will-change-transform cursor-grab active:cursor-grabbing"
+        className="absolute left-1/2 -translate-x-1/2 top-0 w-1 h-12 bg-white rounded-full will-change-transform cursor-grab hover:scale-x-180 transition-[scale] origin-center duration-300 ease-out active:cursor-grabbing"
       />
     </div>
   );

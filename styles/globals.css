@@ -37,6 +37,16 @@ button {
   color: #000;
 }
 
+.showcase-row img {
+  object-fit: contain;
+  height: auto;
+  aspect-ratio: 16/9;
+}
+
+.showcase-row img:nth-child(0) {
+  width: 10vw;
+}
+
 .demo {
   view-transition-name: demo-title;
 }
