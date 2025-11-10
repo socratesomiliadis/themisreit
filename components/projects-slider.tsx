@@ -67,8 +67,11 @@ function Slide({
         "mx-6"
       )}
     >
-      <div className="w-full h-full overflow-hidden flex-1">
-        <div ref={imageRef} className="w-full h-full will-change-transform">
+      <div className="w-full h-full overflow-hidden flex items-center justify-center">
+        <div
+          ref={imageRef}
+          className="w-auto aspect-video h-full will-change-transform"
+        >
           <Image
             src={urlForImage(project.mainImage)?.url() ?? ""}
             alt={project.title}
@@ -80,12 +83,26 @@ function Slide({
         </div>
       </div>
       <div className="absolute -bottom-7 left-0 right-0 flex justify-between items-center pointer-events-none z-10 transition-opacity duration-300 slide-overlay text-white">
-        <h2 className="uppercase font-medium text-lg project-title">
-          {project.title}
+        <h2 className="uppercase font-medium text-lg project-title overflow-hidden leading-none flex relative">
+          <span className="block whitespace-nowrap group-hover:-translate-y-full transition-transform duration-200 ease-out">
+            {project.title}
+          </span>
+          <span className="block whitespace-nowrap absolute inset-0 translate-y-[90%] group-hover:translate-y-0 transition-transform duration-200 ease-out">
+            {project.title}
+          </span>
         </h2>
-        <div className="w-4 h-4 project-arrow">
-          <svg viewBox="0 0 24 24" className="stroke-white stroke-2">
-            <path d="M7 17L17 7M17 7H7M17 7V17" />
+        <div className="size-3 project-arrow">
+          <svg
+            width="100%"
+            viewBox="0 0 14 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3.06978 1.94975L12.9693 1.94973L12.9693 11.8492M0.948451 13.9705L12.6157 2.3033"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
           </svg>
         </div>
       </div>
@@ -219,7 +236,10 @@ export default function ProjectsSlider({
         const offset = distance * -0.25;
         const img = imageRef.current.querySelector("img");
         if (img) {
-          gsap.set(img, { x: offset, scale: 2.25 });
+          gsap.set(img, {
+            x: offset,
+            // scale: 2.25
+          });
         }
       });
     };

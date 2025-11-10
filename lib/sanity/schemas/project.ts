@@ -58,13 +58,6 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: "thumbnailImage",
-      title: "Thumbnail image",
-      description: "Used for the projects slider (Portrait aspect ratio)",
-      type: "image",
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: "mainImage",
       title: "Main image",
       type: "image",
