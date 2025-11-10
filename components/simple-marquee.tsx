@@ -258,7 +258,7 @@ const SimpleMarquee = ({
         <motion.div
           key={i}
           className={cn(
-            "shrink-0 will-change-transform",
+            "shrink-0",
             isHorizontal && "flex",
             draggable && grabCursor && "cursor-grab"
           )}
