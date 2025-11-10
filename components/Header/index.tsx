@@ -169,24 +169,11 @@ export default function Header() {
     }
   }
 
-  function handleLinkClick(e: PointerEvent) {
-    setMenuOpen(false);
-  }
-
   useEffect(() => {
-    const navItems = document.querySelectorAll(
-      ".nav-item"
-    ) as NodeListOf<HTMLAnchorElement>;
-    navItems.forEach((item) => {
-      item.addEventListener("click", handleLinkClick);
-    });
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      navItems.forEach((item) => {
-        item.removeEventListener("click", handleLinkClick);
-      });
     };
   }, []);
 
@@ -394,7 +381,7 @@ attending the B-Hype event in Dubai."
               }}
               className="relative z-0 opacity-0 menu-body rounded-2xl h-[95vh] w-[28vw] backdrop-blur-xl will-change-auto"
             >
-              <Nav isOpen={isMenuOpen} />
+              <Nav isOpen={isMenuOpen} setIsOpen={setMenuOpen} />
               <div className="absolute nav-bg left-0 top-0 z-0 w-full h-full bg-[#1E1E1E]/80 "></div>
             </div>
           </div>

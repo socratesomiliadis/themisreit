@@ -8,18 +8,24 @@ export default function useNavigateTransition() {
   const pathname = usePathname();
   const lenis = useLenis();
 
-  function navigateTo(path: string) {
+  function navigateTo(
+    path: string,
+    beforeNavigate?: () => void,
+    afterNavigate?: () => void
+  ) {
     const isSamePath = pathname === path;
     if (isSamePath) {
       return;
     }
     lenis?.stop();
+    beforeNavigate?.();
     router.push(path, {
       onTransitionReady: () => slideOutIn(),
     });
+    afterNavigate?.();
     setTimeout(() => {
       lenis?.start();
-    }, 1600);
+    }, 1500);
   }
 
   return {

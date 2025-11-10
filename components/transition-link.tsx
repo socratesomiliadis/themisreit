@@ -5,8 +5,14 @@ import { AnchorHTMLAttributes } from "react";
 export default function Link({
   children,
   href,
+  beforeNavigate,
+  afterNavigate,
   ...props
-}: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
+}: AnchorHTMLAttributes<HTMLAnchorElement> & {
+  href: string;
+  beforeNavigate?: () => void;
+  afterNavigate?: () => void;
+}) {
   const { navigateTo } = useNavigateTransition();
   const isExternal = props.target === "_blank";
 
@@ -19,7 +25,7 @@ export default function Link({
           return;
         }
         e.preventDefault();
-        navigateTo(href);
+        navigateTo(href, beforeNavigate, afterNavigate);
       }}
       {...props}
     >

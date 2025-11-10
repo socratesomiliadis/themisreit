@@ -10,10 +10,12 @@ function NavItem({
   text,
   href,
   isMenuOpen,
+  setIsOpen,
 }: {
   text: string;
   href: string;
   isMenuOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
 }) {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -21,6 +23,11 @@ function NavItem({
   return (
     <Link
       href={href}
+      afterNavigate={() => {
+        setTimeout(() => {
+          setIsOpen(false);
+        }, 500);
+      }}
       style={{
         pointerEvents: isActive ? "none" : isMenuOpen ? "auto" : "none",
       }}
@@ -90,7 +97,13 @@ function SocialItem({ text, href }: { text: string; href: string }) {
   );
 }
 
-export default function Nav({ isOpen }: { isOpen: boolean }) {
+export default function Nav({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}) {
   useEffect(() => {
     const tl = gsap.timeline({ paused: true });
     if (isOpen) {
@@ -181,10 +194,30 @@ export default function Nav({ isOpen }: { isOpen: boolean }) {
   return (
     <div className="w-full h-full relative flex flex-col justify-between pl-10 pr-16 z-[1]">
       <div className="flex flex-col w-full mt-24 gap-4">
-        <NavItem isMenuOpen={isOpen} text="Home" href="/" />
-        <NavItem isMenuOpen={isOpen} text="About" href="/about" />
-        <NavItem isMenuOpen={isOpen} text="Work" href="/work" />
-        <NavItem isMenuOpen={isOpen} text="Contact" href="/contact" />
+        <NavItem
+          isMenuOpen={isOpen}
+          setIsOpen={setIsOpen}
+          text="Home"
+          href="/"
+        />
+        <NavItem
+          isMenuOpen={isOpen}
+          setIsOpen={setIsOpen}
+          text="About"
+          href="/about"
+        />
+        <NavItem
+          isMenuOpen={isOpen}
+          setIsOpen={setIsOpen}
+          text="Work"
+          href="/work"
+        />
+        <NavItem
+          isMenuOpen={isOpen}
+          setIsOpen={setIsOpen}
+          text="Contact"
+          href="/contact"
+        />
       </div>
       <div className="flex flex-col w-fit gap-2 tracking-tighter pb-12">
         <span className="text-[#B9B9B9] social-item mb-8 select-none">

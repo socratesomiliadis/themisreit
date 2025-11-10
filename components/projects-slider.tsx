@@ -22,6 +22,7 @@ type SliderState = {
   isDragging: boolean;
   pointerId: number | null;
   pointerType: PointerEvent["pointerType"];
+  pointerMultiplier: number;
   startPointerX: number;
   lastPointerX: number;
   lastTargetX: number;
@@ -63,8 +64,8 @@ function Slide({
       onClick={handleClick}
       className={cn(
         "group shrink-0 relative overflow-visible flex flex-col cursor-pointer",
-        "w-[16vw] h-auto aspect-11/16",
-        "mx-6"
+        "w-[35vw] lg:w-[16vw] h-auto aspect-11/16",
+        "mx-3 lg:mx-6"
       )}
     >
       <div className="w-full h-full overflow-hidden flex items-center justify-center">
@@ -155,6 +156,7 @@ export default function ProjectsSlider({
       isDragging: false,
       pointerId: null,
       pointerType: "mouse",
+      pointerMultiplier: 1,
       startPointerX: 0,
       lastPointerX: 0,
       lastTargetX: 0,
@@ -275,6 +277,7 @@ export default function ProjectsSlider({
       state.isDragging = true;
       state.pointerId = pointerId;
       state.pointerType = pointerType;
+      state.pointerMultiplier = pointerType === "touch" ? 10 : 2;
       state.startPointerX = clientX;
       state.lastPointerX = clientX;
       state.lastTargetX = state.targetX;
@@ -314,11 +317,13 @@ export default function ProjectsSlider({
       state.lastScrollTime = Date.now();
 
       if (state.pointerType === "touch") {
-        const delta = (event.clientX - state.startPointerX) * 1.5;
+        const delta =
+          (event.clientX - state.startPointerX) * state.pointerMultiplier;
         state.targetX = state.lastTargetX + delta;
         state.dragDistance = Math.abs(delta);
       } else {
-        const delta = (event.clientX - state.lastPointerX) * 2;
+        const delta =
+          (event.clientX - state.lastPointerX) * state.pointerMultiplier;
         state.targetX += delta;
         state.lastPointerX = event.clientX;
         state.dragDistance += Math.abs(delta);
