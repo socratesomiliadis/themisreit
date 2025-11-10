@@ -5,10 +5,8 @@ import Header from "./Header";
 import { Scrollbar } from "./Scrollbar";
 import { useEffect } from "react";
 import { ScrollTrigger } from "@/lib/gsap";
-import Footer from "./footer";
 import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
-import FaultyTerminal from "./faulty-terminal";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -37,10 +35,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       />
       <Scrollbar />
       {children}
-      {/* <div className="fixed bottom-0 left-0 w-full h-full z-[0]">
-        <FaultyTerminal />
-      </div> */}
-      <Footer />
     </div>
   );
 }

@@ -48,6 +48,7 @@ export default function HomeQuote() {
       },
     });
     return () => {
+      split.revert();
       tl?.kill();
     };
   }, []);

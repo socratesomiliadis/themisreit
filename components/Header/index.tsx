@@ -10,6 +10,7 @@ import StatusBar from "./status-bar";
 import { useLenis } from "lenis/react";
 import Link from "@/components/transition-link";
 import useNavigateTransition from "@/hooks/useNavigateTransition";
+import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 
 export default function Header() {
   const lenis = useLenis();
@@ -168,11 +169,52 @@ export default function Header() {
     }
   }
 
+  function handleLinkClick(e: PointerEvent) {
+    setMenuOpen(false);
+  }
+
   useEffect(() => {
+    const navItems = document.querySelectorAll(
+      ".nav-item"
+    ) as NodeListOf<HTMLAnchorElement>;
+    navItems.forEach((item) => {
+      item.addEventListener("click", handleLinkClick);
+    });
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      navItems.forEach((item) => {
+        item.removeEventListener("click", handleLinkClick);
+      });
+    };
+  }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    const tl = gsap.timeline({
+      delay: 1.2,
+      defaults: {
+        duration: 1,
+        ease: "power2.out",
+      },
+    });
+    tl.to(
+      ".header-anim",
+      {
+        opacity: 1,
+        filter: "blur(0px)",
+      },
+      0
+    );
+    tl.to(
+      ".header-anim-noblur",
+      {
+        opacity: 1,
+      },
+      0
+    );
+    return () => {
+      tl.kill();
     };
   }, []);
 
@@ -182,7 +224,7 @@ export default function Header() {
     <>
       <Link
         href="/"
-        className="fixed left-16 top-12 w-28 z-[997] text-white opacity-0 home-hero-anim blur mix-blend-difference"
+        className="fixed left-16 top-12 w-28 z-997 text-white opacity-0 header-anim blur mix-blend-difference"
         onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
           e.preventDefault();
           navigateTo("/");
@@ -240,7 +282,7 @@ export default function Header() {
         style={{
           pointerEvents: !isMenuOpen ? "none" : "auto",
         }}
-        className="fixed selection:bg-black selection:text-white z-[999] right-16 top-8 opacity-0 home-hero-anim-noblur"
+        className="fixed selection:bg-black selection:text-white z-999 right-16 top-8 opacity-0 header-anim-noblur"
       >
         <div className="relative flex gap-4 h-[95vh] z-20">
           <div
@@ -310,14 +352,7 @@ attending the B-Hype event in Dubai."
 
           <div className="relative ">
             <StatusBar />
-            <div
-              style={
-                {
-                  // boxShadow: "0 0 0 14px #000",
-                }
-              }
-              className="absolute right-0 top-0 z-10 rounded-full bg-[#1E1E1E]/80 backdrop-blur size-14 flex items-center justify-center pointer-events-auto"
-            >
+            <div className="absolute right-0 top-0 z-10 rounded-full bg-[#1E1E1E]/80 backdrop-blur size-14 flex items-center justify-center pointer-events-auto">
               <Hamburger
                 color="#fff"
                 size={20}
@@ -326,9 +361,6 @@ attending the B-Hype event in Dubai."
               />
             </div>
             <button
-              // style={{
-              //   boxShadow: "0 0 0 14px #000",
-              // }}
               onClick={() => {
                 setNewsOpen((prev) => !prev);
               }}
@@ -339,12 +371,12 @@ attending the B-Hype event in Dubai."
                 viewBox="0 0 25 20"
                 fill="none"
                 className={cn(
-                  "transition-transform ease-out duration-[150ms] nav-arrow",
+                  "transition-transform ease-out duration-150 nav-arrow",
                   isNewsOpen
                     ? "rotate-180"
                     : isMenuOpen
-                      ? "rotate-0"
-                      : "rotate-180"
+                    ? "rotate-0"
+                    : "rotate-180"
                 )}
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -363,13 +395,7 @@ attending the B-Hype event in Dubai."
               className="relative z-0 opacity-0 menu-body rounded-2xl h-[95vh] w-[28vw] backdrop-blur-xl will-change-auto"
             >
               <Nav isOpen={isMenuOpen} />
-              <div
-                // style={{
-                //   maskImage:
-                //     "radial-gradient(circle at 1.5rem 1.5rem, transparent 38px, black 39px)",
-                // }}
-                className="absolute nav-bg left-0 top-0 z-0 w-full h-full bg-[#1E1E1E]/80 "
-              ></div>
+              <div className="absolute nav-bg left-0 top-0 z-0 w-full h-full bg-[#1E1E1E]/80 "></div>
             </div>
           </div>
         </div>

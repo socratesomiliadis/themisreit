@@ -6,20 +6,24 @@ import HomeShowcase from "@/components/Home/home-showcase";
 import HomeCta from "@/components/Home/home-cta";
 import { getProjects } from "@/lib/sanity/sanity.queries";
 import { getClient } from "@/lib/sanity/sanityClient";
+import Footer from "@/components/footer";
 
 export default async function Home() {
   const client = getClient();
   const projects = await getProjects(client);
 
   return (
-    <main>
-      <HomeHero />
-      <HomeProjects projects={projects} />
-      <HomeProof />
-      <HomeShowcase />
-      <HomeQuote />
-      <HomeCta />
-      <div className="h-screen"></div>
-    </main>
+    <>
+      <main>
+        <HomeHero />
+        <HomeProjects projects={projects} />
+        <HomeProof />
+        <HomeShowcase />
+        <HomeQuote />
+        <HomeCta />
+        <div className="h-screen"></div>
+      </main>
+      <Footer />
+    </>
   );
 }
