@@ -52,8 +52,9 @@ export default function HomeHero() {
       <Image
         src="/static/images/flags.png"
         alt="BGImage"
-        width={1490}
-        height={1200}
+        width={1920}
+        quality={100}
+        height={1080}
         priority
         className="absolute top-0 right-[-20%] rotate-[-15deg] w-auto h-full object-contain z-10"
       />

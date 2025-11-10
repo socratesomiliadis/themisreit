@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
         pathname: "/images/fmdnjd8n/**",
       },
     ],
+    qualities: [80, 100],
   },
 };
 
