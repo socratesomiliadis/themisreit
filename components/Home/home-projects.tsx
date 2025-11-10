@@ -231,7 +231,7 @@ export default function HomeProjects({
 
   return (
     <>
-      <div className="mt-44 w-screen relative z-[1]">
+      <div className="mt-44 w-screen relative z-[10]">
         <SimpleMarquee
           direction="left"
           repeat={6}
