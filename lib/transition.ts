@@ -108,3 +108,32 @@ export function scaleInOut() {
     }
   );
 }
+
+export function fadeInOut() {
+  document.documentElement.animate(
+    [
+      {
+        opacity: 0,
+      },
+    ],
+    {
+      duration: 600,
+      easing: "cubic-bezier(0.86, 0, 0.07, 1)",
+      fill: "forwards",
+      pseudoElement: "::view-transition-old(root)",
+    }
+  );
+  document.documentElement.animate(
+    [
+      {
+        opacity: 1,
+      },
+    ],
+    {
+      duration: 600,
+      easing: "cubic-bezier(0.86, 0, 0.07, 1)",
+      fill: "forwards",
+      pseudoElement: "::view-transition-new(root)",
+    }
+  );
+}

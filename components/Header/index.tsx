@@ -79,7 +79,7 @@ export default function Header() {
         ".menu-body",
         {
           maskImage:
-            "radial-gradient(circle at 1.75rem 1.75rem, transparent 1px, black 2px), radial-gradient(circle at calc(100% - 0rem) 1.75rem, transparent 0px, black 1px)",
+            "radial-gradient(circle at 1.375rem 1.375rem, transparent 1px, black 2px), radial-gradient(circle at calc(100% - 0rem) 1.375rem, transparent 0px, black 1px)",
         },
         0
       );
@@ -88,20 +88,20 @@ export default function Header() {
         ".menu-body",
         {
           maskImage:
-            "radial-gradient(circle at 1.75rem 1.75rem, transparent 42px, black 43px), radial-gradient(circle at calc(100% - 1.75rem) 1.75rem, transparent 42px, black 43px)",
+            "radial-gradient(circle at 1.375rem 1.375rem, transparent 32px, black 33px), radial-gradient(circle at calc(100% - 1.375rem) 1.375rem, transparent 32px, black 33px)",
           ease: "elastic.out(1.6,1)",
           duration: 1,
         },
         0
       );
 
-      tl.call(
-        () => {
-          setNewsOpen(true);
-        },
-        undefined,
-        0
-      );
+      // tl.call(
+      //   () => {
+      //     setNewsOpen(true);
+      //   },
+      //   undefined,
+      //   0
+      // );
     } else {
       tl.to(
         ".nav-overlay",
@@ -269,9 +269,12 @@ export default function Header() {
         style={{
           pointerEvents: !isMenuOpen ? "none" : "auto",
         }}
-        className="fixed selection:bg-black selection:text-white z-999 right-16 top-8 opacity-0 header-anim-noblur"
+        className={cn(
+          "fixed selection:bg-black selection:text-white z-999 right-8 top-8 opacity-0 header-anim-noblur transition-right duration-300 ease-out",
+          isMenuOpen && "right-8"
+        )}
       >
-        <div className="relative flex gap-4 h-[95vh] z-20">
+        <div className="relative flex gap-4 h-[95vh] z-20 pointer-events-none">
           <div
             style={{
               pointerEvents: isNewsOpen ? "auto" : "none",
@@ -337,21 +340,28 @@ attending the B-Hype event in Dubai."
           /> */}
           </div>
 
-          <div className="relative ">
-            <StatusBar />
-            <div className="absolute right-0 top-0 z-10 rounded-full bg-[#1E1E1E]/80 backdrop-blur size-14 flex items-center justify-center pointer-events-auto">
-              <Hamburger
-                color="#fff"
-                size={20}
-                toggled={isMenuOpen}
-                toggle={setMenuOpen}
-              />
+          <div
+            style={{
+              pointerEvents: isMenuOpen ? "auto" : "none",
+            }}
+            className="relative"
+          >
+            {/* <StatusBar /> */}
+            <div className="absolute right-0 top-0 z-10 rounded-full bg-[#1E1E1E]/80 backdrop-blur size-11 flex items-center justify-center pointer-events-auto">
+              <div className="scale-75">
+                <Hamburger
+                  color="#fff"
+                  size={20}
+                  toggled={isMenuOpen}
+                  toggle={setMenuOpen}
+                />
+              </div>
             </div>
             <button
               onClick={() => {
                 setNewsOpen((prev) => !prev);
               }}
-              className="cursor-pointer opacity-0 absolute news-btn left-0 top-0 z-10 rounded-full bg-[#1E1E1E]/80 backdrop-blur text-white size-14 flex items-center justify-center"
+              className="cursor-pointer opacity-0 absolute news-btn left-0 top-0 z-10 rounded-full bg-[#1E1E1E]/80 backdrop-blur text-white size-11 flex items-center justify-center"
             >
               <svg
                 width="35%"

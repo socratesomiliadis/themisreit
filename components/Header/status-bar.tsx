@@ -1,6 +1,6 @@
 export default function StatusBar() {
   return (
-    <div className="absolute right-16 status-bar h-fit text-[#B9B9B9] px-8 py-4 rounded-full bg-[#1e1e1e]/80 backdrop-blur flex flex-row items-center gap-5">
+    <div className="absolute right-14 status-bar h-fit text-[#B9B9B9] px-8 py-3 rounded-full bg-[#1e1e1e]/80 backdrop-blur text-sm flex flex-row items-center gap-5">
       <span className="block size-4">
         <svg
           width="100%"

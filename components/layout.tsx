@@ -11,6 +11,8 @@ import { useLenis } from "lenis/react";
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const lenis = useLenis();
+  const isWorkPage = pathname === "/work";
+
   useEffect(() => {
     ScrollTrigger.clearScrollMemory("manual");
   }, []);
@@ -29,6 +31,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Lenis
         root
         options={{
+          orientation: isWorkPage ? "horizontal" : "vertical",
+          infinite: isWorkPage,
           prevent: (node: Element | null) =>
             node?.getAttribute("data-lenis-prevent") === "true",
         }}

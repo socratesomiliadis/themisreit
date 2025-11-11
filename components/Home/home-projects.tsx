@@ -204,31 +204,6 @@ export default function HomeProjects({
   const firstHalfOfProjects = projects.slice(0, 3);
   const secondHalfOfProjects = projects.slice(3);
 
-  useIsomorphicLayoutEffect(() => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: ".markos",
-        start: "-10px bottom",
-        end: "bottom top",
-        scrub: 1,
-      },
-    });
-    tl.fromTo(
-      ".markos",
-      {
-        scale: 1,
-      },
-      {
-        scale: 2,
-        ease: "linear",
-      }
-    );
-
-    return () => {
-      tl.kill();
-    };
-  }, []);
-
   return (
     <>
       <div className="mt-44 w-screen relative z-[10]">
