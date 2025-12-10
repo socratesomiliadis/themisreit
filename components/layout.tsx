@@ -13,7 +13,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const lenis = useLenis();
   const isWorkPage = pathname === "/work";
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     ScrollTrigger.clearScrollMemory("manual");
@@ -39,7 +39,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="layout-wrapper w-screen relative bg-[#111111]">
-      {/* {isLoading && <Loader onComplete={() => setIsLoading(false)} />} */}
+      {isLoading && <Loader onComplete={() => setIsLoading(false)} />}
       {pathname.includes("/sanity") ? null : <Header />}
       <Lenis
         root

@@ -18,7 +18,7 @@
     "hamo": "1.0.0-dev.6",
     "lenis": "^1.3.14",
     "motion": "^12.23.24",
-    "next": "16.0.1",
+    "next": "16.0.8",
     "next-sanity": "^11.6.5",
     "next-view-transitions": "^0.3.4",
     "react": "19.2.0",
