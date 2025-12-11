@@ -68,6 +68,9 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
           delay: 0.2,
           ease: "power2.out",
         });
+        gsap.set(".loader-wrapper", {
+          pointerEvents: "none",
+        });
         lenis?.start();
       },
     });
