@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { gsap } from "@/lib/gsap";
+import { gsap, SplitText } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLenis } from "lenis/react";
 
 const LEFT_LIST = [
@@ -27,6 +27,66 @@ const RIGHT_LIST = [
   "Since 2017",
 ];
 
+function JustifiedText(props: React.HTMLAttributes<HTMLParagraphElement>) {
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    const split = SplitText.create(ref.current, {
+      type: "words, lines",
+      linesClass: "justified-line",
+      autoSplit: true,
+      onSplit: (self) => {
+        gsap.set(ref.current, {
+          opacity: 1,
+        });
+        self.lines.forEach((line) => {
+          (line as HTMLElement).style.display = "flex";
+          (line as HTMLElement).style.justifyContent = "space-between";
+        });
+      },
+    });
+
+    return () => {
+      split.revert();
+    };
+  }, []);
+
+  return (
+    <p ref={ref} {...props}>
+      {props.children}
+    </p>
+  );
+}
+
+function LoaderBoxRow({}) {
+  return (
+    <>
+      <div className="col-span-2 border-[#282828] border flex flex-row gap-8 justify-between p-3">
+        <div className="flex flex-col h-full justify-between text-white text-xs tracking-tight">
+          <p>
+            OPTION SET 1 <br />
+            SYSTEM / STUDIO CORE
+          </p>
+          <p>
+            DESIGN / TECHNOLOGY / CULTURE <br />
+            POST-DEPLOYMENT / PRE-STABILITY
+          </p>
+        </div>
+        <div className="flex flex-col justify-between w-[80%]">
+          <p className="text-[#5E5E5E] text-justify w-full">T1 2 3 4 5 6 7</p>
+          <JustifiedText className="text-[#5E5E5E] w-full opacity-0">
+            Recursive Diagram of One Studio System <br />
+            (left to right) for speculative practice, <br /> becoming a
+            container for identity, technology, and form <br /> as an active
+            ecology.
+          </JustifiedText>
+        </div>
+      </div>
+      <div className="col-span-1 border-[#282828] border"></div>
+    </>
+  );
+}
+
 function renderCurvedList(items: string[], side: "left" | "right") {
   const mid = Math.floor(items.length / 2);
   return items.map((item, index) => {
@@ -44,7 +104,7 @@ function renderCurvedList(items: string[], side: "left" | "right") {
                   side === "left" ? -(mid - index) * 8 : (mid - index) * 8
                 }%)`,
         }}
-        className={`loader-list-item-${side}`}
+        className={`loader-list-item-${side} tracking-tight`}
         key={index}
       >
         {item}
@@ -94,24 +154,24 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
       },
       0.4
     );
-    loaderTl.from(
-      ".loader-list-item-left",
-      {
-        x: "-150%",
-        duration: 0.8,
-        stagger: 0.05,
-      },
-      0.3
-    );
-    loaderTl.from(
-      ".loader-list-item-right",
-      {
-        x: "150%",
-        duration: 0.8,
-        stagger: 0.05,
-      },
-      0.3
-    );
+    // loaderTl.from(
+    //   ".loader-list-item-left",
+    //   {
+    //     x: "-150%",
+    //     duration: 0.8,
+    //     stagger: 0.05,
+    //   },
+    //   0.2
+    // );
+    // loaderTl.from(
+    //   ".loader-list-item-right",
+    //   {
+    //     x: "150%",
+    //     duration: 0.8,
+    //     stagger: 0.05,
+    //   },
+    //   0.2
+    // );
     loaderTl.to(".loader-wrapper", {
       duration: 0.8,
     });
@@ -124,6 +184,12 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
 
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center bg-[#111111] overflow-hidden loader-wrapper">
+      <div className="absolute w-full h-full grid grid-cols-3 p-6 gap-6 z-20">
+        <LoaderBoxRow />
+        <LoaderBoxRow />
+        <LoaderBoxRow />
+        <LoaderBoxRow />
+      </div>
       <div className="relative z-10 flex items-center gap-12">
         <div className="relative max-w-full h-[calc(100vh-0rem)] aspect-square flex items-center justify-center">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -134,14 +200,14 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
               }}
               className={cn(
                 "absolute h-[55%] aspect-square rounded-full border border-white/60 scale-0 loader-circle",
-                i === 0 && "bg-[#111111] z-10",
+                i === 0 && "bg-white z-10",
                 i === 3 &&
                   "flex items-center justify-center overflow-hidden z-5"
               )}
             >
               {i === 0 && (
                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-full">
-                  <div className="flex flex-col items-center text-white relative z-10">
+                  <div className="flex flex-col items-center text-black relative z-10">
                     <span className="font-ballet text-[2.5vw] leading-tight">
                       Loading
                     </span>
@@ -149,10 +215,10 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
                       ({progress}%)
                     </span>
                   </div>
-                  <div className="absolute left-4 flex flex-col gap-2 text-xs text-white font-helvetica-now text-left">
+                  <div className="absolute left-4 flex flex-col gap-2 text-xs text-black font-helvetica-now text-left">
                     {renderCurvedList(LEFT_LIST, "left")}
                   </div>
-                  <div className="absolute right-4 flex flex-col gap-2 text-xs text-white font-helvetica-now text-right">
+                  <div className="absolute right-4 flex flex-col gap-2 text-xs text-black font-helvetica-now text-right">
                     {renderCurvedList(RIGHT_LIST, "right")}
                   </div>
                 </div>
