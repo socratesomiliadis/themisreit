@@ -25,7 +25,7 @@ export default function Link({
           return;
         }
         e.preventDefault();
-        navigateTo(href, beforeNavigate, afterNavigate);
+        navigateTo(href, false, beforeNavigate, afterNavigate);
       }}
       {...props}
     >
