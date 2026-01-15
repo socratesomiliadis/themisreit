@@ -20,14 +20,14 @@ const ppEditorial = localFont({
 });
 
 export const metadata = {
-  title: "Themis Reit",
+  title: "Pensatori Irrazionali",
   description:
     "We help visionary brands flourish by crafting digital experiences that let audiences feel the depth, elegance, and essence of their products.",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Themis Reit",
+    title: "Pensatori Irrazionali",
     type: "website",
     description:
       "We help visionary brands flourish by crafting digital experiences that let audiences feel the depth, elegance, and essence of their products.",
@@ -36,7 +36,7 @@ export const metadata = {
         url: "https://themisreit.vercel.app/ogImage.png",
         width: 1600,
         height: 900,
-        alt: "Themis Reit",
+        alt: "Pensatori Irrazionali",
         type: "image/png",
       },
     ],
