@@ -136,12 +136,19 @@ const ScrambleIn = forwardRef<ScrambleInHandle, ScrambleInProps>(
     };
 
     return (
-      <>
+      <span className="relative inline-block">
+        {/* Invisible placeholder to reserve space */}
+        <span className="invisible whitespace-pre">{text}</span>
+        {/* Screen reader text */}
         <span className="sr-only">{text}</span>
-        <span className="inline-block whitespace-pre-wrap" aria-hidden="true">
+        {/* Animated text positioned on top */}
+        <span
+          className="absolute left-0 top-0 whitespace-pre"
+          aria-hidden="true"
+        >
           {renderText()}
         </span>
-      </>
+      </span>
     );
   }
 );

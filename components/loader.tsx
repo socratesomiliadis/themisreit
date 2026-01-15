@@ -4,8 +4,11 @@ import Image from "next/image";
 import { gsap, SplitText } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
-import { useState, useRef } from "react";
+import { Fragment,
+useState, useRef } from "react";
 import { useLenis } from "lenis/react";
+import ScrambleIn from "@/components/scramble-in";
+import Pensatori from "./SVGs/pensatori-logo";
 
 const LEFT_LIST = [
   "Websites",
@@ -27,10 +30,139 @@ const RIGHT_LIST = [
   "Since 2017",
 ];
 
-function JustifiedText(props: React.HTMLAttributes<HTMLParagraphElement>) {
+// Data structure for loader box rows
+const LOADER_ROWS = [
+  {
+    left: [
+      ["OPTION SET 1", "SYSTEM / STUDIO CORE"],
+      ["DESIGN / TECHNOLOGY / CULTURE", "POST-DEPLOYMENT / PRE-STABILITY"],
+    ],
+    rightText: [
+      "Recursive Diagram of One Studio System",
+      "(left to right) for speculative practice,",
+      "becoming a container for identity, technology, and form",
+      "as an active ecology.",
+    ],
+    rightBox: [
+      ["IDENTITY / MODULE 01", "ID: STUDIO–ID–A01"],
+      [
+        "A container for intention.",
+        "Form emerges before explanation.",
+        "Identity stabilizes only through repetition.",
+      ],
+    ],
+  },
+  {
+    left: [
+      ["OPTION SET 2", "PROCESS / LOADING STATE"],
+      ["SYSTEM STATUS: INITIALIZING", "MODE: SPECULATIVE"],
+    ],
+    rightText: [
+      "Each module operates independently,",
+      "yet remains influenced by adjacent structures.",
+      "Failure, delay, and recursion",
+      "are treated as generative forces.",
+    ],
+    rightBox: [
+      ["SYSTEMS / MODULE 02", "ID: SYS–CORE–B07"],
+      [
+        "Systems are not designed.",
+        "They are discovered through constraints.",
+        "Failure refines the architecture.",
+      ],
+    ],
+  },
+  {
+    left: [
+      ["OPTION SET 3", "FORM / IDENTITY"],
+      [
+        "IDENTITY / FORM / SIGNAL - ASSEMBLED OVER TIME",
+        "POST-INTERFACE CONDITION",
+      ],
+    ],
+    rightText: [
+      "Form is treated as a consequence",
+      "of accumulated decisions and constraints.",
+      "No single element retains autonomy.",
+      "Stability is temporary.",
+    ],
+    rightBox: [
+      ["IDENTITY / MODULE 03", "ID: UI–THRESHOLD–C12"],
+      [
+        "An interface is a negotiation",
+        "between machine logic",
+        "and human instinct.",
+      ],
+    ],
+  },
+  {
+    left: [
+      ["OPTION SET 4", "INTERFACE / MEDIATION"],
+      [
+        "INTERFACE / EMBODIMENT - ACTIVE FEEDBACK LOOP",
+        "CALIBRATION IN PROGRESS",
+      ],
+    ],
+    rightText: [
+      "Diagram of Mediation Between Human and Machine",
+      "where interfaces function as negotiation zones",
+      "rather than solutions.",
+    ],
+    rightBox: [
+      ["NARRATIVE / MODULE 04", "ID: NAR–SEQ–D09"],
+      [
+        "Narrative is not linear.",
+        "It folds, repeats, and leaks",
+        "across mediums.",
+      ],
+    ],
+  },
+  {
+    left: [
+      ["OPTION SET 5", "ARCHIVE / MEMORY"],
+      ["ARCHIVE / SYSTEM MEMORY", "READ-WRITE STATE, NON-FINAL RECORD"],
+    ],
+    rightText: [
+      "Diagram of Mediation Between Human and Machine",
+      "where interfaces function as negotiation zones",
+      "rather than solutions.",
+    ],
+    rightBox: [
+      ["FORM / MODULE 05", "ID: FORM–FIELD–E03"],
+      ["Form is a consequence,", "not a decision.", "Shape follows pressure."],
+    ],
+  },
+];
+
+// Helper component to render scrambled text blocks
+function ScrambleBlock({
+  lines,
+  scramble = true,
+}: {
+  lines: string[];
+  scramble?: boolean;
+}) {
+  return (
+    <p>
+      {lines.map((line, i) => (
+        <span key={i}>
+          {scramble ? <ScrambleIn text={line} scrambleSpeed={30} /> : line}
+          {i < lines.length - 1 && <br />}
+        </span>
+      ))}
+    </p>
+  );
+}
+
+function JustifiedText({
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLParagraphElement>) {
   const ref = useRef<HTMLParagraphElement>(null);
 
   useIsomorphicLayoutEffect(() => {
+    if (!ref.current) return;
+
     const split = SplitText.create(ref.current, {
       type: "words, lines",
       linesClass: "justified-line",
@@ -49,40 +181,70 @@ function JustifiedText(props: React.HTMLAttributes<HTMLParagraphElement>) {
     return () => {
       split.revert();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <p ref={ref} {...props}>
-      {props.children}
+      {children}
     </p>
   );
 }
 
-function LoaderBoxRow({}) {
+function LoaderBoxRow({
+  left,
+  rightText,
+  rightBox,
+}: {
+  left: string[][];
+  rightText: string[];
+  rightBox: string[][];
+}) {
   return (
     <>
       <div className="col-span-2 border-[#282828] border flex flex-row gap-8 justify-between p-3">
         <div className="flex flex-col h-full justify-between text-white text-xs tracking-tight">
-          <p>
-            OPTION SET 1 <br />
-            SYSTEM / STUDIO CORE
-          </p>
-          <p>
-            DESIGN / TECHNOLOGY / CULTURE <br />
-            POST-DEPLOYMENT / PRE-STABILITY
-          </p>
+          {left.map((block, i) => (
+            <ScrambleBlock key={i} lines={block} />
+          ))}
         </div>
-        <div className="flex flex-col justify-between w-[80%]">
-          <p className="text-[#5E5E5E] text-justify w-full">T1 2 3 4 5 6 7</p>
-          <JustifiedText className="text-[#5E5E5E] w-full opacity-0">
-            Recursive Diagram of One Studio System <br />
-            (left to right) for speculative practice, <br /> becoming a
-            container for identity, technology, and form <br /> as an active
-            ecology.
+        <div className="flex flex-col justify-between w-[65%]">
+          <JustifiedText className="text-[#5E5E5E] w-full opacity-0 text-xs tracking-tight">
+            T1 2 3 4 5 6 7
+          </JustifiedText>
+          <JustifiedText className="text-[#5E5E5E] w-full opacity-0 text-xs tracking-tight">
+            {rightText.map((line, i) => (
+              <Fragment key={i}>
+                {line}
+                {i < rightText.length - 1 && <br />}
+              </Fragment>
+            ))}
+          </JustifiedText>
+          <JustifiedText className="text-[#5E5E5E] w-full opacity-0 text-xs tracking-tight">
+            WIT BWIT FNOS SNOS <br /> Diagram By Pensatori Irrazionale
           </JustifiedText>
         </div>
       </div>
-      <div className="col-span-1 border-[#282828] border"></div>
+      <div className="col-span-1 border-[#282828] border flex flex-row gap-8 justify-between p-3">
+        <div className="flex flex-col h-full justify-between text-white text-xs tracking-tight leading-[1.05]">
+          {rightBox.map((block, i) => (
+            <ScrambleBlock key={i} lines={block} />
+          ))}
+        </div>
+        <div className="flex flex-col h-full justify-between text-white text-xs tracking-tight">
+          {Array.from({ length: 7 }).map((_, index) => (
+            <div key={index} className="flex flex-row items-center gap-2">
+              <ScrambleIn
+                text={`${(index + 1)
+                  .toString()
+                  .padStart(2, "0")} STATUS / ACTIVE`}
+                scrambleSpeed={30}
+              />
+              <div className="size-3 rounded-full bg-[#282828]"></div>
+            </div>
+          ))}
+        </div>
+      </div>
     </>
   );
 }
@@ -122,16 +284,52 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
         setProgress(Math.round(loaderTl.progress() * 100));
       },
       onComplete: () => {
-        gsap.to(".loader-wrapper", {
+        // gsap.to(".loader-wrapper", {
+        //   opacity: 0,
+        //   duration: 1,
+        //   delay: 0.2,
+        //   ease: "power2.out",
+        // });
+        // gsap.set(".loader-wrapper", {
+        //   pointerEvents: "none",
+        // });
+        // lenis?.start();
+        const closeTl = gsap.timeline({
+          onComplete: () => {
+            lenis?.start();
+          },
+        });
+        closeTl.to(".loader-blind", {
+          width: "100%",
+          duration: 1.2,
+          stagger: 0,
+        });
+        closeTl.to(
+          ".blind-expand",
+          {
+            scaleY: 1.2,
+            duration: 1,
+            stagger: 0,
+          },
+          "<+=0.2"
+        );
+        closeTl.to(
+          ".loader-close-logo",
+          {
+            opacity: 1,
+            duration: 1,
+          },
+          "<+=0.5"
+        );
+        closeTl.to(".loader-wrapper", {
           opacity: 0,
           duration: 1,
           delay: 0.2,
           ease: "power2.out",
         });
-        gsap.set(".loader-wrapper", {
+        closeTl.set(".loader-wrapper", {
           pointerEvents: "none",
         });
-        lenis?.start();
       },
     });
     const rotateTween = gsap.to(".loader-rotate", {
@@ -184,13 +382,31 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
 
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center bg-[#111111] overflow-hidden loader-wrapper">
-      <div className="absolute w-full h-full grid grid-cols-3 p-6 gap-6 z-20">
-        <LoaderBoxRow />
-        <LoaderBoxRow />
-        <LoaderBoxRow />
-        <LoaderBoxRow />
+      <div className="absolute loader-close-wrapper w-full h-full z-22 flex flex-col gap-4 p-4">
+        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-24 z-22 loader-close-logo opacity-0">
+          <Pensatori />
+        </div>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              "w-0 basis-1/5 bg-white loader-blind",
+              i !== 0 && i !== 4 && "blind-expand"
+            )}
+          ></div>
+        ))}
       </div>
-      <div className="relative z-10 flex items-center gap-12">
+      <div className="absolute w-full h-full grid grid-cols-3 p-4 gap-4 z-20">
+        {LOADER_ROWS.map((row, i) => (
+          <LoaderBoxRow
+            key={i}
+            left={row.left}
+            rightText={row.rightText}
+            rightBox={row.rightBox}
+          />
+        ))}
+      </div>
+      <div className="relative z-21 flex items-center gap-12 opacity-100">
         <div className="relative max-w-full h-[calc(100vh-0rem)] aspect-square flex items-center justify-center">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
@@ -211,6 +427,14 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
                     <span className="font-ballet text-[2.5vw] leading-tight">
                       Loading
                     </span>
+                    {/* <video
+                      src="/static/videos/loading.mp4"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="w-[60%]"
+                    /> */}
                     <span className="font-helvetica-now text-[0.6vw] mb-2 absolute top-0 left-[84%] tabular-nums">
                       ({progress}%)
                     </span>
@@ -241,124 +465,6 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
                     priority
                     className="w-1/2 aspect-square bottom-0 right-0 absolute"
                   />
-                  {/* <div className="absolute w-[31%] right-0 flex items-center justify-center">
-                    <svg
-                      width="100%"
-                      viewBox="0 0 213 214"
-                      fill="none"
-                      className="opacity-60"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <line
-                        x1="0.513634"
-                        y1="213.146"
-                        x2="171.514"
-                        y2="42.1464"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.483077"
-                        y1="213.18"
-                        x2="155.483"
-                        y2="27.1799"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.456609"
-                        y1="213.215"
-                        x2="139.457"
-                        y2="13.2146"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.434196"
-                        y1="213.25"
-                        x2="123.434"
-                        y2="0.249963"
-                        stroke="white"
-                      />
-                      <line
-                        x1="1.01435"
-                        y1="212.068"
-                        x2="212.616"
-                        y2="89.0677"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.978923"
-                        y1="212.09"
-                        x2="199.58"
-                        y2="73.0904"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.944108"
-                        y1="212.117"
-                        x2="185.546"
-                        y2="57.1171"
-                        stroke="white"
-                      />
-                    </svg>
-                  </div>
-                  <div className="absolute w-[31%] left-0 bottom-0 flex items-center justify-center">
-                    <svg
-                      width="100%"
-                      viewBox="0 0 213 214"
-                      fill="none"
-                      className="opacity-60 rotate-180"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <line
-                        x1="0.513634"
-                        y1="213.146"
-                        x2="171.514"
-                        y2="42.1464"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.483077"
-                        y1="213.18"
-                        x2="155.483"
-                        y2="27.1799"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.456609"
-                        y1="213.215"
-                        x2="139.457"
-                        y2="13.2146"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.434196"
-                        y1="213.25"
-                        x2="123.434"
-                        y2="0.249963"
-                        stroke="white"
-                      />
-                      <line
-                        x1="1.01435"
-                        y1="212.068"
-                        x2="212.616"
-                        y2="89.0677"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.978923"
-                        y1="212.09"
-                        x2="199.58"
-                        y2="73.0904"
-                        stroke="white"
-                      />
-                      <line
-                        x1="0.944108"
-                        y1="212.117"
-                        x2="185.546"
-                        y2="57.1171"
-                        stroke="white"
-                      />
-                    </svg>
-                  </div> */}
                 </div>
               )}
             </div>
