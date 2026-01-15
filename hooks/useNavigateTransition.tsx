@@ -10,11 +10,12 @@ export default function useNavigateTransition() {
 
   function navigateTo(
     path: string,
+    isLoader?: boolean,
     beforeNavigate?: () => void,
     afterNavigate?: () => void
   ) {
     const isSamePath = pathname === path;
-    if (isSamePath) {
+    if (isSamePath && !isLoader) {
       return;
     }
     lenis?.stop();

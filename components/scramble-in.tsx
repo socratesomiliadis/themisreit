@@ -25,13 +25,15 @@ export interface ScrambleInHandle {
   reset: () => void;
 }
 
+export const SCRAMBLE_CHARS = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+";
+
 const ScrambleIn = forwardRef<ScrambleInHandle, ScrambleInProps>(
   (
     {
       text,
       scrambleSpeed = 50,
       scrambledLetterCount = 2,
-      characters = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()_+",
+      characters = SCRAMBLE_CHARS,
       className = "",
       scrambledClassName = "",
       autoStart = true,
