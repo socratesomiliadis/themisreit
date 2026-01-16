@@ -38,7 +38,7 @@ export default function HomeShowcase() {
     };
   }, []);
   return (
-    <section className="w-screen pt-32 pb-40 flex flex-col home-showcase">
+    <section className="w-screen pt-0 pb-40 flex flex-col home-showcase">
       <div className="flex flex-col px-16">
         <InfoLine
           number="01"

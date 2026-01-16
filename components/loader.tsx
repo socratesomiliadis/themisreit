@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { gsap, SplitText } from "@/lib/gsap";
+import { gsap, SplitText, ScrollTrigger } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 import { Fragment, useState, useRef } from "react";
@@ -9,6 +9,7 @@ import { useLenis } from "lenis/react";
 import ScrambleIn from "@/components/scramble-in";
 import Pensatori from "./SVGs/pensatori-logo";
 import useNavigateTransition from "@/hooks/useNavigateTransition";
+import { usePathname } from "next/navigation";
 
 const LEFT_LIST = [
   "Websites",
@@ -304,7 +305,7 @@ function LoaderBoxRow({
             className="text-[#5E5E5E] w-full opacity-0 text-xs tracking-tight"
             scramble
           >
-            WIT BWIT FNOS SNOS <br /> Diagram By Pensatori Irrazionale
+            WIT BWIT FNOS SNOS <br /> Diagram By Pensatori Irrazionali
           </JustifiedText>
         </div>
       </div>
@@ -496,6 +497,8 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
   const lenis = useLenis();
   const [progress, setProgress] = useState(0);
   const { navigateTo } = useNavigateTransition();
+  const currentPath = usePathname();
+
   useIsomorphicLayoutEffect(() => {
     const loaderTl = gsap.timeline({
       onUpdate: () => {
@@ -504,12 +507,15 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
       onComplete: () => {
         const closeTl = gsap.timeline({
           onComplete: () => {
-            navigateTo("/", true);
+            navigateTo(currentPath, true);
             gsap.set(".loader-wrapper", {
               delay: 0.6,
               opacity: 0,
               pointerEvents: "none",
             });
+            ScrollTrigger.refresh();
+            lenis?.start();
+            onComplete?.();
           },
         });
         closeTl.to(
@@ -537,10 +543,6 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
           {
             opacity: 0,
             duration: 0.6,
-            // stagger: {
-            //   each: 0.01,
-            //   from: "end",
-            // },
           },
           0
         );
@@ -570,15 +572,6 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
           },
           "<+=0.5"
         );
-        // closeTl.to(".loader-wrapper", {
-        //   opacity: 0,
-        //   duration: 1,
-        //   delay: 0.2,
-        //   ease: "power2.out",
-        // });
-        // closeTl.set(".loader-wrapper", {
-        //   pointerEvents: "none",
-        // });
       },
     });
     const rotateTween = gsap.to(".loader-rotate", {
@@ -637,10 +630,6 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
       },
       0.4
     );
-
-    // loaderTl.to(".loader-wrapper", {
-    //   duration: 0.8,
-    // });
 
     return () => {
       loaderTl.kill();

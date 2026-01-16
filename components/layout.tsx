@@ -39,7 +39,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="layout-wrapper w-screen relative bg-[#111111]">
-      {isLoading && <Loader onComplete={() => setIsLoading(false)} />}
+      {isLoading && !pathname.includes("/sanity") && (
+        <Loader onComplete={() => setIsLoading(false)} />
+      )}
       {pathname.includes("/sanity") ? null : <Header />}
       <Lenis
         root

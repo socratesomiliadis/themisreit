@@ -7,6 +7,7 @@ import HomeCta from "@/components/Home/home-cta";
 import { getProjects } from "@/lib/sanity/sanity.queries";
 import { getClient } from "@/lib/sanity/sanityClient";
 import Footer from "@/components/footer";
+import HomeServices from "@/components/Home/home-services";
 
 export default async function Home() {
   const client = getClient();
@@ -18,6 +19,7 @@ export default async function Home() {
         <HomeHero />
         <HomeProjects projects={projects} />
         <HomeProof />
+        <HomeServices />
         <HomeShowcase />
         <HomeQuote />
         <HomeCta />

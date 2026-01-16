@@ -25,9 +25,18 @@ export default defineConfig({
           .title("Content")
           .items([
             // Minimum required configuration
-            orderableDocumentListDeskItem({ type: "project", S, context }),
-
-            // ... all other desk items
+            orderableDocumentListDeskItem({
+              type: "project",
+              title: "Projects",
+              S,
+              context,
+            }),
+            orderableDocumentListDeskItem({
+              type: "service",
+              title: "Services",
+              S,
+              context,
+            }),
           ]);
       },
     }),

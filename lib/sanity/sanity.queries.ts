@@ -33,3 +33,11 @@ export const categoriesQuery = groq`
 export async function getCategories(client: SanityClient): Promise<any[]> {
   return await client.fetch(categoriesQuery);
 }
+
+export const servicesQuery = groq`*[_type == "service"]{
+  ...
+} | order(orderRank)`;
+
+export async function getServices(client: SanityClient): Promise<any[]> {
+  return await client.fetch(servicesQuery);
+}

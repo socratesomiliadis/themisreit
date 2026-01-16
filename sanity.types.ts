@@ -13,6 +13,38 @@
  */
 
 // Source: schema.json
+export type Service = {
+  _id: string;
+  _type: "service";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  orderRank?: string;
+  title: string;
+  smallTitle: string;
+  slug: Slug;
+  description: string;
+  color: string;
+  features: Array<{
+    title: string;
+    description: string;
+    _key: string;
+  }>;
+  examples: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+};
+
 export type Project = {
   _id: string;
   _type: "project";
@@ -80,6 +112,39 @@ export type Category = {
   _rev: string;
   title: string;
   slug: Slug;
+};
+
+export type Color = {
+  _type: "color";
+  hex?: string;
+  alpha?: number;
+  hsl?: HslaColor;
+  hsv?: HsvaColor;
+  rgb?: RgbaColor;
+};
+
+export type RgbaColor = {
+  _type: "rgbaColor";
+  r?: number;
+  g?: number;
+  b?: number;
+  a?: number;
+};
+
+export type HsvaColor = {
+  _type: "hsvaColor";
+  h?: number;
+  s?: number;
+  v?: number;
+  a?: number;
+};
+
+export type HslaColor = {
+  _type: "hslaColor";
+  h?: number;
+  s?: number;
+  l?: number;
+  a?: number;
 };
 
 export type SanityImagePaletteSwatch = {
@@ -200,20 +265,7 @@ export type SanityAssetSourceData = {
   url?: string;
 };
 
-export type AllSanitySchemaTypes =
-  | Project
-  | Category
-  | SanityImagePaletteSwatch
-  | SanityImagePalette
-  | SanityImageDimensions
-  | SanityImageHotspot
-  | SanityImageCrop
-  | SanityFileAsset
-  | SanityImageAsset
-  | SanityImageMetadata
-  | Geopoint
-  | Slug
-  | SanityAssetSourceData;
+export type AllSanitySchemaTypes = Service | Project | Category | Color | RgbaColor | HsvaColor | HslaColor | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: lib/sanity/sanity.queries.ts
 // Variable: projectsQuery
@@ -356,14 +408,48 @@ export type CategoriesQueryResult = Array<{
   title: string;
   slug: Slug;
 }>;
+// Variable: servicesQuery
+// Query: *[_type == "service"]{  ...} | order(orderRank)
+export type ServicesQueryResult = Array<{
+  _id: string;
+  _type: "service";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  orderRank?: string;
+  title: string;
+  smallTitle: string;
+  slug: Slug;
+  description: string;
+  color: string;
+  features: Array<{
+    title: string;
+    description: string;
+    _key: string;
+  }>;
+  examples: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+}>;
 
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '*[_type == "project" && defined(slug.current)]{\n  ...,\n  category->\n} | order(orderRank)': ProjectsQueryResult;
-    '*[_type == "project" && slug.current == $slug]{\n  ...,\n  category->\n}[0]': ProjectBySlugQueryResult;
-    '\n*[_type == "project" && defined(slug.current)][].slug.current\n': ProjectSlugsQueryResult;
-    '\n  *[_type == "category"] | order(lower(title))\n': CategoriesQueryResult;
+    "*[_type == \"project\" && defined(slug.current)]{\n  ...,\n  category->\n} | order(orderRank)": ProjectsQueryResult;
+    "*[_type == \"project\" && slug.current == $slug]{\n  ...,\n  category->\n}[0]": ProjectBySlugQueryResult;
+    "\n*[_type == \"project\" && defined(slug.current)][].slug.current\n": ProjectSlugsQueryResult;
+    "\n  *[_type == \"category\"] | order(lower(title))\n": CategoriesQueryResult;
+    "*[_type == \"service\"]{\n  ...\n} | order(orderRank)": ServicesQueryResult;
   }
 }
