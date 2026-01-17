@@ -1,6 +1,10 @@
 import ProjectHero from "@/components/ProjectSingle/project-hero";
 import { urlForImage } from "@/lib/sanity/sanity.image";
-import { getProject, projectSlugsQuery } from "@/lib/sanity/sanity.queries";
+import {
+  getProject,
+  getNextProject,
+  projectSlugsQuery,
+} from "@/lib/sanity/sanity.queries";
 import { getClient } from "@/lib/sanity/sanityClient";
 import { ProjectBySlugQueryResult } from "@/sanity.types";
 import { Metadata, Viewport } from "next";
@@ -77,14 +81,15 @@ export default async function ProjectPage({
   const { slug } = await params;
   const client = getClient();
   const project = await getProject(client, slug);
+  const nextProject = await getNextProject(client, slug);
 
   if (!project) {
     notFound();
   }
 
   return (
-    <main>
-      <ProjectPageClient project={project} />
-    </main>
+    <>
+      <ProjectPageClient project={project} nextProject={nextProject} />
+    </>
   );
 }

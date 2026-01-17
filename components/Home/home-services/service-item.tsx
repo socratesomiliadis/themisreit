@@ -98,7 +98,7 @@ export default function ServiceItem({
             <span>Examples & Work</span>
           </div>
           <Swiper
-            className="w-full mt-2"
+            className="w-full mt-4"
             grabCursor
             slidesPerView={2.2}
             spaceBetween={10}

@@ -212,7 +212,7 @@ export default function Header() {
     <>
       <Link
         href="/"
-        className="fixed left-16 top-12 w-22 z-997 text-white opacity-0 header-anim blur mix-blend-difference"
+        className="fixed left-12 top-10 w-18 z-997 text-white opacity-0 header-anim blur mix-blend-difference"
         onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
           e.preventDefault();
           navigateTo("/");

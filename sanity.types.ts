@@ -114,39 +114,6 @@ export type Category = {
   slug: Slug;
 };
 
-export type Color = {
-  _type: "color";
-  hex?: string;
-  alpha?: number;
-  hsl?: HslaColor;
-  hsv?: HsvaColor;
-  rgb?: RgbaColor;
-};
-
-export type RgbaColor = {
-  _type: "rgbaColor";
-  r?: number;
-  g?: number;
-  b?: number;
-  a?: number;
-};
-
-export type HsvaColor = {
-  _type: "hsvaColor";
-  h?: number;
-  s?: number;
-  v?: number;
-  a?: number;
-};
-
-export type HslaColor = {
-  _type: "hslaColor";
-  h?: number;
-  s?: number;
-  l?: number;
-  a?: number;
-};
-
 export type SanityImagePaletteSwatch = {
   _type: "sanity.imagePaletteSwatch";
   background?: string;
@@ -265,7 +232,7 @@ export type SanityAssetSourceData = {
   url?: string;
 };
 
-export type AllSanitySchemaTypes = Service | Project | Category | Color | RgbaColor | HsvaColor | HslaColor | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
+export type AllSanitySchemaTypes = Service | Project | Category | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: lib/sanity/sanity.queries.ts
 // Variable: projectsQuery
@@ -441,6 +408,64 @@ export type ServicesQueryResult = Array<{
     _key: string;
   }>;
 }>;
+// Variable: nextProjectQuery
+// Query: *[_type == "project" && slug.current == $slug][0] {  _id,  orderRank,  "nextProject": *[_type == "project" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank) [0] {    _id,    title,    slug,    mainImage,    category->  },  "firstProject": *[_type == "project" && defined(slug.current)] | order(orderRank) [0] {    _id,    title,    slug,    mainImage,    category->  }}
+export type NextProjectQueryResult = {
+  _id: string;
+  orderRank: string | null;
+  nextProject: {
+    _id: string;
+    title: string;
+    slug: Slug;
+    mainImage: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    category: {
+      _id: string;
+      _type: "category";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title: string;
+      slug: Slug;
+    };
+  } | null;
+  firstProject: {
+    _id: string;
+    title: string;
+    slug: Slug;
+    mainImage: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    category: {
+      _id: string;
+      _type: "category";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title: string;
+      slug: Slug;
+    };
+  } | null;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
@@ -451,5 +476,6 @@ declare module "@sanity/client" {
     "\n*[_type == \"project\" && defined(slug.current)][].slug.current\n": ProjectSlugsQueryResult;
     "\n  *[_type == \"category\"] | order(lower(title))\n": CategoriesQueryResult;
     "*[_type == \"service\"]{\n  ...\n} | order(orderRank)": ServicesQueryResult;
+    "*[_type == \"project\" && slug.current == $slug][0] {\n  _id,\n  orderRank,\n  \"nextProject\": *[_type == \"project\" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank) [0] {\n    _id,\n    title,\n    slug,\n    mainImage,\n    category->\n  },\n  \"firstProject\": *[_type == \"project\" && defined(slug.current)] | order(orderRank) [0] {\n    _id,\n    title,\n    slug,\n    mainImage,\n    category->\n  }\n}": NextProjectQueryResult;
   }
 }

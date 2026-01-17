@@ -59,6 +59,7 @@ export default function HomeCta() {
       tl2.kill();
     };
   }, []);
+
   return (
     <section className="w-screen px-16 pt-32 pb-40 flex flex-col items-center home-cta">
       <div className="relative w-full cta-wrapper">
