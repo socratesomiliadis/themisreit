@@ -30,7 +30,7 @@ export function ProjectItem({
         }
 
         const activeItem = document.querySelector(
-          `.project-item-${slug}`
+          `.project-item-${slug}`,
         ) as HTMLElement;
         router.prefetch(`/work/${slug}`);
         lenis?.stop();
@@ -57,7 +57,7 @@ export function ProjectItem({
             opacity: 0,
             duration: 0.05,
           },
-          0
+          0,
         );
         tl.to(
           "main > *:not(.home-projects)",
@@ -66,7 +66,7 @@ export function ProjectItem({
             duration: 0.3,
             stagger: 0.025,
           },
-          0
+          0,
         );
         tl.to(
           itemImage,
@@ -74,7 +74,7 @@ export function ProjectItem({
             opacity: 1,
             duration: 1,
           },
-          0.3
+          0.3,
         );
 
         tl.to(
@@ -84,7 +84,7 @@ export function ProjectItem({
             padding: 0,
             duration: 1,
           },
-          0.2
+          0.2,
         );
         tl.to(
           itemParent,
@@ -92,7 +92,7 @@ export function ProjectItem({
             padding: 0,
             duration: 1,
           },
-          0.1
+          0.1,
         );
         tl.to(
           itemParent,
@@ -100,12 +100,12 @@ export function ProjectItem({
             width: "100%",
             duration: 1,
           },
-          0.1
+          0.1,
         );
       }}
       className={cn(
         "w-full min-w-[45vw] cursor-pointer group tracking-tighter relative z-10 project-item",
-        `project-item-${slug}`
+        `project-item-${slug}`,
       )}
     >
       <span className="text-white text-6xl leading-[0.75] absolute left-0">
@@ -183,7 +183,7 @@ export function ProjectItem({
           </div>
         </div>
       </div>
-      <div className="absolute left-1/2 -translate-x-1/2 top-20 w-screen max-w-none px-16 project-item-image opacity-0 pointer-events-none">
+      <div className="absolute left-1/2 -translate-x-1/2 top-20 w-screen max-w-none px-12 project-item-image opacity-0 pointer-events-none">
         <Image
           src={urlForImage(projectData.mainImage)?.url() ?? ""}
           alt={projectData.title}
@@ -225,7 +225,7 @@ export default function HomeProjects({
           </div>
         </SimpleMarquee>
       </div>
-      <div className="w-screen px-16 pt-32 pb-40 flex flex-col home-projects">
+      <div className="w-screen px-12 pt-32 pb-40 flex flex-col home-projects">
         {/* <h2 className="text-white flex items-center gap-4 tracking-tight project-open-hide">
           <span>Work</span>
           <span className="w-11 h-[1px] bg-white"></span>

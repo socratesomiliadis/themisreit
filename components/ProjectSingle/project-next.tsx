@@ -36,7 +36,7 @@ export default function ProjectNext({
         top: 0,
         ease: "none",
       },
-      0
+      0,
     );
     // tl.to(
     //   ".next-brand-color",
@@ -52,7 +52,7 @@ export default function ProjectNext({
     };
   }, []);
   return (
-    <div className="w-screen h-screen overflow-hidden relative project-next pt-32 px-16">
+    <div className="w-screen h-screen overflow-hidden relative project-next pt-32 px-12">
       {/* <ProjectItem
         key={nextProject.slug.current}
         projectData={nextProject}

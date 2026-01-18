@@ -20,7 +20,7 @@ export default function ServiceItem({
 }) {
   return (
     <div className="w-full flex flex-col pt-12">
-      <div className="w-full px-16 grid grid-cols-2 text-white tracking-tight">
+      <div className="w-full px-12 grid grid-cols-2 text-white tracking-tight">
         <span>Number</span>
         <span>Service</span>
         <div className="w-full col-span-2 h-px bg-white/20 mt-2 mb-24"></div>
@@ -45,7 +45,7 @@ export default function ServiceItem({
                 key={feaIndex}
                 className={cn(
                   "w-full flex flex-row items-center justify-between gap-2 border-b border-white/20 py-1",
-                  feaIndex === 0 && "border-t"
+                  feaIndex === 0 && "border-t",
                 )}
               >
                 <span>{feature.title}</span>
@@ -80,20 +80,20 @@ export default function ServiceItem({
         direction="left"
         className={cn("w-full py-2")}
       >
-        <span className="uppercase text-sm">
+        <span className="uppercase text-sm pr-1">
           LEARN MORE ABOUT {service.smallTitle} — LET&apos;S WORK —
         </span>
       </SimpleMarquee>
       <div className="w-full py-24 flex flex-col bg-[#171717] text-white">
-        <div className="flex flex-row items-center gap-2 ml-16">
+        <div className="flex flex-row items-center gap-2 ml-12">
           <Cross className="size-2.5" />
           <span>(About it)</span>
         </div>
-        <p className="text-3xl tracking-tight w-1/3 text-pretty mt-4 ml-16">
+        <p className="text-3xl tracking-tight w-1/3 text-pretty mt-4 ml-12">
           {service.description}
         </p>
         <div className="flex flex-col mt-36">
-          <div className="flex flex-row items-center gap-2 ml-16">
+          <div className="flex flex-row items-center gap-2 ml-12">
             <Cross className="size-2.5" />
             <span>Examples & Work</span>
           </div>
@@ -102,8 +102,8 @@ export default function ServiceItem({
             grabCursor
             slidesPerView={2.2}
             spaceBetween={10}
-            slidesOffsetBefore={64}
-            slidesOffsetAfter={64}
+            slidesOffsetBefore={48}
+            slidesOffsetAfter={48}
           >
             {service.examples.map((example, exIndex) => (
               <SwiperSlide key={exIndex}>

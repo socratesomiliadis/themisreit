@@ -13,7 +13,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const lenis = useLenis();
   const isWorkPage = pathname === "/work";
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     ScrollTrigger.clearScrollMemory("manual");

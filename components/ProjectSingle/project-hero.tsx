@@ -10,7 +10,7 @@ export default function ProjectHero({
 }) {
   if (!projectData) return null;
   return (
-    <section className="w-screen min-h-[150vh] pt-32 px-16 z-10 relative">
+    <section className="w-screen min-h-[150vh] pt-32 px-12 z-10 relative">
       <ProjectItem
         key={projectData.slug.current}
         projectData={projectData}

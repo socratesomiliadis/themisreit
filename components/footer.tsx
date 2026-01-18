@@ -51,7 +51,7 @@ function FooterNavLink({
       href={href}
       className={cn(
         "text-white text-3xl tracking-tight flex flex-row items-center gap-0 group",
-        className
+        className,
       )}
     >
       <span className="block w-3 scale-0 group-hover:scale-100 transition-scale duration-200 ease-out text-[#5E5E5E] origin-left">
@@ -118,7 +118,7 @@ export default function Footer() {
             x: 0,
             stagger: 0.1,
           },
-          0
+          0,
         );
         tl.to(
           [self.words, ".footer-anim"],
@@ -128,7 +128,7 @@ export default function Footer() {
             filter: "blur(0px)",
             stagger: 0.05,
           },
-          0.1
+          0.1,
         );
       },
     });
@@ -166,7 +166,7 @@ export default function Footer() {
               </span>
               <FooterNavLink href="/" text="Home" className="mt-14" />
               <FooterNavLink href="/about" text="About Us" />
-              <FooterNavLink href="/projects" text="Projects" />
+              <FooterNavLink href="/work" text="Projects" />
               <FooterNavLink href="/universe" text="Universe" />
 
               <FooterNavLink href="/contact" text="Contact Us" />

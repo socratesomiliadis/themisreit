@@ -8,6 +8,8 @@ import { getProjects } from "@/lib/sanity/sanity.queries";
 import { getClient } from "@/lib/sanity/sanityClient";
 import Footer from "@/components/footer";
 import HomeServices from "@/components/Home/home-services";
+import HomeReel from "@/components/Home/home-reel";
+import HomeEllipsisText from "@/components/Home/home-ellipsis-text";
 
 export default async function Home() {
   const client = getClient();
@@ -19,11 +21,13 @@ export default async function Home() {
         <HomeHero />
         <HomeProjects projects={projects} />
         <HomeProof />
+
         <HomeServices />
         <HomeShowcase />
         <HomeQuote />
+        <HomeReel />
         <HomeCta />
-        <div className="h-screen"></div>
+        <HomeEllipsisText />
       </main>
       <Footer />
     </>

@@ -24,14 +24,14 @@ export default function HomeShowcase() {
       {
         x: "-10%",
       },
-      0
+      0,
     );
     tl.to(
       ".showcase-row.row-2",
       {
         x: "10%",
       },
-      0
+      0,
     );
     return () => {
       tl.kill();
@@ -39,16 +39,13 @@ export default function HomeShowcase() {
   }, []);
   return (
     <section className="w-screen pt-0 pb-40 flex flex-col home-showcase">
-      <div className="flex flex-col px-16">
-        <InfoLine
-          number="01"
-          title="Works"
-          text={`©${new Date().getFullYear()}`}
-        />
+      <div className="flex flex-col px-12">
+        <InfoLine title="Imagery" text={`${new Date().getFullYear()}`} />
         <TitleAndDesc
           playOnScroll
-          wrapperClassName="mt-24"
+          wrapperClassName="mt-12"
           title="Our Studio"
+          titleClassName="hidden"
           desc={
             <>
               We help visionary brands flourish <br />
@@ -60,7 +57,7 @@ export default function HomeShowcase() {
         />
       </div>
       <div className="flex flex-col showcase-wrapper items-center gap-[1.5vw] mt-24 overflow-x-hidden">
-        <div className="flex flex-row showcase-row row-1 items-end gap-[1.5vw]">
+        <div className="flex flex-row showcase-row row-1 items-end gap-[1.5vw] *:saturate-0 *:hover:saturate-100 *:transition-[filter] *:duration-300">
           <Image
             src="/static/images/showcase/1.png"
             alt="Showcase 1"
@@ -90,7 +87,7 @@ export default function HomeShowcase() {
             className="w-[22.2vw]"
           />
         </div>
-        <div className="flex flex-row showcase-row row-2 items-start justify-end gap-[1.5vw]">
+        <div className="flex flex-row showcase-row row-2 items-start justify-end gap-[1.5vw] *:saturate-0 *:hover:saturate-100 *:transition-[filter] *:duration-300">
           <Image
             src="/static/images/showcase/5.png"
             alt="Showcase 5"

@@ -3,7 +3,7 @@ import TitleAndDesc from "../title-and-desc";
 
 export default function HomeHero() {
   return (
-    <section className="relative w-screen h-[110vh] flex items-end px-16 pb-[8%] home-hero">
+    <section className="relative w-screen h-[110vh] flex items-end px-12 pb-[8%] home-hero">
       <TitleAndDesc
         delay={1.2}
         wrapperClassName="z-20"

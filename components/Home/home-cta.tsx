@@ -44,14 +44,14 @@ export default function HomeCta() {
         opacity: 1,
         ease: "none",
       },
-      "start-=0.3"
+      "start-=0.3",
     );
     tl2.call(
       () => {
         ref.current?.start();
       },
       undefined,
-      "start-=0.2"
+      "start-=0.2",
     );
 
     return () => {
@@ -61,7 +61,7 @@ export default function HomeCta() {
   }, []);
 
   return (
-    <section className="w-screen px-16 pt-32 pb-40 flex flex-col items-center home-cta">
+    <section className="w-screen px-12 -mt-64 pb-40 flex flex-col items-center home-cta">
       <div className="relative w-full cta-wrapper">
         {Array.from({ length: 6 }).map((_, index) => (
           <div
