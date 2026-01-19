@@ -5,7 +5,6 @@ import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 import { useLenis } from "lenis/react";
 import { cn } from "@/lib/utils";
 import { gsap, SplitText } from "@/lib/gsap";
-import { useState } from "react";
 import FooterCaligraphy from "./SVGs/footer-caligraphy";
 import SimpleMarquee from "./simple-marquee";
 
@@ -51,7 +50,7 @@ function FooterNavLink({
       href={href}
       className={cn(
         "text-white text-3xl tracking-tight flex flex-row items-center gap-0 group",
-        className,
+        className
       )}
     >
       <span className="block w-3 scale-0 group-hover:scale-100 transition-scale duration-200 ease-out text-[#5E5E5E] origin-left">
@@ -118,7 +117,7 @@ export default function Footer() {
             x: 0,
             stagger: 0.1,
           },
-          0,
+          0
         );
         tl.to(
           [self.words, ".footer-anim"],
@@ -128,7 +127,7 @@ export default function Footer() {
             filter: "blur(0px)",
             stagger: 0.05,
           },
-          0.1,
+          0.1
         );
       },
     });
@@ -143,7 +142,7 @@ export default function Footer() {
     <>
       <footer className="w-screen relative flex flex-col justify-center z-[998]">
         <div className="w-full relative flex items-center justify-center">
-          <div className="absolute w-full cursor-pointer hover:scale-105 transition-transform duration-500 ease-out -translate-y-2">
+          <div className="absolute w-full cursor-pointer hover:scale-105 transition-transform duration-500 ease-out translate-y-12">
             <SimpleMarquee
               baseVelocity={10}
               direction="left"
@@ -250,7 +249,7 @@ export default function Footer() {
                     Privacy Policy
                   </Link>
                   <span className="text-[#5E5E5E] tracking-tighter">
-                    ©2025 All Copyrights Reserved by{" "}
+                    ©{new Date().getFullYear()} All Copyrights Reserved by{" "}
                     <Link
                       href="https://aeva.ae"
                       target="_blank"
