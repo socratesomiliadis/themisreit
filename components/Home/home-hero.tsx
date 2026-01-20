@@ -19,7 +19,6 @@ export default function HomeHero() {
           </>
         }
       />
-
       <Image
         src="/static/images/flagsTrans.png"
         alt="BGImage"
@@ -27,7 +26,7 @@ export default function HomeHero() {
         quality={100}
         height={1080}
         priority
-        className="absolute top-0 right-[-20%] rotate-[-15deg] w-auto h-full object-contain z-10"
+        className="absolute top-[-35%] right-[-20%] rotate-[-15deg] w-auto h-[150%] object-contain z-10"
       />
     </section>
   );

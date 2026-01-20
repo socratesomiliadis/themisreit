@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo, useEffect, useCallback } from "react";
+import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -13,6 +13,122 @@ import * as THREE from "three";
  * Uses 6 baked images that blend from flat/invisible to fully revealed
  * as you draw with the mouse trail.
  */
+
+// ============================================================================
+// GLOBAL TEXTURE CACHE - Shared across ALL BakedRelief instances
+// ============================================================================
+interface CachedTexture {
+  texture: THREE.Texture;
+  refCount: number;
+  loading: boolean;
+  promise: Promise<THREE.Texture>;
+}
+
+const textureCache = new Map<string, CachedTexture>();
+const textureLoader = new THREE.TextureLoader();
+
+function getOrLoadTexture(url: string, repeat = false): Promise<THREE.Texture> {
+  const cacheKey = `${url}:${repeat}`;
+  const cached = textureCache.get(cacheKey);
+
+  if (cached) {
+    cached.refCount++;
+    return cached.promise;
+  }
+
+  const promise = new Promise<THREE.Texture>((resolve) => {
+    // Use requestIdleCallback to defer texture loading when browser is idle
+    const load = () => {
+      textureLoader.load(
+        url,
+        (tex) => {
+          tex.minFilter = THREE.LinearFilter;
+          tex.magFilter = THREE.LinearFilter;
+          tex.wrapS = repeat ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+          tex.wrapT = repeat ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+
+          const entry = textureCache.get(cacheKey);
+          if (entry) {
+            entry.texture = tex;
+            entry.loading = false;
+          }
+          resolve(tex);
+        },
+        undefined,
+        () => {
+          // On error, resolve with a dummy texture
+          const dummy = new THREE.DataTexture(
+            new Uint8Array([128, 128, 128, 255]),
+            1,
+            1,
+            THREE.RGBAFormat
+          );
+          dummy.needsUpdate = true;
+          resolve(dummy);
+        }
+      );
+    };
+
+    // Defer loading to prevent blocking
+    if ("requestIdleCallback" in window) {
+      (window as Window).requestIdleCallback(load, { timeout: 200 });
+    } else {
+      setTimeout(load, 0);
+    }
+  });
+
+  // Create placeholder texture immediately
+  const placeholder = new THREE.DataTexture(
+    new Uint8Array([32, 32, 32, 255]),
+    1,
+    1,
+    THREE.RGBAFormat
+  );
+  placeholder.needsUpdate = true;
+
+  textureCache.set(cacheKey, {
+    texture: placeholder,
+    refCount: 1,
+    loading: true,
+    promise,
+  });
+
+  return promise;
+}
+
+function releaseTexture(url: string, repeat = false) {
+  const cacheKey = `${url}:${repeat}`;
+  const cached = textureCache.get(cacheKey);
+
+  if (cached) {
+    cached.refCount--;
+    if (cached.refCount <= 0) {
+      cached.texture.dispose();
+      textureCache.delete(cacheKey);
+    }
+  }
+}
+
+function getTextureSync(url: string, repeat = false): THREE.Texture {
+  const cacheKey = `${url}:${repeat}`;
+  const cached = textureCache.get(cacheKey);
+  return cached?.texture ?? createDummyTexture();
+}
+
+function createDummyTexture(): THREE.Texture {
+  const tex = new THREE.DataTexture(
+    new Uint8Array([32, 32, 32, 255]),
+    1,
+    1,
+    THREE.RGBAFormat
+  );
+  tex.needsUpdate = true;
+  return tex;
+}
+
+// ============================================================================
+// TRAIL CLASS
+// ============================================================================
 
 /**
  * Trail class - Canvas-based mouse trail texture
@@ -456,73 +572,83 @@ function BakedReliefPlane({
     );
   }, [multiplyColor]);
 
-  // Load all textures
-  const loadedTextures = useMemo(() => {
-    const loader = new THREE.TextureLoader();
+  // Track texture loading state
+  const [texturesReady, setTexturesReady] = useState(false);
 
-    const loadTex = (url: string, repeat = false) => {
-      const tex = loader.load(url);
-      tex.minFilter = THREE.LinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      if (repeat) {
-        // Like davincii.com - use RepeatWrapping for tiling textures
-        tex.wrapS = THREE.RepeatWrapping;
-        tex.wrapT = THREE.RepeatWrapping;
-      } else {
-        tex.wrapS = THREE.ClampToEdgeWrapping;
-        tex.wrapT = THREE.ClampToEdgeWrapping;
+  // Load textures using the global cache (shared across all instances)
+  useEffect(() => {
+    let cancelled = false;
+
+    // Start loading all textures (uses cache if already loaded)
+    const loadPromises = [
+      getOrLoadTexture(textures.bake1),
+      getOrLoadTexture(textures.bake2),
+      getOrLoadTexture(textures.bake3),
+      getOrLoadTexture(textures.bake4),
+      getOrLoadTexture(textures.bake5),
+      getOrLoadTexture(textures.bake6),
+      textures.plaster
+        ? getOrLoadTexture(textures.plaster, true)
+        : Promise.resolve(null),
+      textures.grunge
+        ? getOrLoadTexture(textures.grunge, true)
+        : Promise.resolve(null),
+    ];
+
+    Promise.all(loadPromises).then(() => {
+      if (!cancelled) {
+        // Use requestIdleCallback to defer the "ready" state change
+        if ("requestIdleCallback" in window) {
+          (window as Window).requestIdleCallback(
+            () => {
+              if (!cancelled) setTexturesReady(true);
+            },
+            { timeout: 100 }
+          );
+        } else {
+          requestAnimationFrame(() => {
+            if (!cancelled) setTexturesReady(true);
+          });
+        }
       }
-      return tex;
-    };
+    });
 
-    // Create a white dummy texture for plaster if not provided
-    const whiteTex = new THREE.DataTexture(
-      new Uint8Array([255, 255, 255, 255]),
-      1,
-      1,
-      THREE.RGBAFormat
-    );
-    whiteTex.needsUpdate = true;
-
-    const plasterTex = textures.plaster
-      ? loadTex(textures.plaster, true)
-      : null;
-    const grungeTex = textures.grunge ? loadTex(textures.grunge, true) : null;
-
-    return {
-      bake1: loadTex(textures.bake1),
-      bake2: loadTex(textures.bake2),
-      bake3: loadTex(textures.bake3),
-      bake4: loadTex(textures.bake4),
-      bake5: loadTex(textures.bake5),
-      bake6: loadTex(textures.bake6),
-      // Plaster uses RepeatWrapping like davincii.com for seamless tiling
-      plaster: plasterTex ?? whiteTex,
-      grunge: grungeTex ?? whiteTex,
-      // Keep track of what to dispose (avoid double-dispose of whiteTex)
-      _toDispose: [
-        whiteTex,
-        ...(plasterTex ? [plasterTex] : []),
-        ...(grungeTex ? [grungeTex] : []),
-      ],
+    return () => {
+      cancelled = true;
+      // Release texture references on unmount
+      releaseTexture(textures.bake1);
+      releaseTexture(textures.bake2);
+      releaseTexture(textures.bake3);
+      releaseTexture(textures.bake4);
+      releaseTexture(textures.bake5);
+      releaseTexture(textures.bake6);
+      if (textures.plaster) releaseTexture(textures.plaster, true);
+      if (textures.grunge) releaseTexture(textures.grunge, true);
     };
   }, [textures]);
 
-  // Cleanup textures when they change or unmount
-  useEffect(() => {
-    return () => {
-      loadedTextures.bake1.dispose();
-      loadedTextures.bake2.dispose();
-      loadedTextures.bake3.dispose();
-      loadedTextures.bake4.dispose();
-      loadedTextures.bake5.dispose();
-      loadedTextures.bake6.dispose();
-      // Dispose plaster/grunge/whiteTex without double-disposing
-      loadedTextures._toDispose.forEach((tex) => tex.dispose());
+  // Get current textures from cache (returns placeholders if still loading)
+  const loadedTextures = useMemo(() => {
+    const whiteTex = createDummyTexture();
+    return {
+      bake1: getTextureSync(textures.bake1),
+      bake2: getTextureSync(textures.bake2),
+      bake3: getTextureSync(textures.bake3),
+      bake4: getTextureSync(textures.bake4),
+      bake5: getTextureSync(textures.bake5),
+      bake6: getTextureSync(textures.bake6),
+      plaster: textures.plaster
+        ? getTextureSync(textures.plaster, true)
+        : whiteTex,
+      grunge: textures.grunge
+        ? getTextureSync(textures.grunge, true)
+        : whiteTex,
     };
-  }, [loadedTextures]);
+    // Re-run when textures become ready
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textures, texturesReady]);
 
-  // Create shader material - only recreate when textures change
+  // Create shader material once, update uniforms when textures change
   const shaderMaterial = useMemo(() => {
     const dummyTrailTexture = new THREE.DataTexture(
       new Uint8Array([0, 0, 0, 255]),
@@ -534,13 +660,13 @@ function BakedReliefPlane({
 
     return new THREE.ShaderMaterial({
       uniforms: {
-        tBake1: { value: loadedTextures.bake1 },
-        tBake2: { value: loadedTextures.bake2 },
-        tBake3: { value: loadedTextures.bake3 },
-        tBake4: { value: loadedTextures.bake4 },
-        tBake5: { value: loadedTextures.bake5 },
-        tBake6: { value: loadedTextures.bake6 },
-        tPlaster: { value: loadedTextures.plaster },
+        tBake1: { value: null },
+        tBake2: { value: null },
+        tBake3: { value: null },
+        tBake4: { value: null },
+        tBake5: { value: null },
+        tBake6: { value: null },
+        tPlaster: { value: null },
         tTrail: { value: dummyTrailTexture },
         uTime: { value: 0 },
         uMouse: { value: new THREE.Vector2(0.5, 0.5) },
@@ -556,9 +682,22 @@ function BakedReliefPlane({
       fragmentShader,
       transparent: true,
     });
-  }, [loadedTextures]); // Only recreate when textures change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Create once, never recreate
 
-  // Cleanup shader material when it changes or unmounts
+  // Update texture uniforms when loaded textures change (from cache)
+  useEffect(() => {
+    shaderMaterial.uniforms.tBake1.value = loadedTextures.bake1;
+    shaderMaterial.uniforms.tBake2.value = loadedTextures.bake2;
+    shaderMaterial.uniforms.tBake3.value = loadedTextures.bake3;
+    shaderMaterial.uniforms.tBake4.value = loadedTextures.bake4;
+    shaderMaterial.uniforms.tBake5.value = loadedTextures.bake5;
+    shaderMaterial.uniforms.tBake6.value = loadedTextures.bake6;
+    shaderMaterial.uniforms.tPlaster.value = loadedTextures.plaster;
+    shaderMaterial.needsUpdate = true;
+  }, [shaderMaterial, loadedTextures]);
+
+  // Cleanup shader material on unmount
   useEffect(() => {
     return () => {
       shaderMaterial.dispose();
@@ -758,13 +897,51 @@ export default function BakedRelief({
   style,
 }: BakedReliefProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  // Start visible, let IntersectionObserver handle hiding
-  const [isVisible, setIsVisible] = React.useState(true);
+  // Start NOT visible - defer rendering until ready
+  const [isVisible, setIsVisible] = useState(false);
+  // Track if component has initialized (deferred)
+  const [isInitialized, setIsInitialized] = useState(false);
+  // Control frameloop mode - start with "demand" for lighter init
+  const [frameloopMode, setFrameloopMode] = useState<"demand" | "always">(
+    "demand"
+  );
+
+  // Deferred initialization - don't start heavy work immediately
+  useEffect(() => {
+    let cancelled = false;
+
+    // Defer initialization to avoid blocking mount
+    const init = () => {
+      if (cancelled) return;
+      setIsInitialized(true);
+
+      // After a short delay, switch to continuous rendering
+      setTimeout(() => {
+        if (!cancelled) {
+          setFrameloopMode("always");
+        }
+      }, 100);
+    };
+
+    if ("requestIdleCallback" in window) {
+      const id = (window as Window).requestIdleCallback(init, { timeout: 300 });
+      return () => {
+        cancelled = true;
+        (window as Window).cancelIdleCallback(id);
+      };
+    } else {
+      const timer = setTimeout(init, 50);
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
+    }
+  }, []);
 
   // Use IntersectionObserver to pause rendering when off-screen
   useEffect(() => {
-    if (!pauseWhenHidden) {
-      setIsVisible(true);
+    if (!pauseWhenHidden || !isInitialized) {
+      if (isInitialized) setIsVisible(true);
       return;
     }
 
@@ -775,12 +952,23 @@ export default function BakedRelief({
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
       },
-      { threshold: 0.01 } // Trigger when even slightly visible
+      { threshold: 0.01, rootMargin: "50px" } // Slight margin to pre-initialize
     );
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [pauseWhenHidden]);
+  }, [pauseWhenHidden, isInitialized]);
+
+  // Don't render Canvas until initialized (deferred)
+  if (!isInitialized) {
+    return (
+      <div
+        ref={containerRef}
+        className={className}
+        style={{ width: "100%", height: "100%", ...style }}
+      />
+    );
+  }
 
   return (
     <div
@@ -790,13 +978,17 @@ export default function BakedRelief({
     >
       <Canvas
         gl={{
-          antialias: false, // Disable antialiasing for better performance
+          antialias: false,
           alpha: true,
           powerPreference: "high-performance",
+          // Reduce initial GPU memory allocation
+          depth: false,
+          stencil: false,
         }}
         camera={{ position: [0, 0, 3], fov: 50 }}
         style={{ width: "100%", height: "100%" }}
-        // Keep frameloop always running - we handle pausing internally in useFrame
+        frameloop={frameloopMode}
+        dpr={[1, 1.5]} // Limit DPR to reduce GPU load
       >
         <BakedReliefPlane
           textures={textures}
