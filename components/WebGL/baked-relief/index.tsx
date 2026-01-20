@@ -7,6 +7,7 @@ import React, {
   memo,
   useId,
   startTransition,
+  useMemo,
 } from "react";
 import { Canvas } from "@react-three/fiber";
 
@@ -31,6 +32,7 @@ import {
   DEFAULT_TRAIL_RESOLUTION,
 } from "./types";
 import { BakedReliefPlane } from "./baked-relief-plane";
+import { getQualitySettings } from "./performance";
 
 // Re-export types for external use
 export type { BakedReliefProps, BakedTextures } from "./types";
@@ -136,6 +138,9 @@ function BakedReliefInner({
     "demand"
   );
 
+  // Get quality settings based on device capabilities
+  const qualitySettings = useMemo(() => getQualitySettings(), []);
+
   // Staggered initialization - prevents multiple instances from blocking
   useEffect(() => {
     const cleanup = queueInitialization(instanceId, () => {
@@ -219,7 +224,8 @@ function BakedReliefInner({
           camera={{ position: [0, 0, 3], fov: 50 }}
           style={{ width: "100%", height: "100%" }}
           frameloop={frameloopMode}
-          dpr={[1, 1.5]}
+          // Use quality-based DPR
+          dpr={qualitySettings.dpr}
           // Flat mode skips some R3F overhead
           flat
         >

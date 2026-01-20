@@ -1,9 +1,20 @@
 import type { TrailOptions, AmbientParticle, TrailPoint } from "./types";
 
+// Extended options for quality settings
+export interface TrailQualityOptions extends TrailOptions {
+  /** Number of gradient color stops (3, 4, or 6) */
+  gradientStops?: number;
+  /** Maximum number of trail points */
+  maxPoints?: number;
+  /** Minimum update interval in ms */
+  updateInterval?: number;
+  /** Number of ambient particles */
+  ambientParticleCount?: number;
+}
+
 /**
  * Trail class - Canvas-based mouse trail texture
- * Frame-rate independent fade using delta time
- * Includes ambient trails that animate independently of mouse
+ * Optimized with quality tiers for performance scaling
  */
 export class Trail {
   private canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -19,6 +30,11 @@ export class Trail {
   private lastTime: number;
   private readonly targetFPS = 60;
 
+  // Quality settings
+  private readonly gradientStops: number;
+  private readonly maxPoints: number;
+  private readonly minUpdateInterval: number;
+
   // Ambient trail system
   private ambientParticles: AmbientParticle[] = [];
   private ambientIntensity = 0;
@@ -28,9 +44,11 @@ export class Trail {
 
   // Throttle updates
   private lastUpdateTime = 0;
-  private readonly minUpdateInterval = 16; // ~60fps cap
 
-  constructor(width = 512, height = 512, options: TrailOptions = {}) {
+  // Pre-computed gradient stop multipliers
+  private readonly gradientMultipliers: number[];
+
+  constructor(width = 256, height = 256, options: TrailQualityOptions = {}) {
     this.width = width;
     this.height = height;
     this.maxAge = options.maxAge ?? 120;
@@ -39,6 +57,14 @@ export class Trail {
     this.intensity = options.intensity ?? 0.15;
     this.points = [];
     this.lastTime = performance.now();
+
+    // Quality settings
+    this.gradientStops = options.gradientStops ?? 6;
+    this.maxPoints = options.maxPoints ?? 400;
+    this.minUpdateInterval = options.updateInterval ?? 16;
+
+    // Pre-compute gradient multipliers
+    this.gradientMultipliers = this.computeGradientMultipliers();
 
     // Try OffscreenCanvas for better performance
     let canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -54,7 +80,6 @@ export class Trail {
           alpha: false,
           willReadFrequently: false,
         });
-        // Create transfer canvas for texture
         this.transferCanvas = document.createElement("canvas");
         this.transferCanvas.width = width;
         this.transferCanvas.height = height;
@@ -74,8 +99,21 @@ export class Trail {
     this.canvas = canvas;
     this.ctx = ctx!;
 
-    this.initAmbientParticles(3);
+    const particleCount = options.ambientParticleCount ?? 3;
+    this.initAmbientParticles(particleCount);
     this.clear();
+  }
+
+  private computeGradientMultipliers(): number[] {
+    switch (this.gradientStops) {
+      case 3:
+        return [1.0, 0.4, 0];
+      case 4:
+        return [1.0, 0.6, 0.2, 0];
+      case 6:
+      default:
+        return [1.0, 0.8, 0.5, 0.25, 0.08, 0];
+    }
   }
 
   private initAmbientParticles(count: number): void {
@@ -118,7 +156,7 @@ export class Trail {
   }
 
   addPoint(x: number, y: number): void {
-    if (this.points.length > 500) {
+    if (this.points.length >= this.maxPoints) {
       this.points.shift();
     }
 
@@ -184,6 +222,8 @@ export class Trail {
     const points = this.points;
     const maxAge = this.maxAge;
     const intensity = this.intensity;
+    const multipliers = this.gradientMultipliers;
+    const numStops = multipliers.length;
 
     for (let i = points.length - 1; i >= 0; i--) {
       const point = points[i];
@@ -209,14 +249,13 @@ export class Trail {
         currentSize
       );
 
-      gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
-      gradient.addColorStop(0.1, `rgba(255, 255, 255, ${opacity * 0.95})`);
-      gradient.addColorStop(0.25, `rgba(255, 255, 255, ${opacity * 0.8})`);
-      gradient.addColorStop(0.4, `rgba(255, 255, 255, ${opacity * 0.55})`);
-      gradient.addColorStop(0.55, `rgba(255, 255, 255, ${opacity * 0.3})`);
-      gradient.addColorStop(0.7, `rgba(255, 255, 255, ${opacity * 0.12})`);
-      gradient.addColorStop(0.85, `rgba(255, 255, 255, ${opacity * 0.03})`);
-      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+      // Use pre-computed gradient stops
+      const stepSize = 1 / (numStops - 1);
+      for (let s = 0; s < numStops; s++) {
+        const pos = s * stepSize;
+        const alpha = opacity * multipliers[s];
+        gradient.addColorStop(pos, `rgba(255,255,255,${alpha})`);
+      }
 
       ctx.fillStyle = gradient;
       ctx.beginPath();

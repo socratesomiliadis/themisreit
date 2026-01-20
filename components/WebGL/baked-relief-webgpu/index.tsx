@@ -29,6 +29,9 @@ import {
 // Re-export types
 export type { BakedReliefProps, BakedTextures } from "./types";
 
+// Import performance utilities from WebGL version
+import { getQualitySettings } from "../baked-relief/performance";
+
 // Lazy load the WebGL fallback
 const BakedReliefWebGL = lazy(() => import("../baked-relief"));
 
@@ -52,9 +55,7 @@ async function isWebGPUSupported(): Promise<boolean> {
   // Safari's WebGPU implementation has known issues with three.js
   // Force WebGL fallback on Safari until it's more stable
   if (isSafari()) {
-    console.info(
-      "Safari detected - using WebGL for better compatibility"
-    );
+    console.info("Safari detected - using WebGL for better compatibility");
     return false;
   }
 
@@ -153,6 +154,9 @@ function BakedReliefWebGPU({
         const width = container.clientWidth || 800;
         const height = container.clientHeight || 800;
 
+        // Get quality settings for performance optimization
+        const quality = getQualitySettings();
+
         const sketch: Sketch<"webgpu"> = async ({
           wrap,
           canvas,
@@ -160,9 +164,12 @@ function BakedReliefWebGPU({
           height: h,
           pixelRatio,
         }) => {
-          const renderer = new WebGPURenderer({ canvas, antialias: true });
+          // Use quality-based pixel ratio
+          const adjustedPixelRatio = Math.min(pixelRatio, quality.dpr[1]);
+
+          const renderer = new WebGPURenderer({ canvas, antialias: false });
           renderer.setSize(w, h);
-          renderer.setPixelRatio(pixelRatio);
+          renderer.setPixelRatio(adjustedPixelRatio);
           renderer.setClearColor(new Color(0x000000), 0);
           // Disable tone mapping and set linear output for accurate color multiplication
           renderer.toneMapping = THREE.NoToneMapping;
@@ -175,12 +182,17 @@ function BakedReliefWebGPU({
 
           const scene = new Scene();
 
-          // Trail setup
-          const trail = new Trail(256, 256, {
+          // Trail setup with quality-based settings
+          const trailRes = quality.trailResolution;
+          const trail = new Trail(trailRes, trailRes, {
             baseSize: trailSize,
             fadeSpeed: trailFadeSpeed,
             maxAge: trailMaxAge,
             intensity: trailIntensity,
+            gradientStops: quality.trailGradientStops,
+            maxPoints: quality.maxTrailPoints,
+            updateInterval: quality.trailUpdateInterval,
+            ambientParticleCount: quality.ambientParticles,
           });
           trail.setAmbientIntensity(ambientIntensity);
 
@@ -447,10 +459,10 @@ function BakedReliefWebGPU({
         const settings: SketchSettings = {
           mode: "webgpu",
           dimensions: [width, height],
-          pixelRatio: Math.min(window.devicePixelRatio, 2),
+          pixelRatio: Math.min(window.devicePixelRatio, quality.dpr[1]),
           animate: true,
           duration: 6_000,
-          playFps: 60,
+          playFps: quality.targetFps,
           parent: container,
         };
 

@@ -31,8 +31,9 @@ import {
   createDummyTexture,
 } from "./texture-cache";
 import { Trail } from "./trail";
-import { vertexShader, fragmentShader } from "./shaders";
+import { vertexShader, createFragmentShader } from "./shaders";
 import { parseHexColor, calculatePlaneSize } from "./utils";
+import { getQualitySettings, type QualitySettings } from "./performance";
 
 // Pre-create reusable objects to avoid allocations in render loop
 const mouseVec2 = new THREE.Vector2(0.5, 0.5);
@@ -84,6 +85,10 @@ function BakedReliefPlaneInner({
   const clientCoordsRef = useRef({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Get quality settings based on device performance
+  const qualitySettings = useMemo(() => getQualitySettings(), []);
+  const qualityRef = useRef<QualitySettings>(qualitySettings);
+
   // Track if trail has been initialized (deferred)
   const [trailReady, setTrailReady] = useState(false);
   const trailParamsRef = useRef({
@@ -113,16 +118,22 @@ function BakedReliefPlaneInner({
       if (cancelled) return;
 
       const params = trailParamsRef.current;
-      trailRef.current = new Trail(
-        params.trailResolution,
-        params.trailResolution,
-        {
-          baseSize: params.trailSize,
-          fadeSpeed: params.trailFadeSpeed,
-          maxAge: params.trailMaxAge,
-          intensity: params.trailIntensity,
-        }
-      );
+      const quality = qualityRef.current;
+
+      // Use quality-adjusted resolution
+      const resolution = Math.min(params.trailResolution, quality.trailResolution);
+
+      trailRef.current = new Trail(resolution, resolution, {
+        baseSize: params.trailSize,
+        fadeSpeed: params.trailFadeSpeed,
+        maxAge: params.trailMaxAge,
+        intensity: params.trailIntensity,
+        // Quality-specific settings
+        gradientStops: quality.trailGradientStops,
+        maxPoints: quality.maxTrailPoints,
+        updateInterval: quality.trailUpdateInterval,
+        ambientParticleCount: quality.ambientParticles,
+      });
       setTrailReady(true);
     };
 
@@ -243,7 +254,11 @@ function BakedReliefPlaneInner({
   }, [textures, texturesReady]);
 
   // Create shader material once - use shared dummy texture
+  // Generate fragment shader based on quality tier
   const shaderMaterial = useMemo(() => {
+    const quality = qualityRef.current;
+    const fragmentShader = createFragmentShader(quality.trailBlurSamples);
+
     return new THREE.ShaderMaterial({
       uniforms: {
         tBake1: { value: null },
