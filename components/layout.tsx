@@ -11,10 +11,13 @@ import Loader from "./loader";
 import dynamic from "next/dynamic";
 
 // Dynamic import to avoid SSR issues with Three.js
-const BakedRelief = dynamic(() => import("@/components/WebGL/baked-relief"), {
-  ssr: false,
-  loading: () => null,
-});
+const BakedRelief = dynamic(
+  () => import("@/components/WebGL/baked-relief-webgpu"),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 // Shared texture config
 const WEBGL_TEXTURES = {
@@ -95,25 +98,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="w-full relative aspect-square h-auto">
             <BakedRelief
               textures={WEBGL_TEXTURES}
-              multiplyColor="#161616"
-              aspectRatio={1}
-              trailResolution={192}
+              // multiplyColor="#161616"
+              // aspectRatio={1}
+              // trailResolution={192}
             />
           </div>
           <div className="w-full relative aspect-square h-auto">
             <BakedRelief
               textures={WEBGL_TEXTURES}
-              multiplyColor="#161616"
-              aspectRatio={1}
-              trailResolution={192}
+              // multiplyColor="#161616"
+              // aspectRatio={1}
+              // trailResolution={192}
             />
           </div>
           <div className="w-full relative aspect-square h-auto">
             <BakedRelief
               textures={WEBGL_TEXTURES}
-              multiplyColor="#161616"
-              aspectRatio={1}
-              trailResolution={192}
+              // multiplyColor="#161616"
+              // aspectRatio={1}
+              // trailResolution={192}
             />
           </div>
         </div>
