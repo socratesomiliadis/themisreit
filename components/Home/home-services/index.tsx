@@ -28,7 +28,7 @@ export default async function HomeServices() {
           </div>
         </SimpleMarquee>
       </div>
-      <div className="w-screen pt-32 pb-40 flex flex-col home-services">
+      <div className="w-screen pt-32 pb-40 flex flex-col home-services relative z-10">
         {services.map((service, index) => (
           <ServiceItem key={service._id} service={service} index={index} />
         ))}

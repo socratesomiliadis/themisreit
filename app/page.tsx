@@ -21,7 +21,6 @@ export default async function Home() {
         <HomeHero />
         <HomeProjects projects={projects} />
         <HomeProof />
-
         <HomeServices />
         <HomeShowcase />
         <HomeQuote />

@@ -24,21 +24,21 @@ export default function HomeShowcase() {
       {
         x: "-10%",
       },
-      0,
+      0
     );
     tl.to(
       ".showcase-row.row-2",
       {
         x: "10%",
       },
-      0,
+      0
     );
     return () => {
       tl.kill();
     };
   }, []);
   return (
-    <section className="w-screen pt-0 pb-40 flex flex-col home-showcase">
+    <section className="w-screen pt-0 pb-40 flex flex-col home-showcase relative z-10">
       <div className="flex flex-col px-12">
         <InfoLine title="Imagery" text={`${new Date().getFullYear()}`} />
         <TitleAndDesc

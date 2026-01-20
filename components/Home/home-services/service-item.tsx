@@ -45,7 +45,7 @@ export default function ServiceItem({
                 key={feaIndex}
                 className={cn(
                   "w-full flex flex-row items-center justify-between gap-2 border-b border-white/20 py-1",
-                  feaIndex === 0 && "border-t",
+                  feaIndex === 0 && "border-t"
                 )}
               >
                 <span>{feature.title}</span>

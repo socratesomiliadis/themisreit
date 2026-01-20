@@ -43,7 +43,7 @@ export default function HomeQuote() {
             duration: 3,
             ease: "none",
           },
-          0,
+          0
         );
       },
     });
@@ -53,7 +53,7 @@ export default function HomeQuote() {
     };
   }, []);
   return (
-    <section className="w-screen px-12 pt-32 pb-40 flex flex-col home-quote">
+    <section className="w-screen px-12 pt-32 pb-40 flex flex-col home-quote relative z-10">
       <InfoLine title="Works" text={`©${new Date().getFullYear()}`} />
       <div className="w-full flex flex-col text-white leading-none mt-32 home-quote-wrapper">
         <div className="line-1 w-full flex flex-row gap-3 justify-center items-center">

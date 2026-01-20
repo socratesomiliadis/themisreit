@@ -1,9 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import TitleAndDesc from "../title-and-desc";
 
 export default function HomeHero() {
   return (
-    <section className="relative w-screen h-[110vh] flex items-end px-12 pb-[8%] home-hero">
+    <section className="relative w-screen h-[110vh] flex items-end px-12 pb-[8%] home-hero overflow-hidden">
       <TitleAndDesc
         delay={1.2}
         wrapperClassName="z-20"
@@ -19,7 +21,7 @@ export default function HomeHero() {
       />
 
       <Image
-        src="/static/images/flags.png"
+        src="/static/images/flagsTrans.png"
         alt="BGImage"
         width={1920}
         quality={100}

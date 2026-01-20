@@ -6,7 +6,7 @@ import MapSvg from "../SVGs/map-svg";
 
 export default function HomeProof() {
   return (
-    <section className="w-screen flex flex-col">
+    <section className="w-screen flex flex-col relative z-10">
       <div className="bg-white py-8">
         <SimpleMarquee
           baseVelocity={2}
