@@ -57,9 +57,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       lenis?.start();
       document.body.style.overflow = "";
       // Show WebGL after loader finishes - components handle their own deferred init
-      setShowWebGL(true);
-      // const timer = setTimeout(() => setShowWebGL(true), 200);
-      // return () => clearTimeout(timer);
+      const timer = setTimeout(() => setShowWebGL(true), 1450);
+      return () => clearTimeout(timer);
     }
   }, [isLoading, lenis]);
 
@@ -90,7 +89,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       />
       <Scrollbar />
       {children}
-      {/* WebGL background - each component handles its own deferred initialization */}
+      {/* WebGL background - components handle staggered initialization automatically */}
       {(showWebGL || isSanityPage) && (
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[250vw] min-[2000px]:w-[200vw] z-5 flex flex-col items-center">
           <div className="w-full relative aspect-square h-auto">
@@ -98,6 +97,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               textures={WEBGL_TEXTURES}
               multiplyColor="#161616"
               aspectRatio={1}
+              trailResolution={192}
             />
           </div>
           <div className="w-full relative aspect-square h-auto">
@@ -105,6 +105,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               textures={WEBGL_TEXTURES}
               multiplyColor="#161616"
               aspectRatio={1}
+              trailResolution={192}
             />
           </div>
           <div className="w-full relative aspect-square h-auto">
@@ -112,6 +113,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               textures={WEBGL_TEXTURES}
               multiplyColor="#161616"
               aspectRatio={1}
+              trailResolution={192}
             />
           </div>
         </div>

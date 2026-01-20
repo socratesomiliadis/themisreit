@@ -30,7 +30,7 @@ export function ProjectItem({
         }
 
         const activeItem = document.querySelector(
-          `.project-item-${slug}`,
+          `.project-item-${slug}`
         ) as HTMLElement;
         router.prefetch(`/work/${slug}`);
         lenis?.stop();
@@ -57,7 +57,7 @@ export function ProjectItem({
             opacity: 0,
             duration: 0.05,
           },
-          0,
+          0
         );
         tl.to(
           "main > *:not(.home-projects)",
@@ -66,7 +66,7 @@ export function ProjectItem({
             duration: 0.3,
             stagger: 0.025,
           },
-          0,
+          0
         );
         tl.to(
           itemImage,
@@ -74,7 +74,7 @@ export function ProjectItem({
             opacity: 1,
             duration: 1,
           },
-          0.3,
+          0.3
         );
 
         tl.to(
@@ -84,7 +84,7 @@ export function ProjectItem({
             padding: 0,
             duration: 1,
           },
-          0.2,
+          0.2
         );
         tl.to(
           itemParent,
@@ -92,7 +92,7 @@ export function ProjectItem({
             padding: 0,
             duration: 1,
           },
-          0.1,
+          0.1
         );
         tl.to(
           itemParent,
@@ -100,12 +100,12 @@ export function ProjectItem({
             width: "100%",
             duration: 1,
           },
-          0.1,
+          0.1
         );
       }}
       className={cn(
         "w-full min-w-[45vw] cursor-pointer group tracking-tighter relative z-10 project-item",
-        `project-item-${slug}`,
+        `project-item-${slug}`
       )}
     >
       <span className="text-white text-6xl leading-[0.75] absolute left-0">
@@ -115,7 +115,7 @@ export function ProjectItem({
         <span className="w-[52%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
           {projectData.title}
         </span>
-        <div
+        {/* <div
           style={{
             mask: "linear-gradient(to right, transparent 0%, black 15%, black 100%)",
           }}
@@ -138,8 +138,8 @@ export function ProjectItem({
               />
             </div>
           </SimpleMarquee>
-        </div>
-        <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-white text-sm overflow-hidden group-hover:translate-y-[100%] transition-transform duration-300 ease-out">
+        </div> */}
+        <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-white text-sm overflow-hidden transition-transform duration-300 ease-out">
           <div className="flex-col col-span-2">
             <span className="text-[#5E5E5E]">
               ({projectData.projectOrigin.type}){" "}
