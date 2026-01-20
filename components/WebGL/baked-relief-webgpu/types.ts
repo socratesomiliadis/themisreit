@@ -69,15 +69,15 @@ export interface BakedReliefProps {
 }
 
 // Default values
-export const DEFAULT_TEXTURE_SCALE = 5.0;
-export const DEFAULT_TEXTURE_STRENGTH = 1.0;
-export const DEFAULT_MULTIPLY_COLOR = "#161616";
-export const DEFAULT_TRAIL_SIZE = 0.12;
+export const DEFAULT_TEXTURE_SCALE = 1.0;
+export const DEFAULT_TEXTURE_STRENGTH = 0.0;
+export const DEFAULT_MULTIPLY_COLOR = "#141414";
+export const DEFAULT_TRAIL_SIZE = 0.1;
 export const DEFAULT_TRAIL_FADE_SPEED = 0.9;
 export const DEFAULT_TRAIL_MAX_AGE = 120;
-export const DEFAULT_TRAIL_INTENSITY = 0.05;
+export const DEFAULT_TRAIL_INTENSITY = 0.15;
 export const DEFAULT_AMBIENT_INTENSITY = 0.2;
 export const DEFAULT_MOUSE_LERP = 1.0;
-export const DEFAULT_MOUSE_INFLUENCE = 0.05;
+export const DEFAULT_MOUSE_INFLUENCE = 0.15;
 export const DEFAULT_ROTATION_SPEED = 0.0003;
-export const DEFAULT_EDGE_FADE = 0.01;
+export const DEFAULT_EDGE_FADE = 0.0;

@@ -73,11 +73,7 @@ async function isWebGPUSupported(): Promise<boolean> {
   }
 }
 
-// WebGPU default device texture size limit
-// Note: The adapter may support higher (e.g., 16384), but the default device
-// created by three.js WebGPURenderer uses WebGPU's default limits (8192).
-// To use higher limits, you'd need to pass requiredLimits when calling requestDevice(),
-// but three.js doesn't do this, so we must respect the default limit.
+// WebGPU default device texture size limit (when no requiredLimits specified)
 const WEBGPU_DEFAULT_MAX_TEXTURE_SIZE = 8192;
 
 // Calculate safe pixel ratio that won't exceed WebGPU texture limits
@@ -98,14 +94,31 @@ function calculateSafePixelRatio(
   return Math.max(1, safeRatio);
 }
 
+// Check if the desired texture size exceeds the default limit
+function needsReducedPixelRatio(
+  width: number,
+  height: number,
+  pixelRatio: number
+): boolean {
+  const maxDimension = Math.max(width, height) * pixelRatio;
+  return maxDimension > WEBGPU_DEFAULT_MAX_TEXTURE_SIZE;
+}
+
 // Parse hex color to RGB values (0-1 range)
 function parseHexColor(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  return [
-    parseInt(h.slice(0, 2), 16) / 255,
-    parseInt(h.slice(2, 4), 16) / 255,
-    parseInt(h.slice(4, 6), 16) / 255,
-  ];
+  try {
+    const h = (hex || "#ffffff").replace("#", "");
+    const r = parseInt(h.slice(0, 2), 16) / 255;
+    const g = parseInt(h.slice(2, 4), 16) / 255;
+    const b = parseInt(h.slice(4, 6), 16) / 255;
+    // Validate parsed values
+    if (isNaN(r) || isNaN(g) || isNaN(b)) {
+      return [1, 1, 1]; // Default to white
+    }
+    return [r, g, b];
+  } catch {
+    return [1, 1, 1]; // Default to white on error
+  }
 }
 
 // Inner WebGPU implementation component
@@ -130,13 +143,124 @@ function BakedReliefWebGPU({
 }: BakedReliefProps & { onError?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const disposeRef = useRef<(() => void) | null>(null);
+  const isVisibleRef = useRef(true);
+
+  // Use refs for dynamic values that shouldn't trigger re-initialization
+  const dynamicValuesRef = useRef({
+    textureScale,
+    textureStrength,
+    multiplyColor,
+    trailSize,
+    trailFadeSpeed,
+    trailMaxAge,
+    trailIntensity,
+    ambientIntensity,
+    mouseLerp,
+    mouseInfluence,
+    rotationSpeed,
+    edgeFade,
+  });
+
+  // Refs for runtime-updatable objects
+  const trailRef = useRef<{
+    setBaseSize: (s: number) => void;
+    setFadeSpeed: (s: number) => void;
+    setMaxAge: (a: number) => void;
+    setIntensity: (i: number) => void;
+    setAmbientIntensity: (i: number) => void;
+  } | null>(null);
+  const uniformsRef = useRef<{
+    uMultiplyR: { value: number };
+    uMultiplyG: { value: number };
+    uMultiplyB: { value: number };
+    uTextureScale: { value: number };
+    uTextureStrength: { value: number };
+    uEdgeFade: { value: number };
+  } | null>(null);
+
+  // Update refs when props change (without triggering re-render)
+  useEffect(() => {
+    dynamicValuesRef.current = {
+      textureScale,
+      textureStrength,
+      multiplyColor,
+      trailSize,
+      trailFadeSpeed,
+      trailMaxAge,
+      trailIntensity,
+      ambientIntensity,
+      mouseLerp,
+      mouseInfluence,
+      rotationSpeed,
+      edgeFade,
+    };
+
+    // Update trail settings if available
+    try {
+      if (trailRef.current) {
+        trailRef.current.setBaseSize(trailSize);
+        trailRef.current.setFadeSpeed(trailFadeSpeed);
+        trailRef.current.setMaxAge(trailMaxAge);
+        trailRef.current.setIntensity(trailIntensity);
+        trailRef.current.setAmbientIntensity(ambientIntensity);
+      }
+    } catch (e) {
+      console.warn("Failed to update trail settings:", e);
+    }
+
+    // Update uniforms if available
+    try {
+      if (uniformsRef.current) {
+        const [mr, mg, mb] = parseHexColor(multiplyColor);
+        uniformsRef.current.uMultiplyR.value = mr;
+        uniformsRef.current.uMultiplyG.value = mg;
+        uniformsRef.current.uMultiplyB.value = mb;
+        uniformsRef.current.uTextureScale.value = textureScale;
+        uniformsRef.current.uTextureStrength.value = textureStrength;
+        uniformsRef.current.uEdgeFade.value = edgeFade;
+      }
+    } catch (e) {
+      console.warn("Failed to update uniforms:", e);
+    }
+  }, [
+    textureScale,
+    textureStrength,
+    multiplyColor,
+    trailSize,
+    trailFadeSpeed,
+    trailMaxAge,
+    trailIntensity,
+    ambientIntensity,
+    mouseLerp,
+    mouseInfluence,
+    rotationSpeed,
+    edgeFade,
+  ]);
+
+  // Track visibility with IntersectionObserver
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isVisibleRef.current = entries[0]?.isIntersecting ?? true;
+      },
+      { threshold: 0 }
+    );
+
+    observer.observe(containerRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     let disposed = false;
 
-    const initSketch = async () => {
+    const initSketch = async (useReducedPixelRatio = false) => {
       try {
         // Dynamic imports to avoid SSR issues
         const { ssam } = await import("ssam");
@@ -182,25 +306,40 @@ function BakedReliefWebGPU({
         // Get quality settings for performance optimization
         const quality = getQualitySettings();
 
-        // Calculate safe pixel ratio that respects WebGPU's default texture size limit
-        const maxTextureSize = WEBGPU_DEFAULT_MAX_TEXTURE_SIZE;
         const desiredPixelRatio = Math.min(
           window.devicePixelRatio,
           quality.dpr[1]
         );
-        const safePixelRatio = calculateSafePixelRatio(
-          width,
-          height,
-          desiredPixelRatio,
-          maxTextureSize
-        );
 
-        if (safePixelRatio < desiredPixelRatio) {
-          console.info(
-            `Reduced pixel ratio from ${desiredPixelRatio.toFixed(2)} to ${safePixelRatio.toFixed(2)} ` +
-              `to fit within WebGPU max texture size (${maxTextureSize}px)`
+        // Determine pixel ratio to use
+        let pixelRatioToUse: number;
+        if (useReducedPixelRatio) {
+          // We already tried full ratio and it failed, use safe ratio
+          pixelRatioToUse = calculateSafePixelRatio(
+            width,
+            height,
+            desiredPixelRatio,
+            WEBGPU_DEFAULT_MAX_TEXTURE_SIZE
           );
+          console.info(
+            `Using reduced pixel ratio ${pixelRatioToUse.toFixed(2)} ` +
+              `(down from ${desiredPixelRatio.toFixed(2)}) to fit within WebGPU limits`
+          );
+        } else if (needsReducedPixelRatio(width, height, desiredPixelRatio)) {
+          // Texture would exceed default limit - try full ratio first, it might work
+          // if the adapter supports higher limits
+          pixelRatioToUse = desiredPixelRatio;
+          console.info(
+            `Attempting full pixel ratio ${desiredPixelRatio.toFixed(2)} ` +
+              `(texture size: ${Math.round(Math.max(width, height) * desiredPixelRatio)}px)`
+          );
+        } else {
+          // Texture fits within default limits, use desired ratio
+          pixelRatioToUse = desiredPixelRatio;
         }
+
+        // Store visibility ref for render loop access
+        const visibilityRef = isVisibleRef;
 
         const sketch: Sketch<"webgpu"> = async ({
           wrap,
@@ -208,8 +347,7 @@ function BakedReliefWebGPU({
           width: w,
           height: h,
         }) => {
-          // Use the pre-calculated safe pixel ratio that respects WebGPU texture limits
-          const adjustedPixelRatio = safePixelRatio;
+          const adjustedPixelRatio = pixelRatioToUse;
 
           const renderer = new WebGPURenderer({ canvas, antialias: false });
           renderer.setSize(w, h);
@@ -228,17 +366,21 @@ function BakedReliefWebGPU({
 
           // Trail setup with quality-based settings
           const trailRes = quality.trailResolution;
+          const initialValues = dynamicValuesRef.current;
           const trail = new Trail(trailRes, trailRes, {
-            baseSize: trailSize,
-            fadeSpeed: trailFadeSpeed,
-            maxAge: trailMaxAge,
-            intensity: trailIntensity,
+            baseSize: initialValues.trailSize,
+            fadeSpeed: initialValues.trailFadeSpeed,
+            maxAge: initialValues.trailMaxAge,
+            intensity: initialValues.trailIntensity,
             gradientStops: quality.trailGradientStops,
             maxPoints: quality.maxTrailPoints,
             updateInterval: quality.trailUpdateInterval,
             ambientParticleCount: quality.ambientParticles,
           });
-          trail.setAmbientIntensity(ambientIntensity);
+          trail.setAmbientIntensity(initialValues.ambientIntensity);
+
+          // Store trail ref for dynamic updates
+          trailRef.current = trail;
 
           if (showDebugTrail) {
             const debugCanvas = trail.getCanvas();
@@ -335,13 +477,23 @@ function BakedReliefWebGPU({
           });
 
           // Uniforms - multiply color as individual components
-          const [mr, mg, mb] = parseHexColor(multiplyColor);
+          const [mr, mg, mb] = parseHexColor(initialValues.multiplyColor);
           const uMultiplyR = uniform(mr);
           const uMultiplyG = uniform(mg);
           const uMultiplyB = uniform(mb);
-          const uTextureScale = uniform(textureScale);
-          const uTextureStrength = uniform(textureStrength);
-          const uEdgeFade = uniform(edgeFade);
+          const uTextureScale = uniform(initialValues.textureScale);
+          const uTextureStrength = uniform(initialValues.textureStrength);
+          const uEdgeFade = uniform(initialValues.edgeFade);
+
+          // Store uniform refs for dynamic updates
+          uniformsRef.current = {
+            uMultiplyR,
+            uMultiplyG,
+            uMultiplyB,
+            uTextureScale,
+            uTextureStrength,
+            uEdgeFade,
+          };
 
           // Create plane geometry
           const planeSize = (Math.min(w, h) / h) * 2.5;
@@ -448,46 +600,60 @@ function BakedReliefWebGPU({
           wrap.render = ({ playhead }) => {
             const time = playhead * 6;
 
-            // Update target mouse from client coords (handles scroll)
-            updateTargetMouse();
+            // Skip trail updates when not visible (performance optimization)
+            const isVisible = visibilityRef.current;
 
-            // Smooth mouse following
-            mouse.x += (targetMouse.x - mouse.x) * mouseLerp;
-            mouse.y += (targetMouse.y - mouse.y) * mouseLerp;
+            if (isVisible) {
+              // Get current dynamic values from ref
+              const currentValues = dynamicValuesRef.current;
 
-            // Add points to trail
-            const dx = mouse.x - prevMouse.x;
-            const dy = mouse.y - prevMouse.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+              // Update target mouse from client coords (handles scroll)
+              updateTargetMouse();
 
-            if (distance > 0.001) {
-              const steps = Math.ceil(distance * 30);
-              for (let i = 0; i < steps; i++) {
-                const t = i / steps;
-                trail.addPoint(prevMouse.x + dx * t, prevMouse.y + dy * t);
+              // Smooth mouse following
+              mouse.x += (targetMouse.x - mouse.x) * currentValues.mouseLerp;
+              mouse.y += (targetMouse.y - mouse.y) * currentValues.mouseLerp;
+
+              // Add points to trail
+              const dx = mouse.x - prevMouse.x;
+              const dy = mouse.y - prevMouse.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+
+              if (distance > 0.001) {
+                const steps = Math.ceil(distance * 30);
+                for (let i = 0; i < steps; i++) {
+                  const t = i / steps;
+                  trail.addPoint(prevMouse.x + dx * t, prevMouse.y + dy * t);
+                }
               }
+
+              prevMouse.x = mouse.x;
+              prevMouse.y = mouse.y;
+
+              // Update ambient trails
+              trail.updateAmbient(time);
+              trail.update();
+              trailTexture.needsUpdate = true;
+
+              // Subtle rotation
+              mesh.rotation.x = (mouse.y - 0.5) * currentValues.mouseInfluence;
+              mesh.rotation.y =
+                (mouse.x - 0.5) * currentValues.mouseInfluence +
+                time * currentValues.rotationSpeed;
+
+              renderer.render(scene, camera);
             }
-
-            prevMouse.x = mouse.x;
-            prevMouse.y = mouse.y;
-
-            // Update ambient trails
-            trail.updateAmbient(time);
-            trail.update();
-            trailTexture.needsUpdate = true;
-
-            // Subtle rotation
-            mesh.rotation.x = (mouse.y - 0.5) * mouseInfluence;
-            mesh.rotation.y =
-              (mouse.x - 0.5) * mouseInfluence + time * rotationSpeed;
-
-            renderer.render(scene, camera);
           };
 
           wrap.resize = ({ width: newW, height: newH }) => {
             camera.aspect = newW / newH;
             camera.updateProjectionMatrix();
             renderer.setSize(newW, newH);
+
+            // Update plane scale to maintain coverage
+            const newPlaneSize = (Math.min(newW, newH) / newH) * 2.5;
+            const scale = newPlaneSize / planeSize;
+            mesh.scale.set(scale, scale, 1);
           };
 
           wrap.unload = () => {
@@ -497,17 +663,21 @@ function BakedReliefWebGPU({
             renderer.dispose();
             geometry.dispose();
             material.dispose();
+            // Clear refs
+            trailRef.current = null;
+            uniformsRef.current = null;
           };
         };
 
         const settings: SketchSettings = {
           mode: "webgpu",
           dimensions: [width, height],
-          pixelRatio: safePixelRatio,
+          pixelRatio: pixelRatioToUse,
           animate: true,
           duration: 6_000,
           playFps: quality.targetFps,
           parent: container,
+          scaleToParent: true,
         };
 
         const result = await ssam(sketch as Sketch<"webgpu">, settings);
@@ -518,6 +688,22 @@ function BakedReliefWebGPU({
           disposeRef.current = dispose;
         }
       } catch (error) {
+        // Check if this might be a texture size error and we haven't tried reduced ratio yet
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const isTextureSizeError =
+          errorMessage.includes("texture size") ||
+          errorMessage.includes("Texture size") ||
+          errorMessage.includes("exceeded maximum");
+
+        if (!useReducedPixelRatio && isTextureSizeError) {
+          console.warn(
+            "WebGPU texture size exceeded, retrying with reduced pixel ratio..."
+          );
+          // Retry with reduced pixel ratio
+          return initSketch(true);
+        }
+
         console.error(
           "WebGPU initialization failed, triggering fallback:",
           error
@@ -528,32 +714,26 @@ function BakedReliefWebGPU({
       }
     };
 
-    initSketch();
+    initSketch(false);
 
     return () => {
       disposed = true;
+      trailRef.current = null;
+      uniformsRef.current = null;
       if (disposeRef.current) {
-        disposeRef.current();
+        try {
+          disposeRef.current();
+        } catch (e) {
+          console.warn("Error during WebGPU cleanup:", e);
+        }
         disposeRef.current = null;
       }
     };
-  }, [
-    textures,
-    textureScale,
-    textureStrength,
-    multiplyColor,
-    trailSize,
-    trailFadeSpeed,
-    trailMaxAge,
-    trailIntensity,
-    ambientIntensity,
-    mouseLerp,
-    mouseInfluence,
-    rotationSpeed,
-    edgeFade,
-    showDebugTrail,
-    onError,
-  ]);
+    // Only reinitialize when textures change or debug trail visibility changes
+    // Other settings are updated via refs without reinitializing
+    // Note: onError is intentionally excluded - it should be stable (wrapped in useCallback)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textures, showDebugTrail]);
 
   return (
     <div

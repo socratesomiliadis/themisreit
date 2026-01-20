@@ -30,14 +30,6 @@ const WEBGL_TEXTURES = {
   plaster: "/textures/plaster.png",
 };
 
-// Preload textures using Image objects (caches in browser for WebGL to reuse)
-function preloadTextures(textures: Record<string, string>): void {
-  Object.values(textures).forEach((src) => {
-    const img = new Image();
-    img.src = src;
-  });
-}
-
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const lenis = useLenis();
@@ -48,8 +40,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     ScrollTrigger.clearScrollMemory("manual");
-    // Start preloading textures immediately (during loader)
-    preloadTextures(WEBGL_TEXTURES);
   }, []);
 
   useEffect(() => {
@@ -94,32 +84,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {children}
       {/* WebGL background - components handle staggered initialization automatically */}
       {(showWebGL || isSanityPage) && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150vw] z-5 flex flex-col items-center">
-          <div className="w-full relative aspect-square h-auto">
-            <BakedRelief
-              textures={WEBGL_TEXTURES}
-              showRendererIndicator={true}
-              // multiplyColor="#161616"
-              // aspectRatio={1}
-              // trailResolution={192}
-            />
-          </div>
-          <div className="w-full relative aspect-square h-auto">
-            <BakedRelief
-              textures={WEBGL_TEXTURES}
-              // multiplyColor="#161616"
-              // aspectRatio={1}
-              // trailResolution={192}
-            />
-          </div>
-          <div className="w-full relative aspect-square h-auto">
-            <BakedRelief
-              textures={WEBGL_TEXTURES}
-              // multiplyColor="#161616"
-              // aspectRatio={1}
-              // trailResolution={192}
-            />
-          </div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[225vw] z-5 flex flex-col items-center pointer-events-none max-h-full overflow-hidden">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="w-full relative aspect-square h-auto">
+              <BakedRelief
+                key={`baked-relief-${i}`}
+                textures={WEBGL_TEXTURES}
+              />
+            </div>
+          ))}
         </div>
       )}
     </div>
