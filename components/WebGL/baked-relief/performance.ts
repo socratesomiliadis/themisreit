@@ -118,8 +118,7 @@ export function detectPerformanceTier(): PerformanceTier {
   // Check WebGL capabilities
   try {
     const canvas = document.createElement("canvas");
-    const gl =
-      canvas.getContext("webgl2") || canvas.getContext("webgl");
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
     if (gl) {
       const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
       if (debugInfo) {

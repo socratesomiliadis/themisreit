@@ -73,6 +73,31 @@ async function isWebGPUSupported(): Promise<boolean> {
   }
 }
 
+// WebGPU default device texture size limit
+// Note: The adapter may support higher (e.g., 16384), but the default device
+// created by three.js WebGPURenderer uses WebGPU's default limits (8192).
+// To use higher limits, you'd need to pass requiredLimits when calling requestDevice(),
+// but three.js doesn't do this, so we must respect the default limit.
+const WEBGPU_DEFAULT_MAX_TEXTURE_SIZE = 8192;
+
+// Calculate safe pixel ratio that won't exceed WebGPU texture limits
+function calculateSafePixelRatio(
+  width: number,
+  height: number,
+  desiredPixelRatio: number,
+  maxTextureSize: number
+): number {
+  const maxDimension = Math.max(width, height);
+  const maxSafePixelRatio = maxTextureSize / maxDimension;
+  
+  // Use the smaller of desired pixel ratio or the maximum safe ratio
+  // Leave a small margin (0.95) to account for any rounding
+  const safeRatio = Math.min(desiredPixelRatio, maxSafePixelRatio * 0.95);
+  
+  // Ensure we don't go below 1
+  return Math.max(1, safeRatio);
+}
+
 // Parse hex color to RGB values (0-1 range)
 function parseHexColor(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
@@ -157,15 +182,31 @@ function BakedReliefWebGPU({
         // Get quality settings for performance optimization
         const quality = getQualitySettings();
 
+        // Calculate safe pixel ratio that respects WebGPU's default texture size limit
+        const maxTextureSize = WEBGPU_DEFAULT_MAX_TEXTURE_SIZE;
+        const desiredPixelRatio = Math.min(window.devicePixelRatio, quality.dpr[1]);
+        const safePixelRatio = calculateSafePixelRatio(
+          width,
+          height,
+          desiredPixelRatio,
+          maxTextureSize
+        );
+
+        if (safePixelRatio < desiredPixelRatio) {
+          console.info(
+            `Reduced pixel ratio from ${desiredPixelRatio.toFixed(2)} to ${safePixelRatio.toFixed(2)} ` +
+            `to fit within WebGPU max texture size (${maxTextureSize}px)`
+          );
+        }
+
         const sketch: Sketch<"webgpu"> = async ({
           wrap,
           canvas,
           width: w,
           height: h,
-          pixelRatio,
         }) => {
-          // Use quality-based pixel ratio
-          const adjustedPixelRatio = Math.min(pixelRatio, quality.dpr[1]);
+          // Use the pre-calculated safe pixel ratio that respects WebGPU texture limits
+          const adjustedPixelRatio = safePixelRatio;
 
           const renderer = new WebGPURenderer({ canvas, antialias: false });
           renderer.setSize(w, h);
@@ -459,7 +500,7 @@ function BakedReliefWebGPU({
         const settings: SketchSettings = {
           mode: "webgpu",
           dimensions: [width, height],
-          pixelRatio: Math.min(window.devicePixelRatio, quality.dpr[1]),
+          pixelRatio: safePixelRatio,
           animate: true,
           duration: 6_000,
           playFps: quality.targetFps,
