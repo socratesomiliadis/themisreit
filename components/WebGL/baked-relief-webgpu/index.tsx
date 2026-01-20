@@ -89,11 +89,11 @@ function calculateSafePixelRatio(
 ): number {
   const maxDimension = Math.max(width, height);
   const maxSafePixelRatio = maxTextureSize / maxDimension;
-  
+
   // Use the smaller of desired pixel ratio or the maximum safe ratio
   // Leave a small margin (0.95) to account for any rounding
   const safeRatio = Math.min(desiredPixelRatio, maxSafePixelRatio * 0.95);
-  
+
   // Ensure we don't go below 1
   return Math.max(1, safeRatio);
 }
@@ -184,7 +184,10 @@ function BakedReliefWebGPU({
 
         // Calculate safe pixel ratio that respects WebGPU's default texture size limit
         const maxTextureSize = WEBGPU_DEFAULT_MAX_TEXTURE_SIZE;
-        const desiredPixelRatio = Math.min(window.devicePixelRatio, quality.dpr[1]);
+        const desiredPixelRatio = Math.min(
+          window.devicePixelRatio,
+          quality.dpr[1]
+        );
         const safePixelRatio = calculateSafePixelRatio(
           width,
           height,
@@ -195,7 +198,7 @@ function BakedReliefWebGPU({
         if (safePixelRatio < desiredPixelRatio) {
           console.info(
             `Reduced pixel ratio from ${desiredPixelRatio.toFixed(2)} to ${safePixelRatio.toFixed(2)} ` +
-            `to fit within WebGPU max texture size (${maxTextureSize}px)`
+              `to fit within WebGPU max texture size (${maxTextureSize}px)`
           );
         }
 

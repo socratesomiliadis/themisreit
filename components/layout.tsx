@@ -94,7 +94,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {children}
       {/* WebGL background - components handle staggered initialization automatically */}
       {(showWebGL || isSanityPage) && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[250vw] min-[2000px]:w-[200vw] z-5 flex flex-col items-center">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150vw] z-5 flex flex-col items-center">
           <div className="w-full relative aspect-square h-auto">
             <BakedRelief
               textures={WEBGL_TEXTURES}
