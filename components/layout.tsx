@@ -98,6 +98,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="w-full relative aspect-square h-auto">
             <BakedRelief
               textures={WEBGL_TEXTURES}
+              showRendererIndicator={true}
               // multiplyColor="#161616"
               // aspectRatio={1}
               // trailResolution={192}
