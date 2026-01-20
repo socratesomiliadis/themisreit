@@ -214,7 +214,7 @@ export default function HomeProjects({
         >
           <div className="relative font-ballet text-9xl mt-5 pr-2">
             Works{" "}
-            <span className="text-[#5E5E5E] font-helvetica-now text-lg absolute -top-2 -right-8">
+            <span className="text-[#5E5E5E] font-helvetica-now text-lg absolute top-4 -right-8">
               (01)
             </span>
           </div>

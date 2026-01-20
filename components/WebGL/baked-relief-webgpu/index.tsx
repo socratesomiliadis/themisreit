@@ -323,7 +323,9 @@ function BakedReliefWebGPU({
           );
           console.info(
             `Using reduced pixel ratio ${pixelRatioToUse.toFixed(2)} ` +
-              `(down from ${desiredPixelRatio.toFixed(2)}) to fit within WebGPU limits`
+              `(down from ${desiredPixelRatio.toFixed(
+                2
+              )}) to fit within WebGPU limits`
           );
         } else if (needsReducedPixelRatio(width, height, desiredPixelRatio)) {
           // Texture would exceed default limit - try full ratio first, it might work
@@ -331,7 +333,9 @@ function BakedReliefWebGPU({
           pixelRatioToUse = desiredPixelRatio;
           console.info(
             `Attempting full pixel ratio ${desiredPixelRatio.toFixed(2)} ` +
-              `(texture size: ${Math.round(Math.max(width, height) * desiredPixelRatio)}px)`
+              `(texture size: ${Math.round(
+                Math.max(width, height) * desiredPixelRatio
+              )}px)`
           );
         } else {
           // Texture fits within default limits, use desired ratio
@@ -677,7 +681,8 @@ function BakedReliefWebGPU({
           duration: 6_000,
           playFps: quality.targetFps,
           parent: container,
-          scaleToParent: true,
+          // scaleToParent: true,
+          // scaleContext: true,
         };
 
         const result = await ssam(sketch as Sketch<"webgpu">, settings);
@@ -738,7 +743,7 @@ function BakedReliefWebGPU({
   return (
     <div
       ref={containerRef}
-      className={`relative ${className}`}
+      className={`relative *:origin-top-left ${className}`}
       style={{
         width: "100%",
         height: "100%",

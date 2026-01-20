@@ -17,7 +17,7 @@ export default async function HomeServices() {
         >
           <div className="relative font-ballet text-9xl mt-5 pr-2">
             Disciplines{" "}
-            <span className="text-[#5E5E5E] font-helvetica-now text-lg absolute -top-2 -right-8">
+            <span className="text-[#5E5E5E] font-helvetica-now text-lg absolute top-4 -right-8">
               (02)
             </span>
           </div>
