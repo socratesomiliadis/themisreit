@@ -20,10 +20,10 @@ export default function ServiceItem({
 }) {
   return (
     <div className="w-full flex flex-col pt-12">
-      <div className="w-full px-12 grid grid-cols-2 text-white tracking-tight">
+      <div className="w-full px-12 grid grid-cols-2 text-black tracking-tight">
         <span>Number</span>
         <span>Service</span>
-        <div className="w-full col-span-2 h-px bg-white/20 mt-2 mb-24"></div>
+        <div className="w-full col-span-2 h-px bg-black/20 mt-2 mb-24"></div>
         <span className="font-ballet text-[28rem] ml-12 leading-[0.6]">
           {index + 1}
         </span>
@@ -44,7 +44,7 @@ export default function ServiceItem({
               <div
                 key={feaIndex}
                 className={cn(
-                  "w-full flex flex-row items-center justify-between gap-2 border-b border-white/20 py-1",
+                  "w-full flex flex-row items-center justify-between gap-2 border-b border-black/20 py-1",
                   feaIndex === 0 && "border-t"
                 )}
               >
@@ -84,7 +84,7 @@ export default function ServiceItem({
           LEARN MORE ABOUT {service.smallTitle} — LET&apos;S WORK —
         </span>
       </SimpleMarquee>
-      <div className="w-full py-24 flex flex-col bg-[#171717] text-white">
+      <div className="w-full py-24 flex flex-col  text-black">
         <div className="flex flex-row items-center gap-2 ml-12">
           <Cross className="size-2.5" />
           <span>(About it)</span>

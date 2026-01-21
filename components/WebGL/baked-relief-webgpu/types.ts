@@ -71,7 +71,7 @@ export interface BakedReliefProps {
 // Default values
 export const DEFAULT_TEXTURE_SCALE = 1.0;
 export const DEFAULT_TEXTURE_STRENGTH = 0.0;
-export const DEFAULT_MULTIPLY_COLOR = "#141414";
+export const DEFAULT_MULTIPLY_COLOR = "#ffffff";
 export const DEFAULT_TRAIL_SIZE = 0.1;
 export const DEFAULT_TRAIL_FADE_SPEED = 0.9;
 export const DEFAULT_TRAIL_MAX_AGE = 120;

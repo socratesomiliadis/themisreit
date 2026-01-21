@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { ProjectsQueryResult } from "@/sanity.types";
 import { urlForImage } from "@/lib/sanity/sanity.image";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
+import TitleMarquee from "../title-marquee";
 
 export function ProjectItem({
   projectData,
@@ -108,10 +109,10 @@ export function ProjectItem({
         `project-item-${slug}`
       )}
     >
-      <span className="text-white text-6xl leading-[0.75] absolute left-0">
+      <span className="text-black text-6xl leading-[0.75] absolute left-0">
         {projectData.title}
       </span>
-      <div className="w-full border-y-[1px] border-[#303030]/30 flex flex-row items-center relative overflow-hidden">
+      <div className="w-full border-y border-[#303030]/10 flex flex-row items-center relative overflow-hidden">
         <span className="w-[52%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
           {projectData.title}
         </span>
@@ -139,12 +140,12 @@ export function ProjectItem({
             </div>
           </SimpleMarquee>
         </div> */}
-        <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-white text-sm overflow-hidden transition-transform duration-300 ease-out">
+        <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-black text-sm overflow-hidden transition-transform duration-300 ease-out">
           <div className="flex-col col-span-2">
             <span className="text-[#5E5E5E]">
               ({projectData.projectOrigin.type}){" "}
             </span>
-            <span className="text-white">
+            <span className="text-black">
               {projectData.projectOrigin.subbrand}
             </span>
           </div>
@@ -155,7 +156,7 @@ export function ProjectItem({
               alt={projectData.title}
               width={500}
               height={500}
-              className="w-auto h-11"
+              className="w-auto h-11 invert"
             />
             <Link
               href={`/work/${slug}`}
@@ -206,24 +207,8 @@ export default function HomeProjects({
 
   return (
     <>
-      <div className="mt-44 w-screen relative z-[10]">
-        <SimpleMarquee
-          direction="left"
-          repeat={6}
-          className="py-0 text-white markos border-y-[1px] border-[#303030]/30 h-[4.6rem] items-center"
-        >
-          <div className="relative font-ballet text-9xl mt-5 pr-2">
-            Works{" "}
-            <span className="text-[#5E5E5E] font-helvetica-now text-lg absolute top-4 -right-8">
-              (01)
-            </span>
-          </div>
-          <div className="text-8xl px-10 flex items-center gap-6 tracking-tight">
-            <span className="w-12 h-[6px] bg-white"></span>
-            By Pensatori Irrazionali
-            <span className="w-12 h-[6px] bg-white"></span>
-          </div>
-        </SimpleMarquee>
+      <div className="mt-44 w-screen relative z-10">
+        <TitleMarquee title="Works" number={1} />
       </div>
       <div className="w-screen px-12 pt-32 pb-40 flex flex-col home-projects">
         {/* <h2 className="text-white flex items-center gap-4 tracking-tight project-open-hide">

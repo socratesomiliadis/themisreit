@@ -38,14 +38,14 @@ export default function Header() {
           opacity: 1,
           duration: 0.5,
         },
-        0,
+        0
       );
       tl.set(
         ".status-bar",
         {
           opacity: 0,
         },
-        0.1,
+        0.1
       );
       tl.to(
         ".menu-body",
@@ -55,7 +55,7 @@ export default function Header() {
           ease: "elastic.out(1.8,1)",
           duration: 1,
         },
-        0,
+        0
       );
       tl.set(
         ".news-btn",
@@ -64,7 +64,7 @@ export default function Header() {
           opacity: 0,
           duration: 0.4,
         },
-        0,
+        0
       );
       tl.to(
         ".news-btn",
@@ -74,7 +74,7 @@ export default function Header() {
           ease: "elastic.out(1.8,1)",
           duration: 1,
         },
-        0,
+        0
       );
       tl.set(
         ".menu-body",
@@ -82,7 +82,7 @@ export default function Header() {
           maskImage:
             "radial-gradient(circle at 1.375rem 1.375rem, transparent 1px, black 2px), radial-gradient(circle at calc(100% - 0rem) 1.375rem, transparent 0px, black 1px)",
         },
-        0,
+        0
       );
 
       tl.to(
@@ -93,7 +93,7 @@ export default function Header() {
           ease: "elastic.out(1.6,1)",
           duration: 1,
         },
-        0,
+        0
       );
 
       // tl.call(
@@ -109,28 +109,28 @@ export default function Header() {
         {
           opacity: 0,
         },
-        0,
+        0
       );
       tl.to(
         ".status-bar",
         {
           opacity: 1,
         },
-        0,
+        0
       );
       tl.call(
         () => {
           setNewsOpen(false);
         },
         undefined,
-        0,
+        0
       );
       tl.to(
         ".news-btn",
         {
           opacity: 0,
         },
-        0.06,
+        0.06
       );
 
       tl.to(".menu-body", { opacity: 0, duration: 0.4 }, 0);
@@ -192,14 +192,14 @@ export default function Header() {
         opacity: 1,
         filter: "blur(0px)",
       },
-      0,
+      0
     );
     tl.to(
       ".header-anim-noblur",
       {
         opacity: 1,
       },
-      0,
+      0
     );
     return () => {
       tl.kill();
@@ -226,7 +226,7 @@ export default function Header() {
         }}
         className={cn(
           "fixed selection:bg-black selection:text-white z-999 right-12 top-10 opacity-0 header-anim-noblur transition-right duration-300 ease-out",
-          isMenuOpen && "right-8",
+          isMenuOpen && "right-8"
         )}
       >
         <div className="relative flex gap-4 h-[95vh] z-20 pointer-events-none">
@@ -240,32 +240,28 @@ export default function Header() {
               tag="Events"
               title="B-HYPE DXB"
               date="Oct. 5"
-              description="I am pleased to inform you that I will be 
-attending the B-Hype event in Dubai."
+              description="I am pleased to inform you that I will be attending the B-Hype event in Dubai."
               image="/static/images/bHype.png"
             />
             <NewsItem
               tag="Events"
               title="AEVA & Battlenet"
               date="Oct. 4"
-              description="I organized the AEVA x Battlenet Fortnite
-            OG anniversary cup with 2,000+ participants."
+              description="I organized the AEVA x Battlenet Fortnite OG anniversary cup with 2,000+ participants."
               image="/static/images/aeva.png"
             />
             <NewsItem
               tag="Works"
               title="Jimbo - Go (Video)"
               date="Sep. 14"
-              description="I am pleased to inform you that I will be 
-            attending the BHype event in Dubai."
+              description="I am pleased to inform you that I will be attending the BHype event in Dubai."
               image="/static/images/jimmy.png"
             />
             <NewsItem
               tag="Events"
               title="B-HYPE DXB"
               date="Oct. 5"
-              description="I am pleased to inform you that I will be 
-attending the B-Hype event in Dubai."
+              description="I am pleased to inform you that I will be attending the B-Hype event in Dubai."
               image="/static/images/bHype.png"
             />
             <button className="w-full news-item opacity-0 -translate-y-8 bg-white rounded-2xl py-4 text-base leading-none flex justify-between items-center px-4">
@@ -328,7 +324,7 @@ attending the B-Hype event in Dubai."
                     ? "rotate-180"
                     : isMenuOpen
                     ? "rotate-0"
-                    : "rotate-180",
+                    : "rotate-180"
                 )}
                 xmlns="http://www.w3.org/2000/svg"
               >

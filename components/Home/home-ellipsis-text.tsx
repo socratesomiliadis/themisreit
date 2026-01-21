@@ -4,6 +4,7 @@ import { useRef, useEffect } from "react";
 import { gsap } from "@/lib/gsap";
 import EllipsisTextBox from "./ellipsis-text-box";
 import SimpleMarquee from "../simple-marquee";
+import TitleMarquee from "../title-marquee";
 
 interface TextBoxData {
   index: string;
@@ -191,23 +192,7 @@ export default function HomeEllipsisText() {
 
   return (
     <section className="w-screen relative z-10 flex flex-col pt-32 pb-64 gap-32">
-      <SimpleMarquee
-        direction="left"
-        repeat={6}
-        className="py-0 text-white markos border-y border-[#303030]/30 h-[4.6rem] items-center"
-      >
-        <div className="relative font-ballet text-9xl mt-5 pr-2">
-          Disciplines{" "}
-          <span className="text-[#5E5E5E] font-helvetica-now text-lg absolute top-4 -right-8">
-            (02)
-          </span>
-        </div>
-        <div className="text-8xl px-10 flex items-center gap-6 tracking-tight">
-          <span className="w-12 h-[6px] bg-white"></span>
-          By Pensatori Irrazionali
-          <span className="w-12 h-[6px] bg-white"></span>
-        </div>
-      </SimpleMarquee>
+      <TitleMarquee title="Disciplines" number={2} />
       <div ref={containerRef} className="relative w-screen h-[65vh]">
         {textBoxes.map((box, i) => (
           <EllipsisTextBox

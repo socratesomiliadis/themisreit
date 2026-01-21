@@ -21,12 +21,12 @@ const BakedRelief = dynamic(
 
 // Shared texture config
 const WEBGL_TEXTURES = {
-  bake1: "/textures/0006.png",
-  bake2: "/textures/0005.png",
-  bake3: "/textures/0004.png",
-  bake4: "/textures/0003.png",
-  bake5: "/textures/0002.png",
-  bake6: "/textures/0001.png",
+  bake1: "/textures/new/0006.png",
+  bake2: "/textures/new/0005.png",
+  bake3: "/textures/new/0004.png",
+  bake4: "/textures/new/0003.png",
+  bake5: "/textures/new/0002.png",
+  bake6: "/textures/new/0001.png",
   plaster: "/textures/plaster.png",
 };
 
@@ -66,7 +66,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const isSanityPage = pathname.includes("/sanity");
 
   return (
-    <div className="layout-wrapper w-screen relative bg-[#111111]">
+    <div className="layout-wrapper w-screen relative bg-[#f5f5f5]">
       {isLoading && !isSanityPage && (
         <Loader onComplete={() => setIsLoading(false)} />
       )}
@@ -84,8 +84,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {children}
       {/* WebGL background - components handle staggered initialization automatically */}
       {(showWebGL || isSanityPage) && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[220vw] z-5 flex flex-col items-center pointer-events-none max-h-full overflow-hidden">
-          {Array.from({ length: 3 }).map((_, i) => (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120vw] z-5 flex flex-col items-center pointer-events-none max-h-full overflow-hidden">
+          {Array.from({ length: 6 }).map((_, i) => (
             <BakedRelief
               className="w-full relative aspect-square h-auto"
               key={`baked-relief-${i}`}

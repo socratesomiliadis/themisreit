@@ -19,8 +19,8 @@ const EllipsisTextBox = forwardRef<HTMLDivElement, EllipsisTextBoxProps>(
         style={{ willChange: "transform", backfaceVisibility: "hidden" }}
         className={cn(
           "absolute flex flex-col gap-1 tracking-tight whitespace-nowrap",
-          highlight ? "text-[#C8FF00]" : "text-white",
-          className,
+          highlight ? "text-[#F669E4]" : "text-black",
+          className
         )}
       >
         {/* <div className="flex items-center gap-1.5 mb-0.5">
@@ -36,7 +36,7 @@ const EllipsisTextBox = forwardRef<HTMLDivElement, EllipsisTextBoxProps>(
         </div>
       </div>
     );
-  },
+  }
 );
 
 EllipsisTextBox.displayName = "EllipsisTextBox";

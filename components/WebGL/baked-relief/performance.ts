@@ -31,7 +31,7 @@ export interface QualitySettings {
 const QUALITY_PRESETS: Record<PerformanceTier, QualitySettings> = {
   high: {
     tier: "high",
-    dpr: [1, 1],
+    dpr: [1, 2],
     trailResolution: 256,
     trailGradientStops: 6,
     maxTrailPoints: 400,

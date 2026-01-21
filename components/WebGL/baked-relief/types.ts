@@ -110,9 +110,9 @@ export interface BakedReliefProps {
 }
 
 // Default values as constants for better tree-shaking
-export const DEFAULT_TEXTURE_SCALE = 5.0;
-export const DEFAULT_TEXTURE_STRENGTH = 1.0;
-export const DEFAULT_MULTIPLY_COLOR = "#161616";
+export const DEFAULT_TEXTURE_SCALE = 1.0;
+export const DEFAULT_TEXTURE_STRENGTH = 0.0;
+export const DEFAULT_MULTIPLY_COLOR = "#ffffff";
 export const DEFAULT_FRESNEL_ENABLED = false;
 export const DEFAULT_FRESNEL_COLOR = "#ffffff";
 export const DEFAULT_FRESNEL_STRENGTH = 0.0;

@@ -7,11 +7,11 @@ export default function InfoLine({
 }) {
   return (
     <div className="w-full relative flex flex-col gap-2">
-      <div className="w-full flex flex-row justify-between text-white tracking-tight">
+      <div className="w-full flex flex-row justify-between text-black tracking-tight">
         <span>{title}</span>
         <span>{text}</span>
       </div>
-      <div className="block w-full h-[1px] bg-white/20"> </div>
+      <div className="block w-full h-px bg-black/20"> </div>
     </div>
   );
 }
