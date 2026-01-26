@@ -49,7 +49,7 @@ function FooterNavLink({
     <Link
       href={href}
       className={cn(
-        "text-black text-3xl tracking-tight flex flex-row items-center gap-0 group",
+        "text-[#434343] text-3xl tracking-tight flex flex-row items-center gap-0 group",
         className
       )}
     >
@@ -174,7 +174,7 @@ export default function Footer() {
               </span>
               <div className="mt-14 h-full flex flex-col justify-between">
                 <div className="flex flex-col">
-                  <span className="text-black text-base tracking-tight ">
+                  <span className="text-[#434343] text-base tracking-tight ">
                     Dubai, UAE
                   </span>
 
@@ -188,7 +188,7 @@ export default function Footer() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-black text-base tracking-tight">
+                  <span className="text-[#434343] text-base tracking-tight">
                     Jobs
                   </span>
                   <FooterSmallLink

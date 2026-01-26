@@ -15,7 +15,7 @@ export default function TitleMarquee({
       direction="left"
       repeat={6}
       className={cn(
-        "py-0 text-black markos border-y border-[#303030]/10 h-[4.6rem] items-center",
+        "py-0 text-[#434343] markos border-y border-[#303030]/10 h-[4.6rem] items-center",
         className
       )}
     >
@@ -26,9 +26,9 @@ export default function TitleMarquee({
         </span>
       </div>
       <div className="text-8xl px-10 flex items-center gap-6 tracking-tight">
-        <span className="w-12 h-[6px] bg-black"></span>
+        <span className="w-12 h-[6px] bg-[#434343]"></span>
         By Pensatori Irrazionali
-        <span className="w-12 h-[6px] bg-black"></span>
+        <span className="w-12 h-[6px] bg-[#434343]"></span>
       </div>
     </SimpleMarquee>
   );

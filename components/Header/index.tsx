@@ -226,10 +226,10 @@ export default function Header() {
         }}
         className={cn(
           "fixed selection:bg-black selection:text-white z-999 right-12 top-10 opacity-0 header-anim-noblur transition-right duration-300 ease-out",
-          isMenuOpen && "right-8"
+          isMenuOpen && "right-12"
         )}
       >
-        <div className="relative flex gap-4 h-[95vh] z-20 pointer-events-none">
+        <div className="relative flex gap-4 h-[92vh] z-20 pointer-events-none">
           <div
             style={{
               pointerEvents: isNewsOpen ? "auto" : "none",
@@ -323,8 +323,8 @@ export default function Header() {
                   isNewsOpen
                     ? "rotate-180"
                     : isMenuOpen
-                    ? "rotate-0"
-                    : "rotate-180"
+                      ? "rotate-0"
+                      : "rotate-180"
                 )}
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -340,7 +340,7 @@ export default function Header() {
                 pointerEvents: isMenuOpen ? "auto" : "none",
                 maskComposite: "intersect",
               }}
-              className="relative z-0 opacity-0 menu-body rounded-2xl h-[95vh] w-[28vw] backdrop-blur-xl will-change-auto"
+              className="relative z-0 opacity-0 menu-body rounded-2xl h-[92vh] w-[28vw] backdrop-blur-xl will-change-auto"
             >
               <Nav isOpen={isMenuOpen} setIsOpen={setMenuOpen} />
               <div className="absolute nav-bg left-0 top-0 z-0 w-full h-full bg-[#1E1E1E]/80 "></div>

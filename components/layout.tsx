@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
 import Loader from "./loader";
 import dynamic from "next/dynamic";
+import { cn } from "@/lib/utils";
 
 // Dynamic import to avoid SSR issues with Three.js
 const BakedRelief = dynamic(
@@ -84,8 +85,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Scrollbar />
       {children}
       {/* WebGL background - components handle staggered initialization automatically */}
-      {(showWebGL && !isSanityPage && !isNightPage) && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120vw] z-5 flex flex-col items-center pointer-events-none max-h-full overflow-hidden">
+      {showWebGL && !isSanityPage && !isNightPage && (
+        <div
+          className={cn(
+            "absolute top-0 left-1/2 -translate-x-1/2 w-[190vw] z-5 flex flex-col items-center pointer-events-none max-h-full overflow-hidden",
+            isWorkPage && "fixed"
+          )}
+        >
           {Array.from({ length: 6 }).map((_, i) => (
             <BakedRelief
               className="w-full relative aspect-square h-auto"

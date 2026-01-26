@@ -18,6 +18,9 @@ importers:
       '@react-three/fiber':
         specifier: ^9.5.0
         version: 9.5.0(@types/react@19.2.2)(immer@10.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(three@0.182.0)
+      '@sanity/asset-utils':
+        specifier: ^2.3.0
+        version: 2.3.0
       '@sanity/client':
         specifier: ^7.12.1
         version: 7.12.1(debug@4.4.3)

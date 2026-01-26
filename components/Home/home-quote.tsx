@@ -53,19 +53,19 @@ export default function HomeQuote() {
     };
   }, []);
   return (
-    <section className="w-screen px-12 pt-32 pb-40 flex flex-col home-quote relative z-10">
-      <InfoLine title="Works" text={`©${new Date().getFullYear()}`} />
-      <div className="w-full flex flex-col text-black leading-none mt-32 home-quote-wrapper">
-        <div className="line-1 w-full flex flex-row gap-3 justify-center items-center">
-          <span className="text-[14rem] tracking-tighter font-medium home-quote-text">
+    <section className="w-screen px-12 py-24 flex flex-col home-quote relative z-10">
+      {/* <InfoLine title="Works" text={`©${new Date().getFullYear()}`} /> */}
+      <div className="w-full flex flex-col text-[#434343] leading-none mt-32 home-quote-wrapper">
+        <div className="line-1 w-full flex flex-row gap-3 justify-center items-end">
+          <span className="text-[13.5rem] tracking-tighter font-medium home-quote-text">
             THE ID<span className="tracking-normal split-ignore">E</span>A
           </span>
-          <div className="flex flex-col gap-7">
-            <span className="text-6xl tracking-tighter italic -ml-[10%] home-quote-text">
+          <div className="flex flex-row items-end gap-7 mb-[1.2%] ml-1">
+            <span className="text-6xl tracking-tighter leading-none italic font-pp-editorial home-quote-text">
               IS NOT
             </span>
-            <span className="font-ballet text-[5.4rem] home-quote-text">
-              To live forever
+            <span className="font-ballet text-5xl leading-none home-quote-text lowercase -ml-[5%] -mb-[2.5%]">
+              to live forever
             </span>
           </div>
         </div>
@@ -73,12 +73,12 @@ export default function HomeQuote() {
           <span className="text-5xl font-pp-editorial mb-6 block -mr-10 home-quote-text">
             it is
           </span>
-          <span className="text-[14rem] tracking-tighter font-medium home-quote-text">
+          <span className="text-[13.5rem] tracking-tighter font-medium home-quote-text">
             TO CR<span className="tracking-normal split-ignore">E</span>ATE
           </span>
         </div>
         <div className="line-3 -mt-10 w-full flex flex-row gap-3 justify-end items-end">
-          <span className="text-[14rem] tracking-tighter font-medium home-quote-text">
+          <span className="text-[13.5rem] tracking-tighter font-medium home-quote-text">
             SOM<span className="tracking-normal split-ignore">E</span>THING
           </span>
           <div className="flex flex-col relative">
@@ -89,7 +89,7 @@ export default function HomeQuote() {
               height={77 * 2}
               className="w-52 absolute top-[-150%] left-[-15%] home-quote-anim invert"
             />
-            <span className="font-bold text-[4rem] mb-5 home-quote-text">
+            <span className="font-bold text-[3.5rem] tracking-tighter mb-5 home-quote-text lowercase">
               THAT WILL
             </span>
           </div>

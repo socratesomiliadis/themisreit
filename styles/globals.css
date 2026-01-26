@@ -11,6 +11,7 @@
 
 html {
   overflow: hidden;
+  background-color: #f5f5f5;
 }
 
 button {
@@ -163,7 +164,7 @@ html.scrollbar-grabbing * {
 }
 
 ::view-transition {
-  background-color: #141414;
+  background-color: #e5e5e5;
 }
 
 ::view-transition-new(root) {

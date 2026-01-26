@@ -7,7 +7,7 @@ export default function InfoLine({
 }) {
   return (
     <div className="w-full relative flex flex-col gap-2">
-      <div className="w-full flex flex-row justify-between text-black tracking-tight">
+      <div className="w-full flex flex-row justify-between text-[#434343] tracking-tight">
         <span>{title}</span>
         <span>{text}</span>
       </div>

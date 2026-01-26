@@ -131,7 +131,7 @@ export default function ProjectsSliderNew({
   }, [imageRefs, slideRefs]);
 
   return (
-    <div className="h-svh relative flex items-center justify-center w-fit bg-[#111111]">
+    <div className="h-svh relative flex items-center justify-center w-fit">
       <MinimapScrollbar projects={projects} activeIndex={activeIndex} />
       <div className="flex items-center gap-[1vw] w-[200vw] overflow-hidden">
         {duplicatedProjects.map((project, index) => {

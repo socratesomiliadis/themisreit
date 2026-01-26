@@ -103,7 +103,7 @@ export default function BakedReliefControls({
             onClick={() => setFresnelEnabled(!fresnelEnabled)}
             className={`px-2 py-1 text-[10px] rounded border transition-colors ${
               fresnelEnabled
-                ? "bg-white text-black border-white"
+                ? "bg-white text-[#434343] border-white"
                 : "bg-transparent text-neutral-500 border-neutral-700"
             }`}
           >

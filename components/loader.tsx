@@ -682,7 +682,7 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
             >
               {i === 0 && (
                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-full">
-                  <div className="flex flex-col items-center text-black relative z-10">
+                  <div className="flex flex-col items-center text-[#434343] relative z-10">
                     <span className="font-ballet text-[2.5vw] leading-tight">
                       Loading
                     </span>
@@ -698,10 +698,10 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
                       ({progress}%)
                     </span>
                   </div>
-                  <div className="absolute left-8 flex flex-col gap-1 text-xs text-black font-helvetica-now text-left">
+                  <div className="absolute left-8 flex flex-col gap-1 text-xs text-[#434343] font-helvetica-now text-left">
                     {renderCurvedList(LEFT_LIST, "left")}
                   </div>
-                  <div className="absolute right-8 flex flex-col gap-1 text-xs text-black font-helvetica-now text-right">
+                  <div className="absolute right-8 flex flex-col gap-1 text-xs text-[#434343] font-helvetica-now text-right">
                     {renderCurvedList(RIGHT_LIST, "right")}
                   </div>
                 </div>

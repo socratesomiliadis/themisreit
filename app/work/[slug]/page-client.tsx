@@ -1,6 +1,8 @@
 "use client";
 
 import ProjectHero from "@/components/ProjectSingle/project-hero";
+import ProjectAbout from "@/components/ProjectSingle/project-about";
+import ProjectStories from "@/components/ProjectSingle/project-stories";
 import {
   NextProjectQueryResult,
   ProjectBySlugQueryResult,
@@ -37,7 +39,8 @@ export default function ProjectPageClient({
   return (
     <main>
       <ProjectHero projectData={project} />
-      <div className="w-full h-[200vh]"></div>
+      <ProjectAbout projectData={project} />
+      <ProjectStories projectData={project} />
       <ProjectNext nextProject={nextProject} />
     </main>
   );

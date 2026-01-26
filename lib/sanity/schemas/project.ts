@@ -17,13 +17,19 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: "company",
+      title: "Company",
+      type: "string",
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: "slug",
       title: "Slug",
       type: "slug",
       validation: (Rule) => Rule.required(),
       options: {
         source: "title",
-          maxLength: 96,
+        maxLength: 96,
       },
     }),
     defineField({
@@ -87,10 +93,95 @@ export default defineType({
       type: "string",
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: "description",
+      title: "Description",
+      type: "text",
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: "exampleImages",
+      title: "Example Images",
+      type: "array",
+      of: [{ type: "image" }],
+      validation: (Rule) => Rule.required().min(1).max(8),
+    }),
+    defineField({
+      name: "stories",
+      title: "Stories",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "description",
+              title: "Description",
+              type: "text",
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: "image",
+              title: "Image",
+              type: "image",
+              description:
+                "Upload an image (use either image or video, not both)",
+            }),
+            defineField({
+              name: "video",
+              title: "Video",
+              type: "file",
+              options: {
+                accept: "video/*",
+              },
+              description:
+                "Upload a video (use either image or video, not both)",
+            }),
+          ],
+          validation: (Rule) =>
+            Rule.custom(
+              (fields: { image?: unknown; video?: unknown } | undefined) => {
+                const hasImage = !!fields?.image;
+                const hasVideo = !!fields?.video;
+                if (!hasImage && !hasVideo) {
+                  return "Either an image or a video is required";
+                }
+                if (hasImage && hasVideo) {
+                  return "Please provide either an image or a video, not both";
+                }
+                return true;
+              }
+            ),
+        },
+      ],
+
+      validation: (Rule) => Rule.required().min(1),
+    }),
+    defineField({
+      name: "gallery",
+      title: "Gallery",
+      type: "array",
+      of: [{ type: "image" }],
+      validation: (Rule) => Rule.required().min(1),
+    }),
+    defineField({
+      name: "galleryDescription",
+      title: "Gallery Description",
+      type: "text",
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: "frames",
+      title: "Frames",
+      type: "array",
+      of: [{ type: "image" }],
+      validation: (Rule) => Rule.required().min(1),
+    }),
   ],
   preview: {
     select: {
       title: "title",
+      subtitle: "company",
       media: "logo",
     },
   },

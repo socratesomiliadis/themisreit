@@ -150,6 +150,16 @@ export class Trail {
     this.intensity = intensity;
   }
 
+  /**
+   * Reset timing state to prevent large delta time spikes
+   * Call this when the component becomes visible after being hidden
+   */
+  resetTime(): void {
+    const now = performance.now();
+    this.lastTime = now;
+    this.lastUpdateTime = now;
+  }
+
   clear(): void {
     this.ctx.fillStyle = "black";
     this.ctx.fillRect(0, 0, this.width, this.height);

@@ -46,31 +46,48 @@ function isSafari(): boolean {
   return isSafariBrowser || isIOS;
 }
 
-// Check if WebGPU is supported and reliable
-async function isWebGPUSupported(): Promise<boolean> {
+// WebGPU support check result with adapter limits
+interface WebGPUSupport {
+  supported: boolean;
+  maxTextureSize?: number;
+}
+
+// Check if WebGPU is supported and reliable, also return adapter limits
+async function checkWebGPUSupport(): Promise<WebGPUSupport> {
   if (typeof navigator === "undefined" || !navigator.gpu) {
-    return false;
+    return { supported: false };
   }
 
   // Safari's WebGPU implementation has known issues with three.js
   // Force WebGL fallback on Safari until it's more stable
   if (isSafari()) {
     console.info("Safari detected - using WebGL for better compatibility");
-    return false;
+    return { supported: false };
   }
 
   try {
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) {
-      return false;
+      return { supported: false };
     }
     // Try to get a device to confirm full support
+    // Note: adapter.limits.maxTextureDimension2D returns what the adapter CAN support,
+    // but the default device only gets 8192 unless requiredLimits is specified.
+    // Since three.js/ssam create the device without requiredLimits, we use the default.
     const device = await adapter.requestDevice();
+    // Get the actual device limit (this will be 8192 by default)
+    const maxTextureSize = device.limits.maxTextureDimension2D;
     device.destroy();
-    return true;
+    return { supported: true, maxTextureSize };
   } catch {
-    return false;
+    return { supported: false };
   }
+}
+
+// Legacy function for backward compatibility
+async function isWebGPUSupported(): Promise<boolean> {
+  const result = await checkWebGPUSupport();
+  return result.supported;
 }
 
 // WebGPU default device texture size limit (when no requiredLimits specified)
@@ -92,16 +109,6 @@ function calculateSafePixelRatio(
 
   // Ensure we don't go below 1
   return Math.max(1, safeRatio);
-}
-
-// Check if the desired texture size exceeds the default limit
-function needsReducedPixelRatio(
-  width: number,
-  height: number,
-  pixelRatio: number
-): boolean {
-  const maxDimension = Math.max(width, height) * pixelRatio;
-  return maxDimension > WEBGPU_DEFAULT_MAX_TEXTURE_SIZE;
 }
 
 // Parse hex color to RGB values (0-1 range)
@@ -140,10 +147,12 @@ function BakedReliefWebGPU({
   className = "",
   style,
   onError,
-}: BakedReliefProps & { onError?: () => void }) {
+  maxTextureSize = WEBGPU_DEFAULT_MAX_TEXTURE_SIZE,
+}: BakedReliefProps & { onError?: () => void; maxTextureSize?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const disposeRef = useRef<(() => void) | null>(null);
   const isVisibleRef = useRef(true);
+  const wasVisibleRef = useRef(true);
 
   // Use refs for dynamic values that shouldn't trigger re-initialization
   const dynamicValuesRef = useRef({
@@ -168,6 +177,7 @@ function BakedReliefWebGPU({
     setMaxAge: (a: number) => void;
     setIntensity: (i: number) => void;
     setAmbientIntensity: (i: number) => void;
+    resetTime: () => void;
   } | null>(null);
   const uniformsRef = useRef<{
     uMultiplyR: { value: number };
@@ -243,7 +253,15 @@ function BakedReliefWebGPU({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        isVisibleRef.current = entries[0]?.isIntersecting ?? true;
+        const isVisible = entries[0]?.isIntersecting ?? true;
+        const wasVisible = wasVisibleRef.current;
+        isVisibleRef.current = isVisible;
+        wasVisibleRef.current = isVisible;
+
+        // Reset trail timing when becoming visible to avoid large delta time spikes
+        if (isVisible && !wasVisible && trailRef.current) {
+          trailRef.current.resetTime();
+        }
       },
       { threshold: 0 }
     );
@@ -312,33 +330,28 @@ function BakedReliefWebGPU({
         );
 
         // Determine pixel ratio to use
+        // Proactively check against the actual adapter's max texture size
+        const maxDimension = Math.max(width, height) * desiredPixelRatio;
+        const wouldExceedLimit = maxDimension > maxTextureSize;
+
         let pixelRatioToUse: number;
-        if (useReducedPixelRatio) {
-          // We already tried full ratio and it failed, use safe ratio
+        if (useReducedPixelRatio || wouldExceedLimit) {
+          // Either we already tried and failed, or we know it would exceed limits
+          // Use safe ratio immediately to avoid WebGPU validation errors
           pixelRatioToUse = calculateSafePixelRatio(
             width,
             height,
             desiredPixelRatio,
-            WEBGPU_DEFAULT_MAX_TEXTURE_SIZE
+            maxTextureSize
           );
           console.info(
             `Using reduced pixel ratio ${pixelRatioToUse.toFixed(2)} ` +
-              `(down from ${desiredPixelRatio.toFixed(
-                2
-              )}) to fit within WebGPU limits`
-          );
-        } else if (needsReducedPixelRatio(width, height, desiredPixelRatio)) {
-          // Texture would exceed default limit - try full ratio first, it might work
-          // if the adapter supports higher limits
-          pixelRatioToUse = desiredPixelRatio;
-          console.info(
-            `Attempting full pixel ratio ${desiredPixelRatio.toFixed(2)} ` +
-              `(texture size: ${Math.round(
-                Math.max(width, height) * desiredPixelRatio
-              )}px)`
+              `(down from ${desiredPixelRatio.toFixed(2)}) ` +
+              `to fit within WebGPU limit of ${maxTextureSize}px ` +
+              `(original texture would be ${Math.round(maxDimension)}px)`
           );
         } else {
-          // Texture fits within default limits, use desired ratio
+          // Texture fits within limits, use desired ratio
           pixelRatioToUse = desiredPixelRatio;
         }
 
@@ -681,7 +694,7 @@ function BakedReliefWebGPU({
           duration: 6_000,
           playFps: quality.targetFps,
           parent: container,
-          // scaleToParent: true,
+          scaleToParent: true,
           // scaleContext: true,
         };
 
@@ -734,11 +747,11 @@ function BakedReliefWebGPU({
         disposeRef.current = null;
       }
     };
-    // Only reinitialize when textures change or debug trail visibility changes
+    // Only reinitialize when textures change, debug trail visibility changes, or max texture size changes
     // Other settings are updated via refs without reinitializing
     // Note: onError is intentionally excluded - it should be stable (wrapped in useCallback)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [textures, showDebugTrail]);
+  }, [textures, showDebugTrail, maxTextureSize]);
 
   return (
     <div
@@ -794,14 +807,22 @@ export default function BakedRelief({
   const [renderMode, setRenderMode] = useState<"checking" | "webgpu" | "webgl">(
     "checking"
   );
+  const [maxTextureSize, setMaxTextureSize] = useState<number>(
+    WEBGPU_DEFAULT_MAX_TEXTURE_SIZE
+  );
 
   useEffect(() => {
     let cancelled = false;
 
-    isWebGPUSupported().then((supported) => {
+    checkWebGPUSupport().then((result) => {
       if (cancelled) return;
-      setRenderMode(supported ? "webgpu" : "webgl");
-      if (!supported) {
+      if (result.supported) {
+        setRenderMode("webgpu");
+        if (result.maxTextureSize) {
+          setMaxTextureSize(result.maxTextureSize);
+        }
+      } else {
+        setRenderMode("webgl");
         console.info(
           "WebGPU not supported on this device, falling back to WebGL"
         );
@@ -862,7 +883,11 @@ export default function BakedRelief({
   return (
     <div className="relative w-full h-full">
       {showRendererIndicator && <RendererIndicator mode="webgpu" />}
-      <BakedReliefWebGPU {...props} onError={handleWebGPUError} />
+      <BakedReliefWebGPU
+        {...props}
+        onError={handleWebGPUError}
+        maxTextureSize={maxTextureSize}
+      />
     </div>
   );
 }

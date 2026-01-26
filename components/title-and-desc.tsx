@@ -98,7 +98,7 @@ export default function TitleAndDesc({
     <div
       ref={wrapperRef}
       className={cn(
-        "flex flex-col gap-4 text-black tracking-tight",
+        "flex flex-col gap-4 text-[#434343] tracking-tight",
         wrapperClassName
       )}
     >

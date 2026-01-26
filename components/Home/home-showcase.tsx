@@ -38,7 +38,7 @@ export default function HomeShowcase() {
     };
   }, []);
   return (
-    <section className="w-screen pt-0 pb-40 flex flex-col home-showcase relative z-10">
+    <section className="w-screen flex flex-col home-showcase relative z-10">
       <div className="flex flex-col px-12">
         <InfoLine title="Imagery" text={`${new Date().getFullYear()}`} />
         <TitleAndDesc
@@ -57,7 +57,7 @@ export default function HomeShowcase() {
         />
       </div>
       <div className="flex flex-col showcase-wrapper items-center gap-[1.5vw] mt-24 overflow-x-hidden">
-        <div className="flex flex-row showcase-row row-1 items-end gap-[1.5vw] *:saturate-0 *:hover:saturate-100 *:transition-[filter] *:duration-300">
+        <div className="flex flex-row showcase-row row-1 items-end gap-[1.5vw]">
           <Image
             src="/static/images/showcase/1.png"
             alt="Showcase 1"
@@ -87,7 +87,7 @@ export default function HomeShowcase() {
             className="w-[22.2vw]"
           />
         </div>
-        <div className="flex flex-row showcase-row row-2 items-start justify-end gap-[1.5vw] *:saturate-0 *:hover:saturate-100 *:transition-[filter] *:duration-300">
+        <div className="flex flex-row showcase-row row-2 items-start justify-end gap-[1.5vw]">
           <Image
             src="/static/images/showcase/5.png"
             alt="Showcase 5"

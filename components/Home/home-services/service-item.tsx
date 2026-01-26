@@ -20,7 +20,7 @@ export default function ServiceItem({
 }) {
   return (
     <div className="w-full flex flex-col pt-12">
-      <div className="w-full px-12 grid grid-cols-2 text-black tracking-tight">
+      <div className="w-full px-12 grid grid-cols-2 text-[#434343] tracking-tight">
         <span>Number</span>
         <span>Service</span>
         <div className="w-full col-span-2 h-px bg-black/20 mt-2 mb-24"></div>
@@ -53,7 +53,7 @@ export default function ServiceItem({
               </div>
             ))}
           </div>
-          <button className="flex flex-row items-center gap-2 bg-white text-black px-8 py-2 w-fit">
+          <button className="flex flex-row items-center gap-2 bg-white text-[#434343] px-8 py-2 w-fit">
             <span className="uppercase text-xs tracking-tight">Learn More</span>
             <span className="block w-2">
               <svg
@@ -84,12 +84,12 @@ export default function ServiceItem({
           LEARN MORE ABOUT {service.smallTitle} — LET&apos;S WORK —
         </span>
       </SimpleMarquee>
-      <div className="w-full py-24 flex flex-col  text-black">
+      <div className="w-full py-24 flex flex-col bg-[#efefef] text-[#434343]">
         <div className="flex flex-row items-center gap-2 ml-12">
           <Cross className="size-2.5" />
           <span>(About it)</span>
         </div>
-        <p className="text-3xl tracking-tight w-1/3 text-pretty mt-4 ml-12">
+        <p className="text-3xl tracking-tight w-1/3 text-pretty font-light mt-4 ml-12">
           {service.description}
         </p>
         <div className="flex flex-col mt-36">

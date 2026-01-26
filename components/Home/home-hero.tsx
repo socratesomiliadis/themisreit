@@ -9,13 +9,12 @@ export default function HomeHero() {
       <TitleAndDesc
         delay={1.2}
         wrapperClassName="z-20"
-        title="Our Studio"
+        title="Atelier"
         desc={
           <>
-            We help visionary brands flourish <br />
-            by crafting digital experiences that let <br />
-            audiences feel the depth, elegance, and <br />
-            essence of their products.
+            A creative house based in Europe, operating <br />
+            worldwide. We shape experiences where depth, <br />
+            elegance, and essence are felt—not explained.
           </>
         }
       />

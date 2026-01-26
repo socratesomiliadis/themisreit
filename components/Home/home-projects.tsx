@@ -109,7 +109,7 @@ export function ProjectItem({
         `project-item-${slug}`
       )}
     >
-      <span className="text-black text-6xl leading-[0.75] absolute left-0">
+      <span className="text-[#434343] text-6xl leading-[0.75] absolute left-0">
         {projectData.title}
       </span>
       <div className="w-full border-y border-[#303030]/10 flex flex-row items-center relative overflow-hidden">
@@ -140,12 +140,12 @@ export function ProjectItem({
             </div>
           </SimpleMarquee>
         </div> */}
-        <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-black text-sm overflow-hidden transition-transform duration-300 ease-out">
+        <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-[#434343] text-sm overflow-hidden transition-transform duration-300 ease-out">
           <div className="flex-col col-span-2">
             <span className="text-[#5E5E5E]">
               ({projectData.projectOrigin.type}){" "}
             </span>
-            <span className="text-black">
+            <span className="text-[#434343]">
               {projectData.projectOrigin.subbrand}
             </span>
           </div>

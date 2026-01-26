@@ -71,7 +71,7 @@ export default function HomeCta() {
                 //   scale: 1 - index / 12,
               }
             }
-            className="text-black origin-bottom absolute w-[103%] -left-[2.2vw] cta-item"
+            className="text-[#434343] origin-bottom absolute w-[103%] -left-[2.2vw] cta-item"
           >
             <span className="text-fit z-1 relative">
               <span>
@@ -82,7 +82,7 @@ export default function HomeCta() {
                         BU
                         <span className="last-text-i relative">
                           <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-[48%] w-[45%] h-[48%] flex items-center justify-center">
-                            <button className="w-full h-full bg-black testos text-2xl text-black flex items-center justify-center z-20">
+                            <button className="w-full h-full bg-[#434343] testos text-2xl text-[#434343] flex items-center justify-center z-20">
                               <span className="-rotate-90 block whitespace-nowrap">
                                 <ScrambleIn
                                   autoStart={false}

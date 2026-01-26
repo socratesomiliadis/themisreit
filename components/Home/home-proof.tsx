@@ -14,7 +14,7 @@ export default function HomeProof() {
           className="bg-[#fff] py-6"
         >
           <div className="w-[100vw] pr-12">
-            <LogosMarquee1 width="100%" className="text-black" />
+            <LogosMarquee1 width="100%" className="text-[#434343]" />
           </div>
         </SimpleMarquee>
         <SimpleMarquee
@@ -23,7 +23,7 @@ export default function HomeProof() {
           className="bg-[#fff] py-6"
         >
           <div className="w-[100vw] pr-12">
-            <LogosMarquee2 width="100%" className="text-black" />
+            <LogosMarquee2 width="100%" className="text-[#434343]" />
           </div>
         </SimpleMarquee>
         <SimpleMarquee
@@ -32,7 +32,7 @@ export default function HomeProof() {
           className="bg-[#fff] py-6"
         >
           <div className="w-[100vw] pr-12">
-            <LogosMarquee3 width="100%" className="text-black" />
+            <LogosMarquee3 width="100%" className="text-[#434343]" />
           </div>
         </SimpleMarquee>
       </div>

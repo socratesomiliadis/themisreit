@@ -53,6 +53,7 @@ export type Project = {
   _rev: string;
   orderRank?: string;
   title: string;
+  company: string;
   slug: Slug;
   category: {
     _ref: string;
@@ -102,6 +103,73 @@ export type Project = {
   };
   brandColor: string;
   year: string;
+  description: string;
+  exampleImages: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  stories: Array<{
+    description: string;
+    image?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    video?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+      };
+      media?: unknown;
+      _type: "file";
+    };
+    _key: string;
+  }>;
+  gallery: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  galleryDescription: string;
+  frames: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
 };
 
 export type Category = {
@@ -245,6 +313,7 @@ export type ProjectsQueryResult = Array<{
   _rev: string;
   orderRank?: string;
   title: string;
+  company: string;
   slug: Slug;
   category: {
     _id: string;
@@ -297,6 +366,73 @@ export type ProjectsQueryResult = Array<{
   };
   brandColor: string;
   year: string;
+  description: string;
+  exampleImages: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  stories: Array<{
+    description: string;
+    image?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    video?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+      };
+      media?: unknown;
+      _type: "file";
+    };
+    _key: string;
+  }>;
+  gallery: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  galleryDescription: string;
+  frames: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
 }>;
 // Variable: projectBySlugQuery
 // Query: *[_type == "project" && slug.current == $slug]{  ...,  category->}[0]
@@ -308,6 +444,7 @@ export type ProjectBySlugQueryResult = {
   _rev: string;
   orderRank?: string;
   title: string;
+  company: string;
   slug: Slug;
   category: {
     _id: string;
@@ -360,6 +497,73 @@ export type ProjectBySlugQueryResult = {
   };
   brandColor: string;
   year: string;
+  description: string;
+  exampleImages: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  stories: Array<{
+    description: string;
+    image?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    video?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+      };
+      media?: unknown;
+      _type: "file";
+    };
+    _key: string;
+  }>;
+  gallery: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  galleryDescription: string;
+  frames: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
 } | null;
 // Variable: projectSlugsQuery
 // Query: *[_type == "project" && defined(slug.current)][].slug.current
@@ -409,14 +613,33 @@ export type ServicesQueryResult = Array<{
   }>;
 }>;
 // Variable: nextProjectQuery
-// Query: *[_type == "project" && slug.current == $slug][0] {  _id,  orderRank,  "nextProject": *[_type == "project" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank) [0] {    _id,    title,    slug,    mainImage,    category->  },  "firstProject": *[_type == "project" && defined(slug.current)] | order(orderRank) [0] {    _id,    title,    slug,    mainImage,    category->  }}
+// Query: *[_type == "project" && slug.current == $slug][0] {  _id,  orderRank,  "nextProject": *[_type == "project" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank) [0] {    ...,    category->  },  "firstProject": *[_type == "project" && defined(slug.current)] | order(orderRank) [0] {    ...,    category->  }}
 export type NextProjectQueryResult = {
   _id: string;
   orderRank: string | null;
   nextProject: {
     _id: string;
+    _type: "project";
+    _createdAt: string;
+    _updatedAt: string;
+    _rev: string;
+    orderRank?: string;
     title: string;
+    company: string;
     slug: Slug;
+    category: {
+      _id: string;
+      _type: "category";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title: string;
+      slug: Slug;
+    };
+    projectOrigin: {
+      type: "Commission" | "Concept";
+      subbrand: string;
+    };
     mainImage: {
       asset?: {
         _ref: string;
@@ -429,20 +652,123 @@ export type NextProjectQueryResult = {
       crop?: SanityImageCrop;
       _type: "image";
     };
-    category: {
-      _id: string;
-      _type: "category";
-      _createdAt: string;
-      _updatedAt: string;
-      _rev: string;
-      title: string;
-      slug: Slug;
+    logo: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
     };
+    logoMarquee: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    brandColor: string;
+    year: string;
+    description: string;
+    exampleImages: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    stories: Array<{
+      description: string;
+      image?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      };
+      video?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      _key: string;
+    }>;
+    gallery: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    galleryDescription: string;
+    frames: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
   } | null;
   firstProject: {
     _id: string;
+    _type: "project";
+    _createdAt: string;
+    _updatedAt: string;
+    _rev: string;
+    orderRank?: string;
     title: string;
+    company: string;
     slug: Slug;
+    category: {
+      _id: string;
+      _type: "category";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      title: string;
+      slug: Slug;
+    };
+    projectOrigin: {
+      type: "Commission" | "Concept";
+      subbrand: string;
+    };
     mainImage: {
       asset?: {
         _ref: string;
@@ -455,15 +781,99 @@ export type NextProjectQueryResult = {
       crop?: SanityImageCrop;
       _type: "image";
     };
-    category: {
-      _id: string;
-      _type: "category";
-      _createdAt: string;
-      _updatedAt: string;
-      _rev: string;
-      title: string;
-      slug: Slug;
+    logo: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
     };
+    logoMarquee: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    brandColor: string;
+    year: string;
+    description: string;
+    exampleImages: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    stories: Array<{
+      description: string;
+      image?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      };
+      video?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      _key: string;
+    }>;
+    gallery: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    galleryDescription: string;
+    frames: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
   } | null;
 } | null;
 
@@ -476,6 +886,6 @@ declare module "@sanity/client" {
     "\n*[_type == \"project\" && defined(slug.current)][].slug.current\n": ProjectSlugsQueryResult;
     "\n  *[_type == \"category\"] | order(lower(title))\n": CategoriesQueryResult;
     "*[_type == \"service\"]{\n  ...\n} | order(orderRank)": ServicesQueryResult;
-    "*[_type == \"project\" && slug.current == $slug][0] {\n  _id,\n  orderRank,\n  \"nextProject\": *[_type == \"project\" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank) [0] {\n    _id,\n    title,\n    slug,\n    mainImage,\n    category->\n  },\n  \"firstProject\": *[_type == \"project\" && defined(slug.current)] | order(orderRank) [0] {\n    _id,\n    title,\n    slug,\n    mainImage,\n    category->\n  }\n}": NextProjectQueryResult;
+    "*[_type == \"project\" && slug.current == $slug][0] {\n  _id,\n  orderRank,\n  \"nextProject\": *[_type == \"project\" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank) [0] {\n    ...,\n    category->\n  },\n  \"firstProject\": *[_type == \"project\" && defined(slug.current)] | order(orderRank) [0] {\n    ...,\n    category->\n  }\n}": NextProjectQueryResult;
   }
 }
