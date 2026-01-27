@@ -38,14 +38,14 @@ export async function generateMetadata({
   }
 
   return {
-    title: `Themis Reit — ${project.title}`,
+    title: `Pensatori Irrazionali — ${project.title}`,
     description:
       "We help visionary brands flourish by crafting digital experiences that let audiences feel the depth, elegance, and essence of their products.",
     icons: {
       icon: "/favicon.ico",
     },
     openGraph: {
-      title: `Themis Reit — ${project.title}`,
+      title: `Pensatori Irrazionali — ${project.title}`,
       type: "website",
       description:
         "We help visionary brands flourish by crafting digital experiences that let audiences feel the depth, elegance, and essence of their products.",
@@ -54,7 +54,7 @@ export async function generateMetadata({
           url: urlForImage(project.mainImage)?.url() ?? "",
           width: 1600,
           height: 900,
-          alt: "Themis Reit",
+          alt: "Pensatori Irrazionali",
           type: "image/png",
         },
       ],
@@ -66,7 +66,7 @@ export async function generateMetadata({
 }
 
 export const viewport: Viewport = {
-  themeColor: "#E1FF00",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1.0,
   maximumScale: 1.0,
