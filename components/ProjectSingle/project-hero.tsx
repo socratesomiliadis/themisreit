@@ -36,12 +36,12 @@ export default function ProjectHero({
       <div className="w-full flex flex-col gap-24 mt-24">
         <TitleMarquee title={projectData.title} number={1} />
         <SimpleMarquee
-          baseVelocity={10}
+          baseVelocity={5}
           repeat={20}
-          direction="left"
+          direction="right"
           className={"bg-black text-white py-2"}
         >
-          <span className="uppercase text-sm pr-1">
+          <span className="uppercase text-sm pr-1 font-some-type-mono">
             {projectData.title} BY PENSATORI IRRAZIONALI — SCROLL DOWN —
           </span>
         </SimpleMarquee>

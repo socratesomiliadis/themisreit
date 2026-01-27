@@ -170,6 +170,12 @@ export type Project = {
     _type: "image";
     _key: string;
   }>;
+  projectInfo: {
+    numOfPeople: number;
+    numOfHours: number;
+    location: string;
+    director: string;
+  };
 };
 
 export type Category = {
@@ -433,6 +439,12 @@ export type ProjectsQueryResult = Array<{
     _type: "image";
     _key: string;
   }>;
+  projectInfo: {
+    numOfPeople: number;
+    numOfHours: number;
+    location: string;
+    director: string;
+  };
 }>;
 // Variable: projectBySlugQuery
 // Query: *[_type == "project" && slug.current == $slug]{  ...,  category->}[0]
@@ -564,6 +576,12 @@ export type ProjectBySlugQueryResult = {
     _type: "image";
     _key: string;
   }>;
+  projectInfo: {
+    numOfPeople: number;
+    numOfHours: number;
+    location: string;
+    director: string;
+  };
 } | null;
 // Variable: projectSlugsQuery
 // Query: *[_type == "project" && defined(slug.current)][].slug.current
@@ -745,6 +763,12 @@ export type NextProjectQueryResult = {
       _type: "image";
       _key: string;
     }>;
+    projectInfo: {
+      numOfPeople: number;
+      numOfHours: number;
+      location: string;
+      director: string;
+    };
   } | null;
   firstProject: {
     _id: string;
@@ -874,6 +898,12 @@ export type NextProjectQueryResult = {
       _type: "image";
       _key: string;
     }>;
+    projectInfo: {
+      numOfPeople: number;
+      numOfHours: number;
+      location: string;
+      director: string;
+    };
   } | null;
 } | null;
 

@@ -7,6 +7,7 @@
   --font-normal: 400;
   --font-ballet: var(--font-ballet);
   --font-pp-editorial: var(--font-pp-editorial);
+  --font-some-type-mono: var(--font-some-type-mono);
 }
 
 html {

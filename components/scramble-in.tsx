@@ -72,6 +72,15 @@ const ScrambleIn = forwardRef<ScrambleInHandle, ScrambleInProps>(
       }
     }, [autoStart, startAnimation]);
 
+    // Restart animation when text changes
+    useEffect(() => {
+      if (autoStart) {
+        reset();
+        startAnimation();
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [text]);
+
     useEffect(() => {
       let interval: NodeJS.Timeout;
 

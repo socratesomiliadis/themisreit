@@ -19,6 +19,11 @@ const ppEditorial = localFont({
   variable: "--font-pp-editorial",
 });
 
+const someTypeMono = localFont({
+  src: "../fonts/SomeTypeMono.woff2",
+  variable: "--font-some-type-mono",
+});
+
 export const metadata = {
   title: "Pensatori Irrazionali",
   description:
@@ -63,7 +68,7 @@ export default function RootLayout({
     <ViewTransitions>
       <html suppressHydrationWarning lang="en">
         <body
-          className={`font-wrapper font-helvetica-now ${ppEditorial.variable} ${helveticaNow.variable} ${ballet.variable}`}
+          className={`font-wrapper font-helvetica-now ${ppEditorial.variable} ${helveticaNow.variable} ${ballet.variable} ${someTypeMono.variable}`}
         >
           <Layout>{children}</Layout>
         </body>

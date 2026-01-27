@@ -21,7 +21,7 @@ export default function TitleMarquee({
     >
       <div className="relative font-ballet text-9xl mt-5 pr-2">
         {title}{" "}
-        <span className="text-[#5E5E5E] font-helvetica-now text-lg absolute top-4 -right-8">
+        <span className="text-[#5E5E5E] font-helvetica-now italic tracking-tight text-lg absolute top-4 -right-8">
           ({number.toString().padStart(2, "0")})
         </span>
       </div>

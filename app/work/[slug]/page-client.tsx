@@ -10,6 +10,9 @@ import {
 import { useLenis } from "lenis/react";
 import { useLayoutEffect } from "react";
 import ProjectNext from "@/components/ProjectSingle/project-next";
+import ProjectGallery from "@/components/ProjectSingle/project-gallery";
+import ProjectFrames from "@/components/ProjectSingle/project-frames";
+import ProjectInfo from "@/components/ProjectSingle/project-info";
 
 interface NextProject {
   _id: string;
@@ -41,6 +44,9 @@ export default function ProjectPageClient({
       <ProjectHero projectData={project} />
       <ProjectAbout projectData={project} />
       <ProjectStories projectData={project} />
+      <ProjectGallery projectData={project} />
+      <ProjectFrames projectData={project} />
+      <ProjectInfo projectData={project} />
       <ProjectNext nextProject={nextProject} />
     </main>
   );

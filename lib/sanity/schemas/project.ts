@@ -177,6 +177,38 @@ export default defineType({
       of: [{ type: "image" }],
       validation: (Rule) => Rule.required().min(1),
     }),
+    defineField({
+      name: "projectInfo",
+      title: "Project Info",
+      type: "object",
+      fields: [
+        defineField({
+          name: "numOfPeople",
+          title: "Number of People",
+          type: "number",
+          validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+          name: "numOfHours",
+          title: "Number of Hours",
+          type: "number",
+          validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+          name: "location",
+          title: "Location",
+          type: "string",
+          validation: (Rule) => Rule.required(),
+        }),
+        defineField({
+          name: "director",
+          title: "Director",
+          type: "string",
+          validation: (Rule) => Rule.required(),
+        }),
+      ],
+      validation: (Rule) => Rule.required(),
+    }),
   ],
   preview: {
     select: {

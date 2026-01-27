@@ -85,7 +85,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Scrollbar />
       {children}
       {/* WebGL background - components handle staggered initialization automatically */}
-      {showWebGL && !isSanityPage && !isNightPage && (
+      {/* {showWebGL && !isSanityPage && !isNightPage && (
         <div
           className={cn(
             "absolute top-0 left-1/2 -translate-x-1/2 w-[190vw] z-5 flex flex-col items-center pointer-events-none max-h-full overflow-hidden",
@@ -100,7 +100,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             />
           ))}
         </div>
-      )}
+      )} */}
     </div>
   );
 }
