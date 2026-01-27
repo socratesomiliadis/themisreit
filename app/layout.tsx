@@ -20,7 +20,7 @@ const ppEditorial = localFont({
 });
 
 const someTypeMono = localFont({
-  src: "../fonts/SomeTypeMono.woff2",
+  src: "../fonts/SometypeMono.woff2",
   variable: "--font-some-type-mono",
 });
 
