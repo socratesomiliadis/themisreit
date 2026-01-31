@@ -12,12 +12,12 @@ const BakedRelief = dynamic(
 );
 
 const WEBGL_TEXTURES = {
-  bake1: "/textures/dimcha/new/6.jpg",
-  bake2: "/textures/dimcha/new/5.jpg",
-  bake3: "/textures/dimcha/new/4.jpg",
-  bake4: "/textures/dimcha/new/3.jpg",
-  bake5: "/textures/dimcha/new/2.jpg",
-  bake6: "/textures/dimcha/new/1.jpg",
+  bake1: "/textures/dimcha/new/6.png",
+  bake2: "/textures/dimcha/new/5.png",
+  bake3: "/textures/dimcha/new/4.png",
+  bake4: "/textures/dimcha/new/3.png",
+  bake5: "/textures/dimcha/new/2.png",
+  bake6: "/textures/dimcha/new/1.png",
   plaster: "/textures/plaster.png",
 };
 
