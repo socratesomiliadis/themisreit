@@ -5,6 +5,7 @@ import { gsap, SplitText } from "@/lib/gsap";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
+import Cross from "./SVGs/cross";
 
 export default function TitleAndDesc({
   title,
@@ -102,17 +103,20 @@ export default function TitleAndDesc({
         wrapperClassName
       )}
     >
-      <span
-        className={cn(
-          "opacity-0 title-and-desc-title blur translate-x-4 text-sm",
-          titleClassName
-        )}
-      >
-        {title}
-      </span>
+      <div className="flex flex-row items-center gap-2">
+        <Cross className="size-2.5" />
+        <span
+          className={cn(
+            "opacity-0 title-and-desc-title blur translate-x-4 text-sm",
+            titleClassName
+          )}
+        >
+          ({title})
+        </span>
+      </div>
       <p
         className={cn(
-          "text-4xl font-[300] title-and-desc-text opacity-0 tracking-tight leading-none",
+          "text-4xl font-300 title-and-desc-text opacity-0 tracking-tight leading-none",
           descClassName
         )}
       >

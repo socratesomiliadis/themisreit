@@ -82,13 +82,6 @@ export default function HomeQuote() {
             SOM<span className="tracking-normal split-ignore">E</span>THING
           </span>
           <div className="flex flex-col relative">
-            <Image
-              src="/static/images/andySignature.png"
-              alt="Andy Signature"
-              width={215 * 2}
-              height={77 * 2}
-              className="w-52 absolute top-[-150%] left-[-15%] home-quote-anim invert"
-            />
             <span className="font-bold text-[3.5rem] tracking-tighter mb-5 home-quote-text lowercase">
               THAT WILL
             </span>
