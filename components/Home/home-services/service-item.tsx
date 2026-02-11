@@ -89,7 +89,7 @@ export default function ServiceItem({
           <Cross className="size-2.5" />
           <span>(About it)</span>
         </div>
-        <p className="text-3xl tracking-tight w-1/3 text-pretty font-light mt-4 ml-12">
+        <p className="text-3xl tracking-tight w-1/3 text-pretty mt-4 ml-12">
           {service.description}
         </p>
         <div className="flex flex-col mt-36">

@@ -16,7 +16,7 @@ export default function TitleAndDesc({
   delay,
   playOnScroll = false,
 }: {
-  title: string;
+  title?: string;
   desc: React.ReactNode;
   wrapperClassName?: string;
   titleClassName?: string;
@@ -77,7 +77,7 @@ export default function TitleAndDesc({
           0
         );
         tl.to(
-          [title, self.words],
+          title ? [title, self.words] : [self.words],
           {
             x: 0,
             opacity: 1,
@@ -103,17 +103,19 @@ export default function TitleAndDesc({
         wrapperClassName
       )}
     >
-      <div className="flex flex-row items-center gap-2">
-        <Cross className="size-2.5" />
-        <span
-          className={cn(
-            "opacity-0 title-and-desc-title blur translate-x-4 text-sm",
-            titleClassName
-          )}
-        >
-          ({title})
-        </span>
-      </div>
+      {title && (
+        <div className="flex flex-row items-center gap-2">
+          <Cross className="size-2.5" />
+          <span
+            className={cn(
+              "opacity-0 title-and-desc-title blur translate-x-4 text-sm",
+              titleClassName
+            )}
+          >
+            ({title})
+          </span>
+        </div>
+      )}
       <p
         className={cn(
           "text-4xl font-300 title-and-desc-text opacity-0 tracking-tight leading-none",

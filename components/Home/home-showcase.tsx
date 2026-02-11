@@ -44,7 +44,6 @@ export default function HomeShowcase() {
         <TitleAndDesc
           playOnScroll
           wrapperClassName="mt-12"
-          title="Our Studio"
           titleClassName="hidden"
           desc={
             <>
