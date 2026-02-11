@@ -10,7 +10,6 @@ import ScrambleIn from "@/components/scramble-in";
 import Pensatori from "./SVGs/pensatori-logo";
 import useNavigateTransition from "@/hooks/useNavigateTransition";
 import { usePathname } from "next/navigation";
-import PensatoriWhite from "./SVGs/pensatori-white";
 
 const LEFT_LIST = [
   "Websites",
@@ -278,8 +277,8 @@ function LoaderBoxRow({
 }) {
   return (
     <>
-      <div className="col-span-2 border-[#DADADA] border flex flex-row gap-8 justify-between p-3 loader-box opacity-0">
-        <div className="flex flex-col h-full justify-between text-[#434343] text-xs tracking-tight">
+      <div className="col-span-2 border-[#282828] border flex flex-row gap-8 justify-between p-3 loader-box opacity-0">
+        <div className="flex flex-col h-full justify-between text-white text-xs tracking-tight">
           {left.map((block, i) => (
             <ScrambleBlock key={i} lines={block} />
           ))}
@@ -310,13 +309,13 @@ function LoaderBoxRow({
           </JustifiedText>
         </div>
       </div>
-      <div className="col-span-1 border-[#DADADA] border flex flex-row gap-8 justify-between p-3 loader-box opacity-0">
-        <div className="flex flex-col h-full justify-between text-[#434343] text-xs tracking-tight leading-[1.05]">
+      <div className="col-span-1 border-[#282828] border flex flex-row gap-8 justify-between p-3 loader-box opacity-0">
+        <div className="flex flex-col h-full justify-between text-white text-xs tracking-tight leading-[1.05]">
           {rightBox.map((block, i) => (
             <ScrambleBlock key={i} lines={block} />
           ))}
         </div>
-        <div className="flex flex-col h-full justify-between text-[#434343] text-xs tracking-tight">
+        <div className="flex flex-col h-full justify-between text-white text-xs tracking-tight">
           {Array.from({ length: 7 }).map((_, index) => (
             <div
               key={index}
@@ -328,7 +327,7 @@ function LoaderBoxRow({
                   .padStart(2, "0")} STATUS / ACTIVE`}
                 scrambleSpeed={30}
               />
-              <div className="size-3 rounded-full bg-white loader-right-dot"></div>
+              <div className="size-3 rounded-full bg-[#282828] loader-right-dot"></div>
             </div>
           ))}
         </div>
@@ -430,7 +429,7 @@ function LoaderCircleSVG({ mirrored = false }: { mirrored?: boolean }) {
           cx="100"
           cy="391.624"
           r="391.312"
-          stroke="#DADADA"
+          stroke="#282828"
           strokeWidth="0.623598"
           className={`loader-draw-circle-cw-${id}`}
           style={{
@@ -443,7 +442,7 @@ function LoaderCircleSVG({ mirrored = false }: { mirrored?: boolean }) {
           cx="100"
           cy="391.624"
           r="391.312"
-          stroke="#DADADA"
+          stroke="#282828"
           strokeWidth="0.623598"
           className={`loader-draw-circle-ccw-${id}`}
           style={{
@@ -458,7 +457,7 @@ function LoaderCircleSVG({ mirrored = false }: { mirrored?: boolean }) {
           y1="378.124"
           x2="0"
           y2="378.124"
-          stroke="#DADADA"
+          stroke="#282828"
           className={`loader-draw-line-${id}`}
           style={{
             strokeDasharray: 491,
@@ -470,7 +469,7 @@ function LoaderCircleSVG({ mirrored = false }: { mirrored?: boolean }) {
           y1="378.141"
           x2="-1.86977"
           y2="245.141"
-          stroke="#DADADA"
+          stroke="#282828"
           className={`loader-draw-line-${id}`}
           style={{
             strokeDasharray: 520,
@@ -482,7 +481,7 @@ function LoaderCircleSVG({ mirrored = false }: { mirrored?: boolean }) {
           y1="378.141"
           x2="-1.12865"
           y2="509.141"
-          stroke="#DADADA"
+          stroke="#282828"
           className={`loader-draw-line-${id}`}
           style={{
             strokeDasharray: 520,
@@ -639,16 +638,16 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
   }, [lenis]);
 
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-[#e5e5e5] overflow-hidden loader-wrapper">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-[#111111] overflow-hidden loader-wrapper">
       <div className="absolute loader-close-wrapper w-full h-full z-22 flex flex-col gap-4 p-4">
         <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-24 z-22 loader-close-logo opacity-0">
-          <PensatoriWhite />
+          <Pensatori />
         </div>
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
             className={cn(
-              "w-0 basis-1/5 bg-[#111111] loader-blind",
+              "w-0 basis-1/5 bg-white loader-blind",
               i !== 0 && i !== 4 && "blind-expand"
             )}
           ></div>
@@ -675,8 +674,8 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
                 height: `${50 + i * 14}%`,
               }}
               className={cn(
-                "absolute h-[55%] aspect-square rounded-full border border-[#111111]/20 scale-0 loader-circle",
-                i === 0 && "bg-[#e5e5e5] z-10",
+                "absolute h-[55%] aspect-square rounded-full border border-white/60 scale-0 loader-circle",
+                i === 0 && "bg-white z-10",
                 i === 3 &&
                   "flex items-center justify-center overflow-hidden z-5 relative"
               )}
@@ -687,6 +686,14 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
                     <span className="font-ballet text-[2.5vw] leading-tight">
                       Loading
                     </span>
+                    {/* <video
+                      src="/static/videos/loading.mp4"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      className="w-[60%]"
+                    /> */}
                     <span className="font-helvetica-now text-[0.6vw] mb-2 absolute top-0 left-[84%] tracking-tight">
                       ({progress}%)
                     </span>
@@ -702,18 +709,18 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
               {i === 3 && (
                 <div className="relative w-full h-full loader-rotate">
                   <Image
-                    src="/static/images/loaderImage1.png"
-                    alt="Logo"
-                    width={700}
-                    height={700}
-                    priority
-                    className="w-1/2 aspect-square top-0 left-0 absolute "
-                  />
-                  <Image
                     src="/static/images/loaderImage2.png"
                     alt="Logo"
-                    width={700}
-                    height={700}
+                    width={800}
+                    height={800}
+                    priority
+                    className="w-1/2 aspect-square top-0 left-0 absolute"
+                  />
+                  <Image
+                    src="/static/images/loaderImage1.png"
+                    alt="Logo"
+                    width={800}
+                    height={800}
                     priority
                     className="w-1/2 aspect-square bottom-0 right-0 absolute"
                   />
@@ -728,7 +735,7 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
                 height: `${59 + i * 1}%`,
               }}
               className={cn(
-                "absolute h-[55%] aspect-square rounded-full border border-[#111111]/5 pointer-events-none z-0 opacity-0 loader-circle-secondary"
+                "absolute h-[55%] aspect-square rounded-full border border-white/10 pointer-events-none z-0 opacity-0 loader-circle-secondary"
               )}
             ></div>
           ))}
