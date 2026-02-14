@@ -564,14 +564,14 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
           },
           "<+=0.2"
         );
-        closeTl.addLabel("logo");
+        closeTl.addLabel("logo", "<+=0.3");
         closeTl.to(
           ".loader-close-logo",
           {
             opacity: 1,
             duration: 1,
           },
-          "logo<+=0.5"
+          "logo"
         );
         closeTl.fromTo(
           ".loader-close-logo-flag-part",
@@ -584,7 +584,7 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
             ease: "power2.inOut",
             stagger: 0.3,
           },
-          "logo<+=0.5"
+          "logo"
         );
       },
     });
