@@ -25,7 +25,7 @@ function LogoImage({
       alt="Logo"
       width={200}
       height={200}
-      className="w-full h-full object-contain"
+      className="w-full h-full object-contain select-none"
       onLoad={(e) => {
         const img = e.currentTarget;
         const aspectRatio = img.naturalWidth / img.naturalHeight;

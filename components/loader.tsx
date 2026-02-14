@@ -564,13 +564,27 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
           },
           "<+=0.2"
         );
+        closeTl.addLabel("logo");
         closeTl.to(
           ".loader-close-logo",
           {
             opacity: 1,
             duration: 1,
           },
-          "<+=0.5"
+          "logo<+=0.5"
+        );
+        closeTl.fromTo(
+          ".loader-close-logo-flag-part",
+          {
+            scaleY: 0,
+          },
+          {
+            scaleY: 1,
+            duration: 0.4,
+            ease: "power2.inOut",
+            stagger: 0.3,
+          },
+          "logo<+=0.5"
         );
       },
     });
@@ -640,14 +654,38 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center bg-[#111111] overflow-hidden loader-wrapper">
       <div className="absolute loader-close-wrapper w-full h-full z-22 flex flex-col gap-4 p-4">
-        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-24 z-22 loader-close-logo opacity-0">
+        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-24 z-22 loader-close-logo opacity-0 text-[#434343] flex flex-col">
           <Pensatori />
+          <span className="w-full mt-1">
+            <svg
+              width="100%"
+              viewBox="0 0 292 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                className="loader-close-logo-flag-part"
+                d="M97.2033 0H0V19.7034H97.2033V0Z"
+                fill="#009246"
+              />
+              <path
+                className="loader-close-logo-flag-part"
+                d="M194.399 0H97.1953V19.7034H194.399V0Z"
+                fill="white"
+              />
+              <path
+                className="loader-close-logo-flag-part"
+                d="M291.617 0H194.414V19.7034H291.617V0Z"
+                fill="#CE2B37"
+              />
+            </svg>
+          </span>
         </div>
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
             className={cn(
-              "w-0 basis-1/5 bg-white loader-blind",
+              "w-0 basis-1/5 bg-[#f5f5f5] loader-blind",
               i !== 0 && i !== 4 && "blind-expand"
             )}
           ></div>
@@ -675,7 +713,7 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
               }}
               className={cn(
                 "absolute h-[55%] aspect-square rounded-full border border-white/60 scale-0 loader-circle",
-                i === 0 && "bg-white z-10",
+                i === 0 && "bg-[#f5f5f5] z-10",
                 i === 3 &&
                   "flex items-center justify-center overflow-hidden z-5 relative"
               )}

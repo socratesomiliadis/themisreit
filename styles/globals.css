@@ -165,7 +165,7 @@ html.scrollbar-grabbing * {
 }
 
 ::view-transition {
-  background-color: #e5e5e5;
+  background-color: #111111;
 }
 
 ::view-transition-new(root) {

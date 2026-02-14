@@ -11,7 +11,7 @@ import { useLenis } from "lenis/react";
 import Link from "@/components/transition-link";
 import useNavigateTransition from "@/hooks/useNavigateTransition";
 import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
-import PensatoriWhite from "../SVGs/pensatori-white";
+import Pensatori from "../SVGs/pensatori-logo";
 
 export default function Header() {
   const lenis = useLenis();
@@ -212,14 +212,28 @@ export default function Header() {
     <>
       <Link
         href="/"
-        className="fixed left-12 top-10 w-18 z-997 text-white opacity-0 header-anim blur mix-blend-difference"
+        className="fixed left-12 top-10 w-18 z-997 text-[#b8b8b8] mix-blend-exclusion opacity-0 header-anim blur flex flex-col"
         onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
           e.preventDefault();
           navigateTo("/");
         }}
       >
-        <PensatoriWhite />
+        <span className="">
+          <Pensatori />
+        </span>
       </Link>
+      <span className="block fixed w-18 top-24 left-12 z-997 mt-1">
+        <svg
+          width="100%"
+          viewBox="0 0 292 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M97.2033 0H0V19.7034H97.2033V0Z" fill="#009246" />
+          <path d="M194.399 0H97.1953V19.7034H194.399V0Z" fill="white" />
+          <path d="M291.617 0H194.414V19.7034H291.617V0Z" fill="#CE2B37" />
+        </svg>
+      </span>
       <header
         style={{
           pointerEvents: !isMenuOpen ? "none" : "auto",
@@ -323,8 +337,8 @@ export default function Header() {
                   isNewsOpen
                     ? "rotate-180"
                     : isMenuOpen
-                      ? "rotate-0"
-                      : "rotate-180"
+                    ? "rotate-0"
+                    : "rotate-180"
                 )}
                 xmlns="http://www.w3.org/2000/svg"
               >

@@ -3,7 +3,7 @@ import { urlForImage } from "@/lib/sanity/sanity.image";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 
 export default function ProjectAbout({
@@ -15,9 +15,42 @@ export default function ProjectAbout({
 
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [leftDragConstraint, setLeftDragConstraint] = useState(-500);
   const { description, exampleImages } = projectData;
 
   const cursorRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const measureOverflow = () => {
+      const container = containerRef.current;
+      const content = contentRef.current;
+      if (!container || !content) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const contentRect = content.getBoundingClientRect();
+
+      // Amount of content cut off on the right (extends past viewport right edge)
+      // Dragging left reveals this, so left constraint = -overflowRight
+      const overflowRight = contentRect.right - containerRect.right;
+
+      console.log(overflowRight);
+      setLeftDragConstraint(-overflowRight);
+    };
+
+    measureOverflow();
+    const resizeObserver = new ResizeObserver(measureOverflow);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    window.addEventListener("resize", measureOverflow);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", measureOverflow);
+    };
+  }, [exampleImages]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     gsap.to(cursorRef.current, {
@@ -29,7 +62,10 @@ export default function ProjectAbout({
   }, []);
 
   return (
-    <section className="w-screen relative flex flex-col py-32 px-12 z-10">
+    <section
+      ref={containerRef}
+      className="w-screen relative flex flex-col py-32 px-12 z-10"
+    >
       <div className="flex items-center gap-2 text-[#707070] text-sm mb-4">
         <span className="text-base leading-none">+</span>
         <span className="tracking-tight">(About it)</span>
@@ -82,12 +118,13 @@ export default function ProjectAbout({
         </span>
       </div>
       <motion.div
+        ref={contentRef}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         drag="x"
         dragConstraints={{
-          left: -500,
+          left: -0.25 * window?.innerWidth,
           right: 0,
         }}
         dragElastic={0.1}
@@ -123,7 +160,10 @@ export default function ProjectAbout({
               return (
                 <Image
                   key={index}
-                  className={cn("object-contain", index === 0 && "mt-[15%]")}
+                  className={cn(
+                    "w-[25%] max-h-[40vh] object-contain",
+                    index === 0 && "mt-[15%]"
+                  )}
                   src={urlForImage(image)?.url() ?? ""}
                   width={1920}
                   height={1080}
@@ -132,16 +172,16 @@ export default function ProjectAbout({
               );
             })}
         </div>
-        <div className="flex flex-row gap-[5vw] pointer-events-none">
+        <div className="flex flex-row gap-[3vw] pointer-events-none">
           {exampleImages &&
             exampleImages.slice(4, 8).map((image, index) => {
               return (
                 <Image
                   key={index}
                   className={cn(
-                    "object-contain w-[40%]",
-                    index === 0 && "mt-[15%]",
-                    index === 1 && "size-52 -ml-[18%]"
+                    "object-contain w-[28%]",
+                    index === 0 && "mt-[5%] ml-[10%]",
+                    index === 1 && "size-36 -mt-[5%] -ml-[10%]"
                   )}
                   src={urlForImage(image)?.url() ?? ""}
                   width={1920}
