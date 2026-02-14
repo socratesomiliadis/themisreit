@@ -30,6 +30,9 @@ importers:
       '@sanity/orderable-document-list':
         specifier: ^1.4.0
         version: 1.4.0(@emotion/is-prop-valid@1.2.2)(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react-is@19.2.0)(react@19.2.0)(rxjs@7.8.2)(sanity@4.14.2(@emotion/is-prop-valid@1.2.2)(@portabletext/sanity-bridge@1.2.2(@sanity/schema@4.14.2(@types/react@19.2.2)(debug@4.4.3))(@sanity/types@4.14.2(@types/react@19.2.2)(debug@4.4.3)))(@types/node@24.10.0)(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(babel-plugin-react-compiler@1.0.0)(immer@10.2.0)(jiti@2.6.1)(lightningcss@1.30.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(styled-components@6.1.19(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(typescript@5.9.3)(yaml@2.8.1))(styled-components@6.1.19(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
+      '@sanity/ui':
+        specifier: ^3.1.11
+        version: 3.1.11(@emotion/is-prop-valid@1.2.2)(react-dom@19.2.0(react@19.2.0))(react-is@19.2.0)(react@19.2.0)(styled-components@6.1.19(react-dom@19.2.0(react@19.2.0))(react@19.2.0))
       '@types/three':
         specifier: ^0.182.0
         version: 0.182.0
@@ -51,6 +54,9 @@ importers:
       motion:
         specifier: ^12.23.24
         version: 12.23.24(@emotion/is-prop-valid@1.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
       next:
         specifier: 16.1.4
         version: 16.1.4(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -66,6 +72,9 @@ importers:
       react-dom:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
+      react-rnd:
+        specifier: ^10.5.2
+        version: 10.5.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-use-fittext:
         specifier: ^1.0.2
         version: 1.0.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -2929,6 +2938,10 @@ packages:
     resolution: {integrity: sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==}
     engines: {node: '>=0.8'}
 
+  clsx@1.2.1:
+    resolution: {integrity: sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==}
+    engines: {node: '>=6'}
+
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
@@ -5091,6 +5104,12 @@ packages:
   raf@3.4.1:
     resolution: {integrity: sha512-Sq4CW4QhwOHE8ucn6J34MqtZCeWFP2aQSmrlroYgqAV1PjStIhJXxYuTgUIfkEk7zTLjmIjLmU5q+fbD1NnOJA==}
 
+  re-resizable@6.11.2:
+    resolution: {integrity: sha512-2xI2P3OHs5qw7K0Ud1aLILK6MQxW50TcO+DetD9eIV58j84TqYeHoZcL9H4GXFXXIh7afhH8mv5iUCXII7OW7A==}
+    peerDependencies:
+      react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   react-clientside-effect@1.2.8:
     resolution: {integrity: sha512-ma2FePH0z3px2+WOu6h+YycZcEvFmmxIlAb62cF52bG86eMySciO/EQZeQMXd07kPCYB0a1dWDT5J+KE9mCDUw==}
     peerDependencies:
@@ -5110,6 +5129,12 @@ packages:
     resolution: {integrity: sha512-UlbRu4cAiGaIewkPyiRGJk0imDN2T3JjieT6spoL2UeSf5od4n5LB/mQ4ejmxhCFT1tYe8IvaFulzynWovsEFQ==}
     peerDependencies:
       react: ^19.2.0
+
+  react-draggable@4.4.6:
+    resolution: {integrity: sha512-LtY5Xw1zTPqHkVmtM3X8MUOxNDOUhv/khTgBgrUvwaS064bwVvxT+q5El0uUFNx5IEPKXuRejr7UqLwBIg5pdw==}
+    peerDependencies:
+      react: '>= 16.3.0'
+      react-dom: '>= 16.3.0'
 
   react-fast-compare@3.2.2:
     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
@@ -5171,6 +5196,12 @@ packages:
   react-refresh@0.17.0:
     resolution: {integrity: sha512-z6F7K9bV85EfseRCp2bzrpyQ0Gkw1uLoCel9XBVWPg/TjRj94SkJzUTGfOa4bs7iJvBWtQG0Wq7wnI0syw3EBQ==}
     engines: {node: '>=0.10.0'}
+
+  react-rnd@10.5.2:
+    resolution: {integrity: sha512-0Tm4x7k7pfHf2snewJA8x7Nwgt3LV+58MVEWOVsFjk51eYruFEa6Wy7BNdxt4/lH0wIRsu7Gm3KjSXY2w7YaNw==}
+    peerDependencies:
+      react: '>=16.3.0'
+      react-dom: '>=16.3.0'
 
   react-rx@4.2.2:
     resolution: {integrity: sha512-L0M51QxRnb5RndopV3lGPtG+O2rGVZl6aIzH1Fyx5ieOog/E947Xu00JERxksPJ9Lxn7kdME2wFtsWpiKTgI+A==}
@@ -9554,6 +9585,8 @@ snapshots:
 
   clone@1.0.4: {}
 
+  clsx@1.2.1: {}
+
   clsx@2.1.1: {}
 
   color-convert@1.9.3:
@@ -11936,6 +11969,11 @@ snapshots:
     dependencies:
       performance-now: 2.1.0
 
+  re-resizable@6.11.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+    dependencies:
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+
   react-clientside-effect@1.2.8(react@19.2.0):
     dependencies:
       '@babel/runtime': 7.28.4
@@ -11953,6 +11991,13 @@ snapshots:
     dependencies:
       react: 19.2.0
       scheduler: 0.27.0
+
+  react-draggable@4.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+    dependencies:
+      clsx: 1.2.1
+      prop-types: 15.8.1
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
 
   react-fast-compare@3.2.2: {}
 
@@ -12006,6 +12051,14 @@ snapshots:
       unist-util-visit-parents: 6.0.2
 
   react-refresh@0.17.0: {}
+
+  react-rnd@10.5.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+    dependencies:
+      re-resizable: 6.11.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      react-draggable: 4.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      tslib: 2.6.2
 
   react-rx@4.2.2(react@19.2.0)(rxjs@7.8.2):
     dependencies:

@@ -100,6 +100,12 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: "collage",
+      title: "Collage",
+      type: "collage",
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: "exampleImages",
       title: "Example Images",
       type: "array",
