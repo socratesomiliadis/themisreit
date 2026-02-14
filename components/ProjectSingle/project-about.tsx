@@ -15,7 +15,7 @@ export default function ProjectAbout({
 
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [leftDragConstraint, setLeftDragConstraint] = useState(-500);
+  const [leftDragConstraint, setLeftDragConstraint] = useState(0);
   const { description, exampleImages } = projectData;
 
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -23,33 +23,7 @@ export default function ProjectAbout({
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const measureOverflow = () => {
-      const container = containerRef.current;
-      const content = contentRef.current;
-      if (!container || !content) return;
-
-      const containerRect = container.getBoundingClientRect();
-      const contentRect = content.getBoundingClientRect();
-
-      // Amount of content cut off on the right (extends past viewport right edge)
-      // Dragging left reveals this, so left constraint = -overflowRight
-      const overflowRight = contentRect.right - containerRect.right;
-
-      console.log(overflowRight);
-      setLeftDragConstraint(-overflowRight);
-    };
-
-    measureOverflow();
-    const resizeObserver = new ResizeObserver(measureOverflow);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-    window.addEventListener("resize", measureOverflow);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", measureOverflow);
-    };
+    setLeftDragConstraint(-0.25 * window?.innerWidth);
   }, [exampleImages]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
@@ -124,7 +98,7 @@ export default function ProjectAbout({
         onMouseLeave={() => setIsHovered(false)}
         drag="x"
         dragConstraints={{
-          left: -0.25 * window?.innerWidth,
+          left: leftDragConstraint,
           right: 0,
         }}
         dragElastic={0.1}
