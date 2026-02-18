@@ -84,3 +84,7 @@ export async function getNextProject(
 export const clientsQuery = groq`*[_type == "client"]{
   ...
 } | order(orderRank)`;
+
+export async function getClients(client: SanityClient): Promise<any[]> {
+  return await client.fetch(clientsQuery);
+}

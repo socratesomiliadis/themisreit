@@ -9,7 +9,6 @@ import { useLenis } from "lenis/react";
 import ScrambleIn from "@/components/scramble-in";
 import Pensatori from "./SVGs/pensatori-logo";
 import useNavigateTransition from "@/hooks/useNavigateTransition";
-import { usePathname } from "next/navigation";
 
 const LEFT_LIST = [
   "Websites",
@@ -496,8 +495,7 @@ function LoaderCircleSVG({ mirrored = false }: { mirrored?: boolean }) {
 export default function Loader({ onComplete }: { onComplete?: () => void }) {
   const lenis = useLenis();
   const [progress, setProgress] = useState(0);
-  const { navigateTo } = useNavigateTransition();
-  const currentPath = usePathname();
+  const { completeLoaderTransition } = useNavigateTransition();
 
   useIsomorphicLayoutEffect(() => {
     const loaderTl = gsap.timeline({
@@ -507,15 +505,16 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
       onComplete: () => {
         const closeTl = gsap.timeline({
           onComplete: () => {
-            navigateTo(currentPath, true);
-            gsap.set(".loader-wrapper", {
-              delay: 0.6,
-              opacity: 0,
-              pointerEvents: "none",
+            completeLoaderTransition(() => {
+              gsap.set(".loader-wrapper", {
+                delay: 0.6,
+                opacity: 0,
+                pointerEvents: "none",
+              });
+              ScrollTrigger.refresh();
+              lenis?.start();
+              onComplete?.();
             });
-            ScrollTrigger.refresh();
-            lenis?.start();
-            onComplete?.();
           },
         });
         closeTl.to(
