@@ -13,6 +13,42 @@
  */
 
 // Source: schema.json
+export type Client = {
+  _id: string;
+  _type: "client";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  orderRank?: string;
+  name: string;
+  logo: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  title: string;
+  description: string;
+  mainImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+};
+
 export type Service = {
   _id: string;
   _type: "service";
@@ -104,6 +140,7 @@ export type Project = {
   brandColor: string;
   year: string;
   description: string;
+  collage: Collage;
   exampleImages: Array<{
     asset?: {
       _ref: string;
@@ -176,6 +213,31 @@ export type Project = {
     location: string;
     director: string;
   };
+};
+
+export type Collage = {
+  _type: "collage";
+  items: Array<{
+    image: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    zIndex?: number;
+    _type: "item";
+    _key: string;
+  }>;
 };
 
 export type Category = {
@@ -306,7 +368,7 @@ export type SanityAssetSourceData = {
   url?: string;
 };
 
-export type AllSanitySchemaTypes = Service | Project | Category | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
+export type AllSanitySchemaTypes = Client | Service | Project | Collage | Category | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: lib/sanity/sanity.queries.ts
 // Variable: projectsQuery
@@ -373,6 +435,7 @@ export type ProjectsQueryResult = Array<{
   brandColor: string;
   year: string;
   description: string;
+  collage: Collage;
   exampleImages: Array<{
     asset?: {
       _ref: string;
@@ -510,6 +573,7 @@ export type ProjectBySlugQueryResult = {
   brandColor: string;
   year: string;
   description: string;
+  collage: Collage;
   exampleImages: Array<{
     asset?: {
       _ref: string;
@@ -697,6 +761,7 @@ export type NextProjectQueryResult = {
     brandColor: string;
     year: string;
     description: string;
+    collage: Collage;
     exampleImages: Array<{
       asset?: {
         _ref: string;
@@ -832,6 +897,7 @@ export type NextProjectQueryResult = {
     brandColor: string;
     year: string;
     description: string;
+    collage: Collage;
     exampleImages: Array<{
       asset?: {
         _ref: string;
@@ -906,6 +972,43 @@ export type NextProjectQueryResult = {
     };
   } | null;
 } | null;
+// Variable: clientsQuery
+// Query: *[_type == "client"]{  ...} | order(orderRank)
+export type ClientsQueryResult = Array<{
+  _id: string;
+  _type: "client";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  orderRank?: string;
+  name: string;
+  logo: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  title: string;
+  description: string;
+  mainImage: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+}>;
 
 // Query TypeMap
 import "@sanity/client";
@@ -917,5 +1020,6 @@ declare module "@sanity/client" {
     "\n  *[_type == \"category\"] | order(lower(title))\n": CategoriesQueryResult;
     "*[_type == \"service\"]{\n  ...\n} | order(orderRank)": ServicesQueryResult;
     "*[_type == \"project\" && slug.current == $slug][0] {\n  _id,\n  orderRank,\n  \"nextProject\": *[_type == \"project\" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank) [0] {\n    ...,\n    category->\n  },\n  \"firstProject\": *[_type == \"project\" && defined(slug.current)] | order(orderRank) [0] {\n    ...,\n    category->\n  }\n}": NextProjectQueryResult;
+    "*[_type == \"client\"]{\n  ...\n} | order(orderRank)": ClientsQueryResult;
   }
 }

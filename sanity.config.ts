@@ -37,6 +37,12 @@ export default defineConfig({
               S,
               context,
             }),
+            orderableDocumentListDeskItem({
+              type: "client",
+              title: "Clients",
+              S,
+              context,
+            }),
           ]);
       },
     }),

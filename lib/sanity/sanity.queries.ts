@@ -80,3 +80,7 @@ export async function getNextProject(
 
   return null;
 }
+
+export const clientsQuery = groq`*[_type == "client"]{
+  ...
+} | order(orderRank)`;
