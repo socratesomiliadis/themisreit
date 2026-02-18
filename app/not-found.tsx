@@ -1,4 +1,5 @@
+import Error404 from "@/components/error-404";
+
 export default function NotFound() {
-  return <div>No
-    tFound</div>;   
+  return <Error404 />;
 }

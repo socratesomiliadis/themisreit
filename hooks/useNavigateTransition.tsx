@@ -1,3 +1,5 @@
+"use client";
+
 import { slideOutIn } from "@/lib/transition";
 import { useTransitionRouter } from "next-view-transitions";
 import { usePathname } from "next/navigation";
@@ -38,7 +40,13 @@ export default function useNavigateTransition() {
   function completeLoaderTransition(onComplete: () => void) {
     lenis?.stop();
     if ("startViewTransition" in document) {
-      (document as Document & { startViewTransition: (cb: () => void | Promise<void>) => { ready: Promise<void> } })
+      (
+        document as Document & {
+          startViewTransition: (cb: () => void | Promise<void>) => {
+            ready: Promise<void>;
+          };
+        }
+      )
         .startViewTransition(() => {
           flushSync(() => {
             onComplete();

@@ -37,7 +37,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const lenis = useLenis();
   const isWorkPage = pathname === "/work";
   const isNightPage = pathname === "/night";
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   // Wait for loader to finish before mounting WebGL
   const [showWebGL, setShowWebGL] = useState(false);
 
