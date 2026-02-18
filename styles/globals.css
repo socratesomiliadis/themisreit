@@ -35,8 +35,8 @@ button {
 }
 
 ::selection {
-  background: #28f300;
-  color: #000;
+  background: #434343;
+  color: #f5f5f5;
 }
 
 .showcase-row img {

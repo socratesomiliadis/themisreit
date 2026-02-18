@@ -1,4 +1,3 @@
-import ProjectsSlider from "@/components/projects-slider";
 import { getProjects } from "@/lib/sanity/sanity.queries";
 import { getClient } from "@/lib/sanity/sanityClient";
 import ProjectsSliderNew from "@/components/projects-slider-new";

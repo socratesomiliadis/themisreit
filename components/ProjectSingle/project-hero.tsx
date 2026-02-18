@@ -14,7 +14,7 @@ export default function ProjectHero({
   return (
     <section
       // style={{ backgroundColor: projectData.brandColor }}
-      className="w-screen min-h-svh pt-32 z-10 relative flex flex-col justify-between"
+      className="w-screen min-h-svh pt-40 z-10 relative flex flex-col justify-between"
     >
       <div className="w-full px-12">
         <ProjectItem

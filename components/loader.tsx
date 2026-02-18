@@ -558,7 +558,7 @@ export default function Loader({ onComplete }: { onComplete?: () => void }) {
         closeTl.to(
           ".blind-expand",
           {
-            scaleY: 1.2,
+            scaleY: 1.3,
             duration: 1,
             stagger: 0,
           },

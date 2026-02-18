@@ -7,7 +7,7 @@ export default function HomeHero() {
   return (
     <section className="relative w-screen h-[110vh] flex items-end px-12 pb-[8%] home-hero overflow-hidden">
       <TitleAndDesc
-        delay={1.2}
+        delay={1.4}
         wrapperClassName="z-20"
         title="Atelier"
         desc={
@@ -17,6 +17,7 @@ export default function HomeHero() {
             elegance, and essence are felt—not explained.
           </>
         }
+        playOnScroll={false}
       />
       <Image
         src="/static/images/flagsTrans.png"

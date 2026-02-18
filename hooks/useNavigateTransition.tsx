@@ -1,4 +1,4 @@
-import { scaleInOut, slideOutIn } from "@/lib/transition";
+import { slideOutIn } from "@/lib/transition";
 import { useTransitionRouter } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";

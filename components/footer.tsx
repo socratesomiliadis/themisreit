@@ -7,13 +7,14 @@ import { cn } from "@/lib/utils";
 import { gsap, SplitText } from "@/lib/gsap";
 import FooterCaligraphy from "./SVGs/footer-caligraphy";
 import SimpleMarquee from "./simple-marquee";
+import Image from "next/image";
 
 function FooterSmallLink({ href, text }: { href: string; text: string }) {
   return (
     <Link
       href={href}
       target="_blank"
-      className="text-[#5E5E5E] hover:text-[#28F300] tracking-tighter flex flex-row items-center group transition-[color] duration-200 ease-out"
+      className="text-[#5E5E5E] hover:text-[#F259EF] tracking-tighter flex flex-row items-center group transition-[color] duration-200 ease-out"
     >
       <span className="flex items-center justify-center w-3 h-lh scale-0 group-hover:scale-100 transition-scale duration-200 ease-out origin-left">
         <svg
@@ -140,14 +141,14 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="w-screen relative flex flex-col justify-center z-[998]">
-        <div className="w-full relative flex items-center justify-center">
+      <footer className="w-screen relative flex flex-col justify-center">
+        <div className="w-full relative flex items-center justify-center z-1">
           <div className="absolute w-full cursor-pointer hover:scale-105 transition-transform duration-500 ease-out translate-y-12">
             <SimpleMarquee
               baseVelocity={10}
               direction="left"
               repeat={20}
-              className="bg-[#2BFF00] py-3 text-sm"
+              className="bg-[#FF5EFC] py-3 text-sm"
             >
               <span className="pl-1">
                 IS YOUR VISION READY TO HIT THE WORLD? — LET&apos;S WORK —
@@ -157,10 +158,12 @@ export default function Footer() {
           <FooterCaligraphy />
         </div>
 
-        <div className="w-full relative footer-bottom-wrapper px-18 pt-8 pb-14 flex flex-row items-center justify-center whitespace-nowrap">
+        <div className="w-full relative z-1 footer-bottom-wrapper px-18 pt-8 pb-14 flex flex-row items-center justify-center whitespace-nowrap">
           <div className="w-full flex">
             <div className="flex flex-col">
-              <span className="text-lg text-[#000] tracking-tighter">Menu</span>
+              <span className="text-xl text-[#FF5EFC] tracking-tighter">
+                Menu
+              </span>
               <FooterNavLink href="/" text="Home" className="mt-14" />
               <FooterNavLink href="/about" text="About Us" />
               <FooterNavLink href="/work" text="Projects" />
@@ -169,7 +172,7 @@ export default function Footer() {
               <FooterNavLink href="/contact" text="Contact Us" />
             </div>
             <div className="flex flex-col ml-64">
-              <span className="text-lg text-[#000] tracking-tighter">
+              <span className="text-xl text-[#FF5EFC] tracking-tighter">
                 Contact
               </span>
               <div className="mt-14 h-full flex flex-col justify-between">
@@ -208,10 +211,10 @@ export default function Footer() {
                   onClick={() => {
                     lenis?.scrollTo(0);
                   }}
-                  className="text-lg text-[#000] tracking-tighter flex flex-row items-center gap-2 group"
+                  className="text-xl text-[#FF5EFC] tracking-tighter flex flex-row items-center gap-2 group"
                 >
                   <span>Back to top</span>
-                  <span className="size-0 group-hover:size-6 transition-size duration-200 ease-out rounded-full bg-[#000] flex items-center justify-center text-[#fff]">
+                  <span className="size-0 group-hover:size-6 transition-size duration-200 ease-out rounded-full bg-[#FF5EFC] flex items-center justify-center text-[#fff]">
                     <svg
                       width="45%"
                       viewBox="0 0 17 20"
@@ -230,19 +233,19 @@ export default function Footer() {
                 <div className="flex flex-row gap-8">
                   <Link
                     href="/cookie-settings"
-                    className="text-[#5E5E5E] tracking-tighter hover:text-white transition-colors duration-200 ease-out"
+                    className="text-[#5E5E5E] tracking-tighter hover:text-[#FF5EFC] transition-colors duration-200 ease-out"
                   >
                     Cookie Settings
                   </Link>
                   <Link
                     href="/cookie-policy"
-                    className="text-[#5E5E5E] tracking-tighter hover:text-white transition-colors duration-200 ease-out"
+                    className="text-[#5E5E5E] tracking-tighter hover:text-[#FF5EFC] transition-colors duration-200 ease-out"
                   >
                     Cookie Policy
                   </Link>
                   <Link
                     href="/privacy-policy"
-                    className="text-[#5E5E5E] tracking-tighter hover:text-white transition-colors duration-200 ease-out"
+                    className="text-[#5E5E5E] tracking-tighter hover:text-[#FF5EFC] transition-colors duration-200 ease-out"
                   >
                     Privacy Policy
                   </Link>
@@ -261,6 +264,17 @@ export default function Footer() {
             </div>
           </div>
         </div>
+        <Image
+          style={{
+            maskImage: "linear-gradient(to bottom, transparent, black)",
+            maskSize: "100% 100%",
+          }}
+          src="/static/images/tempFooter.png"
+          width={2560}
+          height={1440}
+          className="w-full -mt-[40%] z-0 opacity-50"
+          alt="Footer"
+        />
       </footer>
     </>
   );

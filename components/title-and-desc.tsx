@@ -6,6 +6,7 @@ import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import Cross from "./SVGs/cross";
+import { useLoaderContext } from "@/contexts/loader-context";
 
 export default function TitleAndDesc({
   title,
@@ -25,6 +26,7 @@ export default function TitleAndDesc({
   playOnScroll?: boolean;
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const { isLoaderComplete } = useLoaderContext();
 
   useIsomorphicLayoutEffect(() => {
     let tl: GSAPTimeline;
@@ -34,7 +36,20 @@ export default function TitleAndDesc({
     const title = wrapperRef.current?.querySelector(
       ".title-and-desc-title"
     ) as HTMLSpanElement;
+    const elem = wrapperRef.current?.querySelector(
+      ".title-and-desc-elem"
+    ) as HTMLElement;
 
+    gsap.set(elem, {
+      opacity: 0,
+      x: "1rem",
+      filter: "blur(8px)",
+    });
+    gsap.set(title, {
+      opacity: 0,
+      x: "1rem",
+      filter: "blur(8px)",
+    });
     const split = SplitText.create(text, {
       type: "words, lines",
       linesClass: "title-and-desc-line",
@@ -65,6 +80,10 @@ export default function TitleAndDesc({
             ease: "power2.out",
           },
         });
+
+        tl.set(wrapperRef.current, {
+          opacity: 1,
+        });
         tl.set(text, {
           opacity: 1,
         });
@@ -77,7 +96,7 @@ export default function TitleAndDesc({
           0
         );
         tl.to(
-          title ? [title, self.words] : [self.words],
+          title ? [elem, title, self.words] : [self.words],
           {
             x: 0,
             opacity: 1,
@@ -93,29 +112,30 @@ export default function TitleAndDesc({
       split.revert();
       tl?.kill();
     };
-  }, []);
+  }, [isLoaderComplete]);
 
   return (
     <div
       ref={wrapperRef}
       className={cn(
-        "flex flex-col gap-4 text-[#434343] tracking-tight",
+        "flex flex-col gap-4 text-[#434343] tracking-tight opacity-0",
         wrapperClassName
       )}
     >
-      {title && (
-        <div className="flex flex-row items-center gap-2">
-          <Cross className="size-2.5" />
-          <span
-            className={cn(
-              "opacity-0 title-and-desc-title blur translate-x-4 text-sm",
-              titleClassName
-            )}
-          >
-            ({title})
-          </span>
-        </div>
-      )}
+      <div
+        className={cn("flex flex-row items-center gap-2", !title && "hidden")}
+      >
+        <Cross className="size-2.5 title-and-desc-elem opacity-0 translate-x-4 blur" />
+        <span
+          className={cn(
+            "opacity-0 title-and-desc-title blur translate-x-4 text-sm",
+            titleClassName
+          )}
+        >
+          ({title})
+        </span>
+      </div>
+
       <p
         className={cn(
           "text-4xl font-300 title-and-desc-text opacity-0 tracking-tight leading-none",

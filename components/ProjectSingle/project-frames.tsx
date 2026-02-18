@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
 import { ProjectStoriesCursor } from "./project-stories";
 import { cn } from "@/lib/utils";
-import { gsap } from "@/lib/gsap";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 export default function ProjectFrames({
   projectData,
@@ -58,6 +58,9 @@ export default function ProjectFrames({
       onMouseLeave={() => {
         setIsHovering(false);
       }}
+      style={{
+        clipPath: "inset(0% 0% 0% 0%)",
+      }}
       onClick={handleClick}
       className="w-screen h-screen relative z-10 cursor-none select-none"
     >
@@ -109,6 +112,9 @@ export default function ProjectFrames({
           <Image
             src={urlForImage(frame)?.url() ?? ""}
             alt=""
+            onLoad={() => {
+              if (index === 0) ScrollTrigger.refresh();
+            }}
             width={1920}
             height={1080}
             className="w-full h-full object-cover"

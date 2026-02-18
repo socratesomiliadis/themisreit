@@ -17,7 +17,7 @@ export default async function Home() {
 
   return (
     <>
-      <main>
+      <main className="pb-64">
         <HomeHero />
         <HomeProjects projects={projects} />
         <HomeProof />
@@ -26,7 +26,7 @@ export default async function Home() {
         <HomeQuote />
         <HomeReel />
         <HomeCta />
-        <HomeEllipsisText />
+        {/* <HomeEllipsisText /> */}
       </main>
       <Footer />
     </>

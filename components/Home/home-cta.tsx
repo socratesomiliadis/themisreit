@@ -3,6 +3,7 @@ import useIsomorphicLayoutEffect from "@/hooks/useIsomorphicLayoutEffect";
 import { gsap } from "@/lib/gsap";
 import ScrambleIn, { ScrambleInHandle } from "../scramble-in";
 import { useRef } from "react";
+import Link from "@/components/transition-link";
 
 export default function HomeCta() {
   const ref = useRef<ScrambleInHandle>(null);
@@ -33,27 +34,29 @@ export default function HomeCta() {
       x: "-6%",
       height: "17rem",
       width: "4rem",
-      backgroundColor: "#00FF37",
+      backgroundColor: "#F259EF",
       rotate: 90,
       ease: "none",
     });
     tl2.addLabel("start");
+    tl2.set(
+      ".testos",
+      {
+        pointerEvents: "auto",
+      },
+      "start-=0.2"
+    );
     tl2.to(
       ".testos-text",
       {
+        scrambleText: {
+          text: "CONTACT US",
+        },
         opacity: 1,
         ease: "none",
       },
       "start-=0.3"
     );
-    tl2.call(
-      () => {
-        ref.current?.start();
-      },
-      undefined,
-      "start-=0.2"
-    );
-
     return () => {
       tl.kill();
       tl2.kill();
@@ -82,16 +85,12 @@ export default function HomeCta() {
                         BU
                         <span className="last-text-i relative">
                           <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-[48%] w-[45%] h-[48%] flex items-center justify-center">
-                            <button className="w-full h-full bg-[#434343] testos text-2xl text-[#434343] flex items-center justify-center z-20">
-                              <span className="-rotate-90 block whitespace-nowrap">
-                                <ScrambleIn
-                                  autoStart={false}
-                                  text="CONTACT US"
-                                  className="whitespace-nowrap testos-text opacity-0"
-                                  ref={ref}
-                                />
-                              </span>
-                            </button>
+                            <Link
+                              href="/contact"
+                              className="w-full h-full bg-[#434343] testos text-2xl text-[#434343] flex items-center justify-center z-20 pointer-events-none"
+                            >
+                              <span className="-rotate-90 block whitespace-nowrap testos-text pointer-events-none"></span>
+                            </Link>
                           </div>
 
                           <span className="opacity-0 pointer-events-none">

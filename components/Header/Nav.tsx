@@ -203,14 +203,14 @@ export default function Nav({
         <NavItem
           isMenuOpen={isOpen}
           setIsOpen={setIsOpen}
-          text="About"
-          href="/about"
+          text="Work"
+          href="/work"
         />
         <NavItem
           isMenuOpen={isOpen}
           setIsOpen={setIsOpen}
-          text="Work"
-          href="/work"
+          text="Universe"
+          href="/universe"
         />
         <NavItem
           isMenuOpen={isOpen}

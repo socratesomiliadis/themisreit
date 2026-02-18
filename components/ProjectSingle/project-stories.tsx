@@ -46,7 +46,6 @@ export function ProjectStoriesCursor({
         left: mousePosition.x,
         top: mousePosition.y,
         opacity: isHovering ? 1 : 0,
-        transform: "translate(-50%, -50%)",
       }}
     >
       <div
@@ -171,7 +170,7 @@ function ProjectStoriesContent({
       // Only navigate if it wasn't a hold (short click)
       if (!wasHoldingRef.current && containerRef.current) {
         const clientX =
-          "clientX" in e ? e.clientX : (e.changedTouches?.[0]?.clientX ?? 0);
+          "clientX" in e ? e.clientX : e.changedTouches?.[0]?.clientX ?? 0;
         const rect = containerRef.current.getBoundingClientRect();
         const x = clientX - rect.left;
 
@@ -272,12 +271,15 @@ function ProjectStoriesContent({
   return (
     <section
       ref={containerRef}
-      className="w-screen h-svh relative overflow-hidden cursor-none select-none z-10"
+      className="w-screen h-svh relative overflow-hidden select-none cursor-none z-10"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => {
         setIsHovering(false);
         handlePointerLeave();
+      }}
+      style={{
+        clipPath: "inset(0% 0% 0% 0%)",
       }}
       onMouseDown={handlePointerDown}
       onMouseUp={handlePointerUp}

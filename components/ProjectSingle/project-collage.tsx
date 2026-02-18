@@ -96,7 +96,7 @@ function CollageLayer({
         x: parallaxOffset,
         backfaceVisibility: "hidden" as const,
       }}
-      className="absolute overflow-hidden isolate"
+      className="absolute overflow-hidden isolate will-change-transform"
     >
       <Image
         src={imageUrl}

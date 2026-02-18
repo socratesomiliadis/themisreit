@@ -36,7 +36,7 @@ export function ProjectItem({
         router.prefetch(`/work/${slug}`);
         lenis?.stop();
         lenis?.scrollTo(activeItem, {
-          offset: -128,
+          offset: -160,
           lock: true,
           duration: 1,
           force: true,
@@ -116,30 +116,6 @@ export function ProjectItem({
         <span className="w-[52%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
           {projectData.title}
         </span>
-        {/* <div
-          style={{
-            mask: "linear-gradient(to right, transparent 0%, black 15%, black 100%)",
-          }}
-          className="absolute w-[48%] h-full z-10 overflow-hidden right-0 translate-y-[100%] group-hover:-translate-y-0 transition-transform duration-300 ease-out"
-        >
-          <SimpleMarquee
-            baseVelocity={70}
-            repeat={20}
-            style={{ backgroundColor: projectData.brandColor }}
-            direction="left"
-            className={cn("h-full")}
-          >
-            <div className="h-full w-auto aspect-square flex items-center justify-center pr-3 box-content">
-              <Image
-                src={urlForImage(projectData.logoMarquee)?.url() ?? ""}
-                alt={projectData.title}
-                width={500}
-                height={500}
-                className="w-2/3 h-auto max-h-2/3 object-contain"
-              />
-            </div>
-          </SimpleMarquee>
-        </div> */}
         <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-[#434343] text-sm overflow-hidden transition-transform duration-300 ease-out">
           <div className="flex-col col-span-2">
             <span className="text-[#5E5E5E]">

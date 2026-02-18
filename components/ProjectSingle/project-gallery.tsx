@@ -1,6 +1,7 @@
 import { urlForImage } from "@/lib/sanity/sanity.image";
 import { ProjectBySlugQueryResult } from "@/sanity.types";
 import Image from "next/image";
+import { ScrollTrigger } from "@/lib/gsap";
 
 export default function ProjectGallery({
   projectData,
@@ -25,8 +26,11 @@ export default function ProjectGallery({
             </span>
             <Image
               src={urlForImage(image)?.url() ?? ""}
+              onLoad={() => {
+                if (index === 0) ScrollTrigger.refresh();
+              }}
               alt=""
-              width={1920}
+              width={1080}
               height={1080}
               className="w-full h-auto object-contain"
             />

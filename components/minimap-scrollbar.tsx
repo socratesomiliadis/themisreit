@@ -15,8 +15,8 @@ export default function MinimapScrollbar({
           <div
             key={index}
             className={cn(
-              "w-3 h-auto aspect-11/16 border border-white/50 transition-[width,border-color] duration-300 ease-out",
-              index === activeIndex && "w-5 border-white",
+              "w-3 h-auto aspect-11/16 border border-[#e5e5e5] transition-[width,border-color] duration-300 ease-out",
+              index === activeIndex && "w-5 border-[#434343]/70",
               Math.abs(index - activeIndex) === 1 && "w-4"
             )}
           ></div>

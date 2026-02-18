@@ -10,6 +10,7 @@ import { useLenis } from "lenis/react";
 import Loader from "./loader";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
+import { LoaderProvider } from "@/contexts/loader-context";
 
 // Dynamic import to avoid SSR issues with Three.js
 const BakedRelief = dynamic(
@@ -51,9 +52,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     } else {
       lenis?.start();
       document.body.style.overflow = "";
+      // Recalculate Lenis dimensions after content is visible (critical for work page
+      // horizontal scroll on reload - Lenis may have initialized before content was ready)
+      const resizeLenis = () => {
+        lenis?.resize();
+        ScrollTrigger.refresh();
+      };
+      const rafId = requestAnimationFrame(() => {
+        // Work page needs extra frame for client component hydration
+        isWorkPage ? requestAnimationFrame(resizeLenis) : resizeLenis();
+      });
       // Show WebGL after loader finishes - components handle their own deferred init
       const timer = setTimeout(() => setShowWebGL(true), 1450);
-      return () => clearTimeout(timer);
+      return () => {
+        cancelAnimationFrame(rafId);
+        clearTimeout(timer);
+      };
     }
   }, [isLoading, lenis]);
 
@@ -68,24 +82,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const isSanityPage = pathname.includes("/sanity");
 
   return (
-    <div className="layout-wrapper w-screen relative bg-[#f5f5f5]">
-      {isLoading && !isSanityPage && (
-        <Loader onComplete={() => setIsLoading(false)} />
-      )}
-      {isSanityPage ? null : <Header />}
-      <Lenis
-        root
-        options={{
-          orientation: isWorkPage ? "horizontal" : "vertical",
-          infinite: isWorkPage,
-          prevent: (node: Element | null) =>
-            node?.getAttribute("data-lenis-prevent") === "true",
-        }}
-      />
-      <Scrollbar />
-      {children}
-      {/* WebGL background - components handle staggered initialization automatically */}
-      {/* {showWebGL && !isSanityPage && !isNightPage && (
+    <LoaderProvider isLoaderPlaying={isLoading}>
+      <div className="layout-wrapper w-screen relative bg-[#f5f5f5]">
+        {isLoading && !isSanityPage && (
+          <Loader onComplete={() => setIsLoading(false)} />
+        )}
+        {isSanityPage ? null : <Header />}
+        <Lenis
+          root
+          options={{
+            orientation: isWorkPage ? "horizontal" : "vertical",
+            infinite: isWorkPage,
+            prevent: (node: Element | null) =>
+              node?.getAttribute("data-lenis-prevent") === "true",
+          }}
+        />
+        <Scrollbar />
+        {children}
+        {/* WebGL background - components handle staggered initialization automatically */}
+        {/* {showWebGL && !isSanityPage && !isNightPage && (
         <div
           className={cn(
             "absolute top-0 left-1/2 -translate-x-1/2 w-[190vw] z-5 flex flex-col items-center pointer-events-none max-h-full overflow-hidden",
@@ -101,6 +116,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           ))}
         </div>
       )} */}
-    </div>
+      </div>
+    </LoaderProvider>
   );
 }
