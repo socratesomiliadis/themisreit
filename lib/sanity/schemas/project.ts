@@ -105,13 +105,7 @@ export default defineType({
       type: "collage",
       validation: (Rule) => Rule.required(),
     }),
-    defineField({
-      name: "exampleImages",
-      title: "Example Images",
-      type: "array",
-      of: [{ type: "image" }],
-      validation: (Rule) => Rule.required().min(1).max(8),
-    }),
+
     defineField({
       name: "stories",
       title: "Stories",
