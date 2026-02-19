@@ -36,7 +36,7 @@ export function ProjectItem({
         router.prefetch(`/work/${slug}`);
         lenis?.stop();
         lenis?.scrollTo(activeItem, {
-          offset: -160,
+          offset: -161,
           lock: true,
           duration: 1,
           force: true,
@@ -109,11 +109,11 @@ export function ProjectItem({
         `project-item-${slug}`
       )}
     >
-      <span className="text-[#434343] text-6xl leading-[0.75] absolute left-0">
+      <span className="text-[#434343] text-[3.5rem] leading-[0.75] absolute left-0">
         {projectData.title}
       </span>
       <div className="w-full border-y border-[#303030]/10 flex flex-row items-center relative overflow-hidden">
-        <span className="w-[55%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
+        <span className="w-[55%] text-white text-[3.5rem] leading-[0.75] opacity-0 pointer-events-none">
           {projectData.title}
         </span>
         <div className="w-[45%] relative grid grid-cols-5 whitespace-nowrap items-center gap-4 text-[#434343] text-sm overflow-hidden transition-transform duration-300 ease-out">
@@ -132,7 +132,7 @@ export function ProjectItem({
               alt={projectData.title}
               width={500}
               height={500}
-              className="w-auto h-11"
+              className="w-auto h-10"
             />
             <span className="block min-w-2.5 w-2.5 text-[#5E5E5E] absolute right-0">
               <svg
@@ -155,7 +155,7 @@ export function ProjectItem({
           </div>
         </div>
       </div>
-      <div className="absolute left-1/2 -translate-x-1/2 top-20 w-screen max-w-none px-12 project-item-image opacity-0 pointer-events-none">
+      <div className="absolute left-1/2 -translate-x-1/2 top-19 w-screen max-w-none px-12 project-item-image opacity-0 pointer-events-none">
         <Image
           src={urlForImage(projectData.mainImage)?.url() ?? ""}
           alt={projectData.title}

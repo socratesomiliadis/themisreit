@@ -68,8 +68,8 @@ function Slide({
           />
         </div>
       </div>
-      <div className="absolute z-10 left-0 -bottom-5 w-full overflow-hidden">
-        <span className="text-[#434343] text-xl tracking-tighter leading-[0.75] translate-y-[120%] group-hover:translate-y-0 transition-transform duration-300 ease-out block">
+      <div className="absolute z-10 left-0 -bottom-8 w-full overflow-hidden">
+        <span className="text-[#434343] text-xl tracking-tighter translate-y-[120%] group-hover:translate-y-0 transition-transform duration-300 ease-out block">
           {project.title}
         </span>
       </div>
