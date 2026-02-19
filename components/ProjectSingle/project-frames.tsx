@@ -68,6 +68,7 @@ export default function ProjectFrames({
     >
       <ProjectStoriesCursor
         isPaused={false}
+        brandColor={brandColor}
         cursorText={cursorText}
         mousePosition={mousePosition}
         isHovering={isHovering}

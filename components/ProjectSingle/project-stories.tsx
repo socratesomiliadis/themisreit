@@ -22,6 +22,7 @@ interface ProjectStoriesContentProps {
   company: string;
   year: string;
   projectOrigin: NonNullable<ProjectBySlugQueryResult>["projectOrigin"];
+  brandColor: string;
 }
 
 export function ProjectStoriesCursor({
@@ -30,12 +31,14 @@ export function ProjectStoriesCursor({
   mousePosition,
   isHovering,
   className,
+  brandColor,
 }: {
   isPaused: boolean;
   cursorText: "NEXT" | "PREV";
   mousePosition: { x: number; y: number };
   isHovering: boolean;
   className?: string;
+  brandColor: string;
 }) {
   return (
     <motion.div
@@ -48,12 +51,11 @@ export function ProjectStoriesCursor({
         left: mousePosition.x,
         top: mousePosition.y,
         opacity: isHovering ? 1 : 0,
+        backgroundColor: isPaused ? "#fff" : brandColor,
       }}
     >
       <div
-        className={`px-4 py-2 text-sm font-medium tracking-tight flex items-center gap-2 transition-colors duration-150 text-[#434343] ${
-          isPaused ? "bg-white/90" : "bg-[#28f300]"
-        }`}
+        className={`px-4 py-2 text-sm font-medium tracking-tight flex items-center gap-2 transition-colors duration-150 text-[#434343] `}
       >
         <ScrambleIn
           scrambleSpeed={75}
@@ -112,6 +114,7 @@ function ProjectStoriesContent({
   company,
   year,
   projectOrigin,
+  brandColor,
 }: ProjectStoriesContentProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -364,6 +367,7 @@ function ProjectStoriesContent({
       {/* Mouse Follower Cursor */}
       {isHovering && (
         <ProjectStoriesCursor
+          brandColor={brandColor}
           isPaused={isPaused}
           cursorText={cursorText}
           mousePosition={mousePosition}
@@ -389,10 +393,12 @@ export default function ProjectStories({
 }) {
   if (!projectData || !projectData.stories?.length) return null;
 
-  const { stories, logo, company, year, projectOrigin } = projectData;
+  const { stories, logo, company, year, projectOrigin, brandColor } =
+    projectData;
 
   return (
     <ProjectStoriesContent
+      brandColor={brandColor}
       stories={stories}
       logo={logo}
       company={company}

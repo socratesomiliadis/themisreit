@@ -113,10 +113,10 @@ export function ProjectItem({
         {projectData.title}
       </span>
       <div className="w-full border-y border-[#303030]/10 flex flex-row items-center relative overflow-hidden">
-        <span className="w-[52%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
+        <span className="w-[55%] text-white text-6xl leading-[0.75] opacity-0 pointer-events-none">
           {projectData.title}
         </span>
-        <div className="w-[48%] relative grid grid-cols-4 whitespace-nowrap items-center gap-4 text-[#434343] text-sm overflow-hidden transition-transform duration-300 ease-out">
+        <div className="w-[45%] relative grid grid-cols-5 whitespace-nowrap items-center gap-4 text-[#434343] text-sm overflow-hidden transition-transform duration-300 ease-out">
           <div className="flex-col col-span-2">
             <span className="text-[#5E5E5E]">
               ({projectData.projectOrigin.type}){" "}
@@ -126,37 +126,32 @@ export function ProjectItem({
             </span>
           </div>
           <span className="">{projectData.category.title}</span>
-          <div className="flex flex-row items-center gap-6 justify-center relative">
+          <div className="flex flex-row items-center gap-2 justify-center relative col-span-2">
             <Image
               src={urlForImage(projectData.logo)?.url() ?? ""}
               alt={projectData.title}
               width={500}
               height={500}
-              className="w-auto h-11 invert"
+              className="w-auto h-11"
             />
-            <Link
-              href={`/work/${slug}`}
-              className="flex flex-row items-center gap-2 justify-self-end absolute right-0"
-            >
-              <span className="block w-3 text-[#5E5E5E]">
-                <svg
-                  width="100%"
-                  viewBox="0 0 10 9"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M9.37205 0.379864L9.37025 7.14139L8.7499 7.14156L8.75066 4.2903L8.75142 1.43904L1.60255 8.5879L1.16401 8.14936L8.31288 1.0005L2.61036 1.00202L2.61052 0.381663L9.37205 0.379864Z"
-                    fill="currentColor"
-                    stroke="currentColor"
-                    strokeWidth="0.5"
-                    strokeLinecap="square"
-                  />
-                </svg>
-              </span>
-            </Link>
+            <span className="block min-w-2.5 w-2.5 text-[#5E5E5E] absolute right-0">
+              <svg
+                width="100%"
+                viewBox="0 0 10 9"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M9.37205 0.379864L9.37025 7.14139L8.7499 7.14156L8.75066 4.2903L8.75142 1.43904L1.60255 8.5879L1.16401 8.14936L8.31288 1.0005L2.61036 1.00202L2.61052 0.381663L9.37205 0.379864Z"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  strokeWidth="0.5"
+                  strokeLinecap="square"
+                />
+              </svg>
+            </span>
           </div>
         </div>
       </div>
