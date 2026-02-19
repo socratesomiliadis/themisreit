@@ -24,36 +24,16 @@ export default function ProjectAbout({
 }) {
   if (!projectData) return null;
 
-  const { description, exampleImages } = projectData;
+  const { description } = projectData;
   const collageItemsFromStudio =
     (
       projectData as ProjectBySlugQueryResult & {
         collage?: { items?: CollageItem[] };
       }
     )?.collage?.items ?? [];
-  const fallbackItemsFromExamples: CollageItem[] = (exampleImages ?? [])
-    .slice(0, 8)
-    .map((image, index) => ({
-      _key: image._key || `example-${index}`,
-      image: {
-        _type: "image",
-        asset: image.asset
-          ? {
-              _type: "reference",
-              _ref: image.asset._ref,
-            }
-          : undefined,
-      },
-      x: 6 + (index % 4) * 23,
-      y: 8 + Math.floor(index / 4) * 35 + (index % 2 ? 4 : 0),
-      width: index % 3 === 0 ? 24 : 20,
-      height: index % 2 === 0 ? 32 : 28,
-      zIndex: index + 1,
-    }));
+
   const collageItems =
-    collageItemsFromStudio.length > 0
-      ? collageItemsFromStudio
-      : fallbackItemsFromExamples;
+    collageItemsFromStudio.length > 0 ? collageItemsFromStudio : [];
 
   return (
     <section className="w-screen relative flex flex-col py-32 px-12 z-10">

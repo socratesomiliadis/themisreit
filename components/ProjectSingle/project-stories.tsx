@@ -12,7 +12,9 @@ import { motion } from "motion/react";
 
 const DEFAULT_IMAGE_DURATION = 5; // 5 seconds for images
 
-type Story = NonNullable<ProjectBySlugQueryResult>["stories"][number];
+type Story = NonNullable<
+  NonNullable<ProjectBySlugQueryResult>["stories"]
+>[number];
 
 interface ProjectStoriesContentProps {
   stories: readonly Story[];

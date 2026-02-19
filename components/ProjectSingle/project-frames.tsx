@@ -44,9 +44,11 @@ export default function ProjectFrames({
       }
     );
     if (cursorText === "NEXT") {
-      setActiveFrame((prev) => (prev + 1) % frames?.length);
+      setActiveFrame((prev) => (prev + 1) % (frames?.length ?? 0));
     } else {
-      setActiveFrame((prev) => (prev - 1 + frames?.length) % frames?.length);
+      setActiveFrame(
+        (prev) => (prev - 1 + (frames?.length ?? 0)) % (frames?.length ?? 0)
+      );
     }
   }, [frames?.length, cursorText]);
 
