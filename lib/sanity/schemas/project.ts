@@ -76,12 +76,6 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: "logoMarquee",
-      title: "Logo Marquee",
-      type: "image",
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: "brandColor",
       title: "Brand Color",
       type: "string",
@@ -97,13 +91,11 @@ export default defineType({
       name: "description",
       title: "Description",
       type: "text",
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "collage",
       title: "Collage",
       type: "collage",
-      validation: (Rule) => Rule.required(),
     }),
 
     defineField({
@@ -154,28 +146,23 @@ export default defineType({
             ),
         },
       ],
-
-      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: "gallery",
       title: "Gallery",
       type: "array",
       of: [{ type: "image" }],
-      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: "galleryDescription",
       title: "Gallery Description",
       type: "text",
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: "frames",
       title: "Frames",
       type: "array",
       of: [{ type: "image" }],
-      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: "projectInfo",
@@ -186,28 +173,23 @@ export default defineType({
           name: "numOfPeople",
           title: "Number of People",
           type: "number",
-          validation: (Rule) => Rule.required(),
         }),
         defineField({
           name: "numOfHours",
           title: "Number of Hours",
           type: "number",
-          validation: (Rule) => Rule.required(),
         }),
         defineField({
           name: "location",
           title: "Location",
           type: "string",
-          validation: (Rule) => Rule.required(),
         }),
         defineField({
           name: "director",
           title: "Director",
           type: "string",
-          validation: (Rule) => Rule.required(),
         }),
       ],
-      validation: (Rule) => Rule.required(),
     }),
   ],
   preview: {

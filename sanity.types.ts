@@ -125,36 +125,11 @@ export type Project = {
     crop?: SanityImageCrop;
     _type: "image";
   };
-  logoMarquee: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
   brandColor: string;
   year: string;
-  description: string;
-  collage: Collage;
-  exampleImages: Array<{
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-    _key: string;
-  }>;
-  stories: Array<{
+  description?: string;
+  collage?: Collage;
+  stories?: Array<{
     description: string;
     image?: {
       asset?: {
@@ -180,7 +155,7 @@ export type Project = {
     };
     _key: string;
   }>;
-  gallery: Array<{
+  gallery?: Array<{
     asset?: {
       _ref: string;
       _type: "reference";
@@ -193,8 +168,8 @@ export type Project = {
     _type: "image";
     _key: string;
   }>;
-  galleryDescription: string;
-  frames: Array<{
+  galleryDescription?: string;
+  frames?: Array<{
     asset?: {
       _ref: string;
       _type: "reference";
@@ -207,11 +182,11 @@ export type Project = {
     _type: "image";
     _key: string;
   }>;
-  projectInfo: {
-    numOfPeople: number;
-    numOfHours: number;
-    location: string;
-    director: string;
+  projectInfo?: {
+    numOfPeople?: number;
+    numOfHours?: number;
+    location?: string;
+    director?: string;
   };
 };
 
@@ -420,36 +395,11 @@ export type ProjectsQueryResult = Array<{
     crop?: SanityImageCrop;
     _type: "image";
   };
-  logoMarquee: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
   brandColor: string;
   year: string;
-  description: string;
-  collage: Collage;
-  exampleImages: Array<{
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-    _key: string;
-  }>;
-  stories: Array<{
+  description?: string;
+  collage?: Collage;
+  stories?: Array<{
     description: string;
     image?: {
       asset?: {
@@ -475,7 +425,7 @@ export type ProjectsQueryResult = Array<{
     };
     _key: string;
   }>;
-  gallery: Array<{
+  gallery?: Array<{
     asset?: {
       _ref: string;
       _type: "reference";
@@ -488,8 +438,8 @@ export type ProjectsQueryResult = Array<{
     _type: "image";
     _key: string;
   }>;
-  galleryDescription: string;
-  frames: Array<{
+  galleryDescription?: string;
+  frames?: Array<{
     asset?: {
       _ref: string;
       _type: "reference";
@@ -502,11 +452,11 @@ export type ProjectsQueryResult = Array<{
     _type: "image";
     _key: string;
   }>;
-  projectInfo: {
-    numOfPeople: number;
-    numOfHours: number;
-    location: string;
-    director: string;
+  projectInfo?: {
+    numOfPeople?: number;
+    numOfHours?: number;
+    location?: string;
+    director?: string;
   };
 }>;
 // Variable: projectBySlugQuery
@@ -558,36 +508,11 @@ export type ProjectBySlugQueryResult = {
     crop?: SanityImageCrop;
     _type: "image";
   };
-  logoMarquee: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-  };
   brandColor: string;
   year: string;
-  description: string;
-  collage: Collage;
-  exampleImages: Array<{
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
-    media?: unknown;
-    hotspot?: SanityImageHotspot;
-    crop?: SanityImageCrop;
-    _type: "image";
-    _key: string;
-  }>;
-  stories: Array<{
+  description?: string;
+  collage?: Collage;
+  stories?: Array<{
     description: string;
     image?: {
       asset?: {
@@ -613,7 +538,7 @@ export type ProjectBySlugQueryResult = {
     };
     _key: string;
   }>;
-  gallery: Array<{
+  gallery?: Array<{
     asset?: {
       _ref: string;
       _type: "reference";
@@ -626,8 +551,8 @@ export type ProjectBySlugQueryResult = {
     _type: "image";
     _key: string;
   }>;
-  galleryDescription: string;
-  frames: Array<{
+  galleryDescription?: string;
+  frames?: Array<{
     asset?: {
       _ref: string;
       _type: "reference";
@@ -640,11 +565,11 @@ export type ProjectBySlugQueryResult = {
     _type: "image";
     _key: string;
   }>;
-  projectInfo: {
-    numOfPeople: number;
-    numOfHours: number;
-    location: string;
-    director: string;
+  projectInfo?: {
+    numOfPeople?: number;
+    numOfHours?: number;
+    location?: string;
+    director?: string;
   };
 } | null;
 // Variable: projectSlugsQuery
@@ -746,36 +671,11 @@ export type NextProjectQueryResult = {
       crop?: SanityImageCrop;
       _type: "image";
     };
-    logoMarquee: {
-      asset?: {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-      };
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      _type: "image";
-    };
     brandColor: string;
     year: string;
-    description: string;
-    collage: Collage;
-    exampleImages: Array<{
-      asset?: {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-      };
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      _type: "image";
-      _key: string;
-    }>;
-    stories: Array<{
+    description?: string;
+    collage?: Collage;
+    stories?: Array<{
       description: string;
       image?: {
         asset?: {
@@ -801,7 +701,7 @@ export type NextProjectQueryResult = {
       };
       _key: string;
     }>;
-    gallery: Array<{
+    gallery?: Array<{
       asset?: {
         _ref: string;
         _type: "reference";
@@ -814,8 +714,8 @@ export type NextProjectQueryResult = {
       _type: "image";
       _key: string;
     }>;
-    galleryDescription: string;
-    frames: Array<{
+    galleryDescription?: string;
+    frames?: Array<{
       asset?: {
         _ref: string;
         _type: "reference";
@@ -828,11 +728,11 @@ export type NextProjectQueryResult = {
       _type: "image";
       _key: string;
     }>;
-    projectInfo: {
-      numOfPeople: number;
-      numOfHours: number;
-      location: string;
-      director: string;
+    projectInfo?: {
+      numOfPeople?: number;
+      numOfHours?: number;
+      location?: string;
+      director?: string;
     };
   } | null;
   firstProject: {
@@ -882,36 +782,11 @@ export type NextProjectQueryResult = {
       crop?: SanityImageCrop;
       _type: "image";
     };
-    logoMarquee: {
-      asset?: {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-      };
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      _type: "image";
-    };
     brandColor: string;
     year: string;
-    description: string;
-    collage: Collage;
-    exampleImages: Array<{
-      asset?: {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-      };
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      _type: "image";
-      _key: string;
-    }>;
-    stories: Array<{
+    description?: string;
+    collage?: Collage;
+    stories?: Array<{
       description: string;
       image?: {
         asset?: {
@@ -937,7 +812,7 @@ export type NextProjectQueryResult = {
       };
       _key: string;
     }>;
-    gallery: Array<{
+    gallery?: Array<{
       asset?: {
         _ref: string;
         _type: "reference";
@@ -950,8 +825,8 @@ export type NextProjectQueryResult = {
       _type: "image";
       _key: string;
     }>;
-    galleryDescription: string;
-    frames: Array<{
+    galleryDescription?: string;
+    frames?: Array<{
       asset?: {
         _ref: string;
         _type: "reference";
@@ -964,11 +839,11 @@ export type NextProjectQueryResult = {
       _type: "image";
       _key: string;
     }>;
-    projectInfo: {
-      numOfPeople: number;
-      numOfHours: number;
-      location: string;
-      director: string;
+    projectInfo?: {
+      numOfPeople?: number;
+      numOfHours?: number;
+      location?: string;
+      director?: string;
     };
   } | null;
 } | null;
