@@ -30,7 +30,10 @@ function ProjectItem({
         {projectData.title}
       </div>
       <div className="w-full border-y border-[#303030]/10 flex flex-row items-center relative overflow-hidden">
-        <div className="h-full bg-[#434343] w-0 absolute left-0 top-0 z-10 project-next-progress"></div>
+        <div
+          style={{ backgroundColor: projectData.brandColor }}
+          className="h-full bg-[#434343] w-0 absolute left-0 top-0 z-10 project-next-progress"
+        ></div>
         <div className="w-[55%] h-fit text-[#434343] text-[3.5rem] leading-[0.75] opacity-0 pointer-events-none">
           {projectData.title}
         </div>
@@ -106,6 +109,9 @@ export default function ProjectNext({
           });
           setProgress(Math.round(self.progress * 100));
         },
+      },
+      onStart: () => {
+        router.prefetch(`/work/${nextProject?.slug.current}`);
       },
       onComplete: () => {
         lenis?.stop();

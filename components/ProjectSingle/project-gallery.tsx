@@ -3,6 +3,7 @@ import { getContrastTextColor } from "@/lib/utils";
 import { ProjectBySlugQueryResult } from "@/sanity.types";
 import Image from "next/image";
 import { ScrollTrigger } from "@/lib/gsap";
+import { PortableText } from "next-sanity";
 
 function GalleryItem({
   image,
@@ -19,10 +20,7 @@ function GalleryItem({
       style={{ backgroundColor: brandColor }}
       className="relative h-fit w-full group "
     >
-      <span
-        className="absolute left-12 top-12 text-2xl z-10 opacity-0 blur-sm group-hover:blur-none group-hover:opacity-100 transition-[opacity, filter] duration-300 ease-out"
-        style={{ color: getContrastTextColor(brandColor) }}
-      >
+      <span className="absolute left-12 top-12 text-white text-2xl z-10 opacity-0 blur-sm group-hover:blur-none group-hover:opacity-100 transition-[opacity, filter] duration-300 ease-out">
         {index + 1}
       </span>
       <div className="absolute inset-0 z-5 group-hover:p-6 transition-padding duration-300 ease-out">
@@ -75,9 +73,9 @@ export default function ProjectGallery({
           <span className="tracking-tight">(About it)</span>
         </div>
 
-        <h2 className="text-[#434343] text-2xl lg:text-4xl tracking-tight font-[400] w-[35%]">
-          {galleryDescription}
-        </h2>
+        <div className="text-[#434343] text-2xl lg:text-4xl tracking-tight font-[400] w-[50%] text-balance">
+          <PortableText value={galleryDescription ?? []} />
+        </div>
       </div>
     </section>
   );

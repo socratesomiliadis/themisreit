@@ -437,7 +437,7 @@ function ProjectStoriesContent({
                   alt={company}
                   width={100}
                   height={100}
-                  className="object-contain w-[60%] invert"
+                  className="object-contain w-[60%] h-[40%] invert"
                 />
               )}
             </div>

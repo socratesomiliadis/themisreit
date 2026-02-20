@@ -1,5 +1,6 @@
 import { ProjectBySlugQueryResult } from "@/sanity.types";
 import ProjectCollage from "@/components/ProjectSingle/project-collage";
+import { PortableText } from "next-sanity";
 
 type CollageItem = {
   _key: string;
@@ -42,9 +43,9 @@ export default function ProjectAbout({
         <span className="tracking-tight">(About it)</span>
       </div>
 
-      <h2 className="text-[#434343] text-2xl lg:text-4xl tracking-tight font-[400] w-[35%]">
-        {description}
-      </h2>
+      <div className="text-[#434343] text-2xl lg:text-4xl tracking-tight font-[400] w-[45%] text-balance">
+        <PortableText value={description ?? []} />
+      </div>
 
       <div className="flex items-center gap-2 text-[#707070] text-sm mt-20 lg:mt-28">
         <span className="text-base leading-none">+</span>

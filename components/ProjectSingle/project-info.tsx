@@ -25,7 +25,7 @@ export default function ProjectInfo({
     },
     {
       title: "Work Hours",
-      value: `${numOfHours} hours`,
+      value: `${Intl.NumberFormat().format(numOfHours ?? 0)} hours`,
     },
     {
       title: "Work Location",
@@ -42,14 +42,14 @@ export default function ProjectInfo({
   ];
   return (
     <div className="w-full flex flex-col pt-12">
-      <div className="w-full px-12 pb-32 grid grid-cols-2 text-[#434343] tracking-tight">
+      <div className="w-full px-12 pb-12 grid grid-cols-2 text-[#434343] tracking-tight">
         <span>People Worked</span>
         <span>Project Details</span>
         <div className="w-full col-span-2 h-px bg-black/20 mt-2 mb-24"></div>
         <span className="font-ballet text-[28rem] ml-12 leading-[0.6]">
           {projectData.projectInfo.numOfPeople}
         </span>
-        <div className="flex flex-col gap-6 pb-24">
+        <div className="flex flex-col gap-6 pb-12">
           <div className="flex flex-row items-center gap-2">
             <Cross className="size-2.5" />
             <span>(Information)</span>
@@ -75,7 +75,7 @@ export default function ProjectInfo({
               </div>
             ))}
           </div>
-          <button className="flex flex-row items-center gap-2 bg-white text-[#434343] px-8 py-2 w-fit">
+          {/* <button className="flex flex-row items-center gap-2 bg-white text-[#434343] px-8 py-2 w-fit">
             <span className="uppercase text-xs tracking-tight">Learn More</span>
             <span className="block w-2">
               <svg
@@ -92,7 +92,7 @@ export default function ProjectInfo({
                 />
               </svg>
             </span>
-          </button>
+          </button> */}
         </div>
       </div>
       <SimpleMarquee

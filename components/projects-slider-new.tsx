@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 import { ProjectsQueryResult } from "@/sanity.types";
 import Image from "next/image";
@@ -86,12 +92,14 @@ export default function ProjectsSliderNew({
   const lenis = useLenis();
   const [open, setOpen] = useState<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const isAnimating = useRef(false);
+  const isExpanding = useRef(false);
   const duplicatedProjects = [...projects, ...projects];
 
   const totalSlides = duplicatedProjects.length;
 
   const openDataIndex = useMemo(() => {
-    return open ? open % projects.length : 0;
+    return open !== null ? open % projects.length : 0;
   }, [open, projects]);
 
   const slideRefs = useMemo(
@@ -114,6 +122,7 @@ export default function ProjectsSliderNew({
     if (!slideRefs.length || !imageRefs.length) return;
 
     const updateParallax = () => {
+      if (isExpanding.current) return;
       const viewportCenter = window.innerWidth / 2;
       imageRefs.forEach((imageRef, index) => {
         const slideRef = slideRefs[index];
@@ -152,77 +161,165 @@ export default function ProjectsSliderNew({
     };
   }, [imageRefs, slideRefs]);
 
+  const handleSetOpen = useCallback((index: number | null) => {
+    if (isAnimating.current) return;
+    setOpen(index);
+  }, []);
+
   useIsomorphicLayoutEffect(() => {
     if (open === null) return;
-    const slideRef = slideRefs[open];
-    if (!slideRef?.current) return;
-    const dataIndex = open % projects.length;
-    const openTl = gsap.timeline({
-      onComplete: () => {
-        router.push(`/work/${projects[dataIndex].slug.current}`);
-      },
-    });
-    openTl.to(".work-slide", {
-      y: "-200%",
-      stagger: {
-        each: 0.06,
-        from: open,
-      },
-      duration: 1,
-    });
-    openTl.fromTo(
-      ".work-open-item",
-      {
-        clipPath: "inset(0% 100% 0% 0%)",
-      },
-      {
-        clipPath: "inset(0% 0% 0% 0%)",
-        duration: 1.2,
-      },
-      0.3
-    );
-    openTl.to(
-      ".work-open-item-bg",
-      {
-        width: 0,
-        duration: 1.2,
-      },
-      0.8
-    );
-    openTl.to(
-      ".work-open-item-image",
+    if (isAnimating.current) return;
+    isAnimating.current = true;
 
-      {
-        scale: 1,
-        duration: 1.2,
+    const slideEl = slideRefs[open]?.current;
+    if (!slideEl) {
+      isAnimating.current = false;
+      return;
+    }
+
+    const dataIndex = open % projects.length;
+    const slug = projects[dataIndex].slug.current;
+    router.prefetch(`/work/${slug}`);
+
+    const rect = slideEl.getBoundingClientRect();
+    const currentScroll = lenis?.scroll ?? 0;
+    const elementAbsPos = rect.left + currentScroll;
+    const targetScroll =
+      elementAbsPos - (window.innerWidth / 2 - rect.width / 2);
+
+    lenis?.scrollTo(targetScroll, {
+      lock: true,
+      duration: 1,
+      force: true,
+      onComplete: () => {
+        lenis?.stop();
+        isExpanding.current = true;
+
+        const centeredRect = slideEl.getBoundingClientRect();
+
+        const heroRef = document.querySelector(
+          ".work-open-item-image"
+        ) as HTMLElement;
+        if (!heroRef) return;
+        const heroRect = heroRef.getBoundingClientRect();
+
+        const spacer = document.createElement("div");
+        spacer.style.width = `${centeredRect.width}px`;
+        spacer.style.height = `${centeredRect.height}px`;
+        spacer.style.flexShrink = "0";
+        slideEl.parentNode?.insertBefore(spacer, slideEl);
+
+        const idealLeft = (window.innerWidth - centeredRect.width) / 2;
+
+        gsap.set(slideEl, {
+          position: "fixed",
+          left: idealLeft,
+          top: centeredRect.top,
+          width: centeredRect.width,
+          height: centeredRect.height,
+          zIndex: 50,
+          margin: 0,
+          overflow: "hidden",
+        });
+
+        const slideImg = slideEl.querySelector("img");
+        if (slideImg) gsap.to(slideImg, { x: 0, duration: 0.3 });
+
+        const allSlides = gsap.utils.toArray(".work-slide") as HTMLElement[];
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            spacer.remove();
+            router.push(`/work/${slug}`);
+          },
+        });
+
+        allSlides.forEach((slide) => {
+          if (slide === slideEl) return;
+          const otherRect = slide.getBoundingClientRect();
+          const isLeft =
+            otherRect.left + otherRect.width / 2 < window.innerWidth / 2;
+          const img = slide.querySelector("img");
+          // if (img) tl.to(img, { x: 0, duration: 0.3 }, 0);
+          tl.to(
+            slide,
+            {
+              x: isLeft
+                ? `-=${window.innerWidth / 2}`
+                : `+=${window.innerWidth / 2}`,
+
+              duration: 1.4,
+            },
+            0
+          );
+        });
+
+        tl.to(
+          slideEl,
+          {
+            left: heroRect.left,
+            top: heroRect.top,
+            width: heroRect.width,
+            height: heroRect.height,
+            duration: 1.4,
+          },
+          0
+        );
+
+        const overlayItem = document.querySelector(
+          ".work-open-item"
+        ) as HTMLElement;
+        if (overlayItem) {
+          tl.to(
+            overlayItem,
+            {
+              clipPath: "inset(0% 0% 0% 0%)",
+              duration: 1,
+            },
+            0.5
+          );
+
+          tl.fromTo(
+            ".work-open-item-bg",
+            { xPercent: 0 },
+            { xPercent: 101, duration: 1 },
+            1
+          );
+          tl.set(".work-open-bg", { opacity: 1 }, 1);
+        }
       },
-      0.8
-    );
+    });
   }, [open, lenis]);
 
   return (
     <div className="h-svh relative flex items-center justify-center w-fit">
-      <div className="fixed top-0 left-0 w-full h-full z-50 px-12 pt-40 flex flex-col pointer-events-none">
-        <div
-          style={{
-            clipPath: "inset(0% 100% 0% 0%)",
-          }}
-          className="w-full work-open-item relative"
-        >
-          <div className="absolute w-full h-full bg-[#434343] right-0 top-0 work-open-item-bg z-50"></div>
-          <ProjectItem
-            projectData={projects[openDataIndex]}
-            isProjectPage={true}
-          />
+      <div className="fixed inset-0 z-40 bg-[#f5f5f5] opacity-0 pointer-events-none work-open-bg" />
+      <div className="fixed inset-0 z-60 pointer-events-none">
+        <div className="w-full h-full px-12 pt-40 flex flex-col">
+          <div
+            style={{ clipPath: "inset(0% 100% 0% 0%)" }}
+            className="w-full work-open-item relative"
+          >
+            <div
+              style={{ backgroundColor: projects[openDataIndex].brandColor }}
+              className="absolute w-full h-full right-0 top-0 work-open-item-bg z-50"
+            />
+            <ProjectItem
+              projectData={projects[openDataIndex]}
+              isProjectPage={true}
+            />
+          </div>
+          <div className="w-full mt-8 opacity-0 pointer-events-none work-open-item-image">
+            <Image
+              src={urlForImage(projects[openDataIndex].mainImage)?.url() ?? ""}
+              alt=""
+              priority
+              width={1920}
+              height={1080}
+              className="w-full h-auto object-contain"
+            />
+          </div>
         </div>
-        <Image
-          src={urlForImage(projects[openDataIndex].mainImage)?.url() ?? ""}
-          alt=""
-          priority
-          width={1920}
-          height={1080}
-          className="w-full h-auto object-contain mt-8 scale-10 origin-bottom work-open-item-image"
-        />
       </div>
       <div className="flex items-center gap-[1vw] w-[200vw]">
         {duplicatedProjects.map((project, index) => {
@@ -236,7 +333,7 @@ export default function ProjectsSliderNew({
               imageRef={imageRefs[index]}
               dataIndex={dataIndex}
               setActiveIndex={setActiveIndex}
-              setOpen={setOpen}
+              setOpen={handleSetOpen}
             />
           );
         })}

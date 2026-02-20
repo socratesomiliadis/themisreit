@@ -165,7 +165,7 @@ export default function Footer() {
                 Menu
               </span>
               <FooterNavLink href="/" text="Home" className="mt-14" />
-              <FooterNavLink href="/about" text="About Us" />
+              <FooterNavLink href="/clients" text="Clients" />
               <FooterNavLink href="/work" text="Projects" />
               <FooterNavLink href="/universe" text="Universe" />
 
@@ -214,7 +214,7 @@ export default function Footer() {
                   className="text-xl text-[#FF5EFC] tracking-tighter flex flex-row items-center gap-2 group"
                 >
                   <span>Back to top</span>
-                  <span className="size-0 group-hover:size-6 transition-size duration-200 ease-out rounded-full bg-[#FF5EFC] flex items-center justify-center text-[#fff]">
+                  <span className="size-0 group-hover:size-6 transition-size duration-200 ease-out rounded-full bg-[#FF5EFC] flex items-center justify-center text-white">
                     <svg
                       width="45%"
                       viewBox="0 0 17 20"
