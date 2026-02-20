@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { BakedRelief } from "../WebGL";
+import { cn } from "@/lib/utils";
 
 const CONTACT_FORM_BUTTONS = [
   { value: "$50,000" },
@@ -9,6 +11,15 @@ const CONTACT_FORM_BUTTONS = [
   { value: "$200,000" },
   { value: "$250,000" },
 ];
+
+const WEBGL_TEXTURES = {
+  bake1: "/textures/hand/6.png",
+  bake2: "/textures/hand/5.png",
+  bake3: "/textures/hand/4.png",
+  bake4: "/textures/hand/3.png",
+  bake5: "/textures/hand/2.png",
+  bake6: "/textures/hand/1.png",
+};
 
 function ContactFormButton({ value }: { value: string }) {
   return (
@@ -78,13 +89,23 @@ export default function ContactHero() {
           </div>
         </div>
       </div>
-      <Image
+      {/* <Image
         src="/static/images/contactBg.png"
         alt="Contact Hero"
         width={1920 * 1.5}
         height={1080 * 1.5}
         className="w-full h-full absolute top-0 left-0 z-0 object-cover"
-      />
+      /> */}
+      <div
+        className={cn(
+          "absolute top-0 left-1/2 -translate-x-1/2 w-screen z-5 flex flex-col items-center justify-center pointer-events-none max-h-full overflow-hidden"
+        )}
+      >
+        <BakedRelief
+          className="w-screen aspect-square h-auto"
+          textures={WEBGL_TEXTURES}
+        />
+      </div>
     </section>
   );
 }
