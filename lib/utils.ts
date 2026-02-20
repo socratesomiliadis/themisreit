@@ -54,3 +54,43 @@ export function mapRange(
 
   return shouldClamp ? clamp(outMin, result, outMax) : result;
 }
+
+/**
+ * Returns the appropriate text color (#434343 or #ffffff) for text on top of a
+ * given background color, based on relative luminance for WCAG contrast.
+ * Supports hex (#fff, #ffffff) and rgb(r, g, b) formats.
+ */
+export function getContrastTextColor(
+  backgroundColor: string
+): "#434343" | "#ffffff" {
+  let r: number, g: number, b: number;
+
+  const rgbMatch = backgroundColor.match(
+    /rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/
+  );
+  if (rgbMatch) {
+    r = parseInt(rgbMatch[1], 10);
+    g = parseInt(rgbMatch[2], 10);
+    b = parseInt(rgbMatch[3], 10);
+  } else {
+    const hex = backgroundColor.replace(/^#/, "");
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length === 6) {
+      r = parseInt(hex.slice(0, 2), 16);
+      g = parseInt(hex.slice(2, 4), 16);
+      b = parseInt(hex.slice(4, 6), 16);
+    } else {
+      return "#434343";
+    }
+  }
+
+  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
+    return "#434343";
+  }
+
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? "#434343" : "#ffffff";
+}

@@ -90,7 +90,8 @@ export default defineType({
     defineField({
       name: "description",
       title: "Description",
-      type: "text",
+      type: "array",
+      of: [{ type: "block" }],
     }),
     defineField({
       name: "collage",
@@ -156,7 +157,8 @@ export default defineType({
     defineField({
       name: "galleryDescription",
       title: "Gallery Description",
-      type: "text",
+      type: "array",
+      of: [{ type: "block" }],
     }),
     defineField({
       name: "frames",

@@ -7,7 +7,7 @@ import { gsap } from "@/lib/gsap";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ScrambleIn from "../scramble-in";
-import { cn } from "@/lib/utils";
+import { cn, getContrastTextColor } from "@/lib/utils";
 import { motion } from "motion/react";
 import { PortableText } from "next-sanity";
 import Player from "../VideoPlayer/player";
@@ -58,7 +58,10 @@ export function ProjectStoriesCursor({
       }}
     >
       <div
-        className={`px-4 py-2 text-sm font-medium tracking-tight flex items-center gap-2 transition-colors duration-150 text-[#434343] `}
+        className="px-4 py-2 text-sm font-medium tracking-tight flex items-center gap-2 transition-colors duration-150"
+        style={{
+          color: isPaused ? "#434343" : getContrastTextColor(brandColor),
+        }}
       >
         <ScrambleIn
           scrambleSpeed={75}

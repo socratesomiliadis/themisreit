@@ -1,7 +1,7 @@
 "use client";
 
 import { ProjectBySlugQueryResult, ServicesQueryResult } from "@/sanity.types";
-import { cn } from "@/lib/utils";
+import { cn, getContrastTextColor } from "@/lib/utils";
 import SimpleMarquee from "@/components/simple-marquee";
 import Cross from "@/components/SVGs/cross";
 import { urlForImage } from "@/lib/sanity/sanity.image";
@@ -102,7 +102,10 @@ export default function ProjectInfo({
         direction="left"
         className={cn("w-full py-2")}
       >
-        <span className="uppercase text-sm pr-1">
+        <span
+          className="uppercase text-sm pr-1"
+          style={{ color: getContrastTextColor(brandColor) }}
+        >
           LEARN MORE ABOUT {title} — LET&apos;S WORK —
         </span>
       </SimpleMarquee>
