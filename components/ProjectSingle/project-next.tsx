@@ -26,7 +26,7 @@ function ProjectItem({
         {progress}%
       </span>
 
-      <div className="text-[#434343] text-[3.5rem] leading-[0.75] absolute left-0 translate-y-[155%] project-next-hid">
+      <div className="text-[#434343] text-[3.5rem] leading-[0.75] absolute left-0 translate-y-[165%] project-next-hid">
         {projectData.title}
       </div>
       <div className="w-full border-y border-[#303030]/10 flex flex-row items-center relative overflow-hidden">

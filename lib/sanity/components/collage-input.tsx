@@ -1,6 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type MouseEvent as ReactMouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { nanoid } from "nanoid";
 import { Rnd } from "react-rnd";
 import { Box, Button, Card, Flex, Grid, Stack, Text } from "@sanity/ui";
@@ -169,6 +177,8 @@ export function CollageInput(props: ObjectInputProps) {
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const sceneRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const replaceFileInputRef = useRef<HTMLInputElement | null>(null);
+  const replaceTargetKeyRef = useRef<string | null>(null);
   const middlePanRef = useRef<{
     startX: number;
     startY: number;
@@ -179,6 +189,11 @@ export function CollageInput(props: ObjectInputProps) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMiddlePanning, setIsMiddlePanning] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    key: string;
+  } | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 1, height: 1 });
   const canvasAspect = COLLAGE_CANVAS_ASPECT;
 
@@ -233,6 +248,62 @@ export function CollageInput(props: ObjectInputProps) {
     },
     [collageValue.items, patchValue, selectedKey]
   );
+
+  const replaceItem = useCallback(
+    async (key: string, file: File) => {
+      const item = collageValue.items.find((i) => i._key === key);
+      if (!item || readOnly) return;
+
+      setIsUploading(true);
+      setContextMenu(null);
+      try {
+        const asset = await client.assets.upload("image", file, {
+          filename: file.name,
+        });
+        const rawAspectRatio = (
+          asset as { metadata?: { dimensions?: { aspectRatio?: number } } }
+        ).metadata?.dimensions?.aspectRatio;
+        const aspectRatio = hasAspectRatio(rawAspectRatio) ? rawAspectRatio : 1;
+        const safeWidth = fitWidthToCanvas(
+          item.width,
+          aspectRatio,
+          getCanvasAspect()
+        );
+        const height = getHeightFromWidth(
+          safeWidth,
+          aspectRatio,
+          getCanvasAspect()
+        );
+
+        updateItem(key, () => ({
+          ...item,
+          image: {
+            _type: "image",
+            asset: {
+              _type: "reference",
+              _ref: asset._id,
+            },
+          },
+          aspectRatio,
+          width: safeWidth,
+          height,
+          x: clamp(item.x, 0, 100 - safeWidth),
+          y: clamp(item.y, 0, 100 - height),
+        }));
+      } finally {
+        setIsUploading(false);
+        if (replaceFileInputRef.current) {
+          replaceFileInputRef.current.value = "";
+        }
+      }
+    },
+    [client.assets, collageValue.items, readOnly, updateItem]
+  );
+
+  const triggerReplaceImage = useCallback((key: string) => {
+    replaceTargetKeyRef.current = key;
+    replaceFileInputRef.current?.click();
+  }, []);
 
   const uploadImages = useCallback(
     async (files: FileList | null) => {
@@ -429,6 +500,41 @@ export function CollageInput(props: ObjectInputProps) {
     };
   }, [isMiddlePanning]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Delete" && event.key !== "Backspace") {
+        return;
+      }
+      if (!selectedKey || readOnly) {
+        return;
+      }
+      const target = event.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+      event.preventDefault();
+      removeItem(selectedKey);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedKey, readOnly, removeItem]);
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    const closeMenu = () => setContextMenu(null);
+    window.addEventListener("click", closeMenu);
+    window.addEventListener("contextmenu", closeMenu);
+    return () => {
+      window.removeEventListener("click", closeMenu);
+      window.removeEventListener("contextmenu", closeMenu);
+    };
+  }, [contextMenu]);
+
   const toPercentX = useCallback(
     (px: number) => clamp((px / canvasSize.width) * 100, 0, 100),
     [canvasSize.width]
@@ -502,293 +608,364 @@ export function CollageInput(props: ObjectInputProps) {
   );
 
   return (
-    <Stack space={4}>
-      <Flex gap={2} wrap="wrap">
-        <Button
-          mode="ghost"
-          tone="primary"
-          text={isUploading ? "Uploading..." : "Upload Images"}
-          disabled={isUploading || readOnly}
-          onClick={() => fileInputRef.current?.click()}
-        />
-        <Button
-          mode="ghost"
-          text={isFullscreen ? "Exit Fullscreen" : "Fullscreen Canvas"}
-          onClick={toggleFullscreen}
-          disabled={readOnly}
-        />
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={(event) => void uploadImages(event.target.files)}
-        />
-      </Flex>
+    <>
+      <Stack space={4}>
+        <Flex gap={2} wrap="wrap">
+          <Button
+            mode="ghost"
+            tone="primary"
+            text={isUploading ? "Uploading..." : "Upload Images"}
+            disabled={isUploading || readOnly}
+            onClick={() => fileInputRef.current?.click()}
+          />
+          <Button
+            mode="ghost"
+            text={isFullscreen ? "Exit Fullscreen" : "Fullscreen Canvas"}
+            onClick={toggleFullscreen}
+            disabled={readOnly}
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            onChange={(event) => void uploadImages(event.target.files)}
+          />
+          <input
+            ref={replaceFileInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              const key = replaceTargetKeyRef.current;
+              if (file && key) {
+                replaceTargetKeyRef.current = null;
+                void replaceItem(key, file);
+              }
+            }}
+          />
+        </Flex>
 
-      <Card
-        ref={canvasRef}
-        radius={2}
-        shadow={1}
-        onMouseDown={(event) => {
-          if (!isFullscreen || event.button !== 1 || !canvasRef.current) {
-            return;
-          }
-          event.preventDefault();
-          middlePanRef.current = {
-            startX: event.clientX,
-            startY: event.clientY,
-            startScrollLeft: canvasRef.current.scrollLeft,
-            startScrollTop: canvasRef.current.scrollTop,
-          };
-          setIsMiddlePanning(true);
-        }}
-        onAuxClick={(event) => {
-          if (isFullscreen && event.button === 1) {
+        <Card
+          ref={canvasRef}
+          radius={2}
+          shadow={1}
+          onMouseDown={(event) => {
+            if (!isFullscreen || event.button !== 1 || !canvasRef.current) {
+              return;
+            }
             event.preventDefault();
-          }
-        }}
-        style={{
-          width: isFullscreen ? "100vw" : "100%",
-          height: isFullscreen ? "100vh" : undefined,
-          aspectRatio: isFullscreen ? undefined : "25 / 9",
-          display: isFullscreen ? "flex" : "block",
-          alignItems: isFullscreen ? "center" : undefined,
-          justifyContent: isFullscreen ? "center" : undefined,
-          background: "#111111",
-          overflow: isFullscreen ? "auto" : "hidden",
-          cursor: isFullscreen
-            ? isMiddlePanning
-              ? "grabbing"
-              : "grab"
-            : "default",
-        }}
-      >
-        <div
-          ref={sceneRef}
+            middlePanRef.current = {
+              startX: event.clientX,
+              startY: event.clientY,
+              startScrollLeft: canvasRef.current.scrollLeft,
+              startScrollTop: canvasRef.current.scrollTop,
+            };
+            setIsMiddlePanning(true);
+          }}
+          onAuxClick={(event) => {
+            if (isFullscreen && event.button === 1) {
+              event.preventDefault();
+            }
+          }}
           style={{
-            width: isFullscreen ? "min(100vw, calc(100vh * 25 / 9))" : "100%",
-            height: isFullscreen ? "min(100vh, calc(100vw * 9 / 25))" : "100%",
-            background: "#1d1f23",
-            aspectRatio: "25 / 9",
-            position: "relative",
-            flex: "0 0 auto",
+            width: isFullscreen ? "100vw" : "100%",
+            height: isFullscreen ? "100vh" : undefined,
+            aspectRatio: isFullscreen ? undefined : "25 / 9",
+            display: isFullscreen ? "flex" : "block",
+            alignItems: isFullscreen ? "center" : undefined,
+            justifyContent: isFullscreen ? "center" : undefined,
+            background: "#111111",
+            overflow: isFullscreen ? "auto" : "hidden",
+            cursor: isFullscreen
+              ? isMiddlePanning
+                ? "grabbing"
+                : "grab"
+              : "default",
           }}
         >
-          {collageValue.items.length === 0 ? (
-            <Flex
-              align="center"
-              justify="center"
-              style={{ position: "absolute", inset: 0 }}
-            >
-              <Text muted>
-                Upload multiple images and drag them into position.
-              </Text>
-            </Flex>
-          ) : null}
+          <div
+            ref={sceneRef}
+            style={{
+              width: isFullscreen ? "min(100vw, calc(100vh * 25 / 9))" : "100%",
+              height: isFullscreen
+                ? "min(100vh, calc(100vw * 9 / 25))"
+                : "100%",
+              background: "#1d1f23",
+              aspectRatio: "25 / 9",
+              position: "relative",
+              flex: "0 0 auto",
+            }}
+          >
+            {collageValue.items.length === 0 ? (
+              <Flex
+                align="center"
+                justify="center"
+                style={{ position: "absolute", inset: 0 }}
+              >
+                <Text muted>
+                  Upload multiple images and drag them into position.
+                </Text>
+              </Flex>
+            ) : null}
 
-          {collageValue.items.map((item) =>
-            (() => {
-              const ratio = hasAspectRatio(item.aspectRatio)
-                ? item.aspectRatio
-                : 1;
-              const safeWidth = fitWidthToCanvas(
-                item.width,
-                ratio,
-                canvasAspect
-              );
-              const safeHeight = getHeightFromWidth(
-                safeWidth,
-                ratio,
-                canvasAspect
-              );
-              return (
-                <Rnd
-                  key={item._key}
-                  bounds="parent"
-                  disableDragging={readOnly}
-                  enableResizing={!readOnly}
-                  lockAspectRatio={ratio}
-                  size={{
-                    width: toPxX(safeWidth),
-                    height: toPxY(safeHeight),
-                  }}
-                  position={{
-                    x: toPxX(item.x),
-                    y: toPxY(item.y),
-                  }}
-                  onDragStart={() => {
-                    if (!readOnly) {
-                      focusItem(item._key);
-                    }
-                  }}
-                  onDragStop={(_, data) => {
-                    updateItem(item._key, (current) => ({
-                      ...current,
-                      x: clamp(toPercentX(data.x), 0, 100 - safeWidth),
-                      y: clamp(toPercentY(data.y), 0, 100 - safeHeight),
-                    }));
-                  }}
-                  onResizeStart={() => {
-                    if (!readOnly) {
-                      focusItem(item._key);
-                    }
-                  }}
-                  onResizeStop={(_, __, ref, ___, position) => {
-                    const nextWidth = fitWidthToCanvas(
-                      toPercentX(ref.offsetWidth),
-                      ratio,
-                      canvasAspect
-                    );
-                    const nextHeight = getHeightFromWidth(
-                      nextWidth,
-                      ratio,
-                      canvasAspect
-                    );
+            {collageValue.items.map((item) =>
+              (() => {
+                const ratio = hasAspectRatio(item.aspectRatio)
+                  ? item.aspectRatio
+                  : 1;
+                const safeWidth = fitWidthToCanvas(
+                  item.width,
+                  ratio,
+                  canvasAspect
+                );
+                const safeHeight = getHeightFromWidth(
+                  safeWidth,
+                  ratio,
+                  canvasAspect
+                );
+                return (
+                  <Rnd
+                    key={item._key}
+                    bounds="parent"
+                    disableDragging={readOnly}
+                    enableResizing={!readOnly}
+                    lockAspectRatio={ratio}
+                    size={{
+                      width: toPxX(safeWidth),
+                      height: toPxY(safeHeight),
+                    }}
+                    position={{
+                      x: toPxX(item.x),
+                      y: toPxY(item.y),
+                    }}
+                    onDragStart={() => {
+                      if (!readOnly) {
+                        focusItem(item._key);
+                      }
+                    }}
+                    onDragStop={(_, data) => {
+                      updateItem(item._key, (current) => ({
+                        ...current,
+                        x: clamp(toPercentX(data.x), 0, 100 - safeWidth),
+                        y: clamp(toPercentY(data.y), 0, 100 - safeHeight),
+                      }));
+                    }}
+                    onResizeStart={() => {
+                      if (!readOnly) {
+                        focusItem(item._key);
+                      }
+                    }}
+                    onResizeStop={(_, __, ref, ___, position) => {
+                      const nextWidth = fitWidthToCanvas(
+                        toPercentX(ref.offsetWidth),
+                        ratio,
+                        canvasAspect
+                      );
+                      const nextHeight = getHeightFromWidth(
+                        nextWidth,
+                        ratio,
+                        canvasAspect
+                      );
 
-                    updateItem(item._key, (current) => ({
-                      ...current,
-                      aspectRatio: ratio,
-                      x: clamp(toPercentX(position.x), 0, 100 - nextWidth),
-                      y: clamp(toPercentY(position.y), 0, 100 - nextHeight),
-                      width: nextWidth,
-                      height: nextHeight,
-                    }));
-                  }}
-                  onMouseDown={() => setSelectedKey(item._key)}
-                  style={{
-                    zIndex: item.zIndex,
-                  }}
-                >
-                  <Card
-                    padding={0}
-                    radius={1}
+                      updateItem(item._key, (current) => ({
+                        ...current,
+                        aspectRatio: ratio,
+                        x: clamp(toPercentX(position.x), 0, 100 - nextWidth),
+                        y: clamp(toPercentY(position.y), 0, 100 - nextHeight),
+                        width: nextWidth,
+                        height: nextHeight,
+                      }));
+                    }}
+                    onMouseDown={() => setSelectedKey(item._key)}
+                    onContextMenu={(e: ReactMouseEvent<HTMLElement>) => {
+                      if (readOnly) return;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedKey(item._key);
+                      setContextMenu({
+                        x: e.clientX,
+                        y: e.clientY,
+                        key: item._key,
+                      });
+                    }}
                     style={{
-                      width: "100%",
-                      height: "100%",
-                      border:
-                        selectedKey === item._key
-                          ? "2px solid #3b82f6"
-                          : "1px solid #333",
-                      overflow: "hidden",
-                      cursor: readOnly ? "default" : "move",
-                      userSelect: "none",
-                      background: "#111",
+                      zIndex: item.zIndex,
                     }}
                   >
-                    <img
-                      src={urlForImage(item.image)
-                        ?.width(1200)
-                        .fit("max")
-                        .url()}
-                      alt=""
-                      draggable={false}
+                    <Card
+                      padding={0}
+                      radius={1}
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",
+                        border:
+                          selectedKey === item._key
+                            ? "2px solid #3b82f6"
+                            : "1px solid #333",
+                        overflow: "hidden",
+                        cursor: readOnly ? "default" : "move",
+                        userSelect: "none",
+                        background: "#111",
                       }}
-                    />
-                  </Card>
-                </Rnd>
-              );
-            })()
-          )}
-        </div>
-      </Card>
+                    >
+                      <img
+                        src={urlForImage(item.image)
+                          ?.width(1200)
+                          .fit("max")
+                          .url()}
+                        alt=""
+                        draggable={false}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </Card>
+                  </Rnd>
+                );
+              })()
+            )}
+          </div>
+        </Card>
 
-      <Grid columns={[1, 2]} gap={4}>
-        <Card padding={3} radius={2} tone="transparent" border>
-          <Stack space={3}>
-            <Text weight="semibold">Layer Settings</Text>
-            {!selectedItem ? (
-              <Text muted>Select an image to edit its position and size.</Text>
-            ) : (
-              <>
-                <RangeControl
-                  label={`X: ${selectedItem.x.toFixed(1)}%`}
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  value={selectedItem.x}
-                  disabled={readOnly}
-                  onChange={(next) => setSelectedField("x", next)}
-                />
-                <RangeControl
-                  label={`Y: ${selectedItem.y.toFixed(1)}%`}
-                  min={0}
-                  max={100}
-                  step={0.1}
-                  value={selectedItem.y}
-                  disabled={readOnly}
-                  onChange={(next) => setSelectedField("y", next)}
-                />
-                <RangeControl
-                  label={`Width: ${selectedItem.width.toFixed(1)}%`}
-                  min={5}
-                  max={100}
-                  step={0.1}
-                  value={selectedItem.width}
-                  disabled={readOnly}
-                  onChange={(next) => setSelectedField("width", next)}
-                />
-                <Text size={1} muted>
-                  Aspect Ratio:{" "}
-                  {(hasAspectRatio(selectedItem.aspectRatio)
-                    ? selectedItem.aspectRatio
-                    : 1
-                  ).toFixed(3)}
+        <Grid columns={[1, 2]} gap={4}>
+          <Card padding={3} radius={2} tone="transparent" border>
+            <Stack space={3}>
+              <Text weight="semibold">Layer Settings</Text>
+              {!selectedItem ? (
+                <Text muted>
+                  Select an image to edit its position and size.
                 </Text>
-                <RangeControl
-                  label={`Z-index: ${selectedItem.zIndex}`}
-                  min={0}
-                  max={Math.max(20, collageValue.items.length * 2)}
-                  step={1}
-                  value={selectedItem.zIndex}
-                  disabled={readOnly}
-                  onChange={(next) => setSelectedField("zIndex", next)}
-                />
-                <Button
-                  tone="critical"
-                  mode="ghost"
-                  text="Remove Selected Image"
-                  onClick={() => removeItem(selectedItem._key)}
-                  disabled={readOnly}
-                />
-              </>
-            )}
-          </Stack>
-        </Card>
+              ) : (
+                <>
+                  <RangeControl
+                    label={`X: ${selectedItem.x.toFixed(1)}%`}
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    value={selectedItem.x}
+                    disabled={readOnly}
+                    onChange={(next) => setSelectedField("x", next)}
+                  />
+                  <RangeControl
+                    label={`Y: ${selectedItem.y.toFixed(1)}%`}
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    value={selectedItem.y}
+                    disabled={readOnly}
+                    onChange={(next) => setSelectedField("y", next)}
+                  />
+                  <RangeControl
+                    label={`Width: ${selectedItem.width.toFixed(1)}%`}
+                    min={5}
+                    max={100}
+                    step={0.1}
+                    value={selectedItem.width}
+                    disabled={readOnly}
+                    onChange={(next) => setSelectedField("width", next)}
+                  />
+                  <Text size={1} muted>
+                    Aspect Ratio:{" "}
+                    {(hasAspectRatio(selectedItem.aspectRatio)
+                      ? selectedItem.aspectRatio
+                      : 1
+                    ).toFixed(3)}
+                  </Text>
+                  <RangeControl
+                    label={`Z-index: ${selectedItem.zIndex}`}
+                    min={0}
+                    max={Math.max(20, collageValue.items.length * 2)}
+                    step={1}
+                    value={selectedItem.zIndex}
+                    disabled={readOnly}
+                    onChange={(next) => setSelectedField("zIndex", next)}
+                  />
+                  <Button
+                    tone="critical"
+                    mode="ghost"
+                    text="Remove Selected Image"
+                    onClick={() => removeItem(selectedItem._key)}
+                    disabled={readOnly}
+                  />
+                </>
+              )}
+            </Stack>
+          </Card>
 
-        <Card padding={3} radius={2} tone="transparent" border>
-          <Stack space={3}>
-            <Text weight="semibold">Layers</Text>
-            {collageValue.items.length === 0 ? (
-              <Text muted>No layers yet.</Text>
-            ) : (
-              collageValue.items
-                .slice()
-                .sort((a, b) => b.zIndex - a.zIndex)
-                .map((item, idx) => (
-                  <Card
-                    key={item._key}
-                    padding={2}
-                    radius={2}
-                    tone={selectedKey === item._key ? "primary" : "transparent"}
-                    border
-                    onClick={() => setSelectedKey(item._key)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <Text size={1}>
-                      Layer {collageValue.items.length - idx} (z: {item.zIndex})
-                    </Text>
-                  </Card>
-                ))
-            )}
-          </Stack>
-        </Card>
-      </Grid>
-    </Stack>
+          <Card padding={3} radius={2} tone="transparent" border>
+            <Stack space={3}>
+              <Text weight="semibold">Layers</Text>
+              {collageValue.items.length === 0 ? (
+                <Text muted>No layers yet.</Text>
+              ) : (
+                collageValue.items
+                  .slice()
+                  .sort((a, b) => b.zIndex - a.zIndex)
+                  .map((item, idx) => (
+                    <Card
+                      key={item._key}
+                      padding={2}
+                      radius={2}
+                      tone={
+                        selectedKey === item._key ? "primary" : "transparent"
+                      }
+                      border
+                      onClick={() => setSelectedKey(item._key)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <Text size={1}>
+                        Layer {collageValue.items.length - idx} (z:{" "}
+                        {item.zIndex})
+                      </Text>
+                    </Card>
+                  ))
+              )}
+            </Stack>
+          </Card>
+        </Grid>
+      </Stack>
+
+      {contextMenu &&
+        createPortal(
+          <Card
+            padding={0}
+            radius={2}
+            shadow={2}
+            style={{
+              position: "fixed",
+              left: contextMenu.x,
+              top: contextMenu.y,
+              zIndex: 10000,
+              minWidth: 180,
+              overflow: "hidden",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Stack padding={0}>
+              <Box
+                padding={2}
+                style={{
+                  cursor: readOnly ? "default" : "pointer",
+                  background: "transparent",
+                }}
+                onClick={() => {
+                  if (!readOnly) {
+                    setContextMenu(null);
+                    triggerReplaceImage(contextMenu.key);
+                  }
+                }}
+              >
+                <Text size={1}>Replace image</Text>
+              </Box>
+            </Stack>
+          </Card>,
+          document.body
+        )}
+    </>
   );
 }

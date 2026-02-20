@@ -98,11 +98,11 @@ export default function ContactHero() {
       /> */}
       <div
         className={cn(
-          "absolute top-0 left-1/2 -translate-x-1/2 w-screen z-5 flex flex-col items-center justify-center pointer-events-none max-h-full overflow-hidden"
+          "absolute top-0 left-1/2 -translate-x-1/2 w-[170vw] z-5 flex flex-col items-center justify-center pointer-events-none max-h-full overflow-hidden"
         )}
       >
         <BakedRelief
-          className="w-screen aspect-square h-auto"
+          className="w-full aspect-square h-auto"
           textures={WEBGL_TEXTURES}
         />
       </div>
