@@ -9,6 +9,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ScrambleIn from "../scramble-in";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
+import { PortableText } from "next-sanity";
+import Player from "../VideoPlayer/player";
+import { useLenis } from "lenis/react";
 
 const DEFAULT_IMAGE_DURATION = 5; // 5 seconds for images
 
@@ -121,6 +124,7 @@ function ProjectStoriesContent({
   const [isHovering, setIsHovering] = useState(false);
   const [cursorText, setCursorText] = useState<"NEXT" | "PREV">("NEXT");
   const [isPaused, setIsPaused] = useState(false);
+  const [showVideoOverlay, setShowVideoOverlay] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -128,6 +132,7 @@ function ProjectStoriesContent({
   const tweenRef = useRef<gsap.core.Tween | null>(null);
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const wasHoldingRef = useRef(false);
+  const lenis = useLenis();
 
   const currentStory = stories[currentIndex];
   const isVideo = !!currentStory?.video;
@@ -273,116 +278,223 @@ function ProjectStoriesContent({
     }
   }, [currentIndex, isVideo]);
 
+  // Pause story video when overlay opens
+  useEffect(() => {
+    if (showVideoOverlay && videoRef.current) {
+      lenis?.stop();
+      videoRef.current.pause();
+    } else {
+      lenis?.start();
+    }
+  }, [lenis, showVideoOverlay]);
+
+  // Close overlay on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showVideoOverlay) {
+        setShowVideoOverlay(false);
+        if (videoRef.current && isVideo) videoRef.current.play();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showVideoOverlay, isVideo]);
+
+  const closeVideoOverlay = useCallback(
+    (e: React.PointerEvent) => {
+      e.stopPropagation();
+      setShowVideoOverlay(false);
+      if (videoRef.current && isVideo) {
+        videoRef.current.play();
+      }
+    },
+    [isVideo]
+  );
+
   return (
-    <section
-      ref={containerRef}
-      className="w-screen h-svh relative overflow-hidden select-none cursor-none z-10"
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => {
-        setIsHovering(false);
-        handlePointerLeave();
-      }}
-      style={{
-        clipPath: "inset(0% 0% 0% 0%)",
-      }}
-      onMouseDown={handlePointerDown}
-      onMouseUp={handlePointerUp}
-      onTouchStart={handlePointerDown}
-      onTouchEnd={handlePointerUp}
-    >
-      {/* Background Media */}
-      <div className="absolute inset-0 z-0">
-        {isVideo ? (
-          <video
-            ref={videoRef}
-            key={currentStory._key}
-            src={mediaUrl}
-            className="w-full h-full object-cover"
-            autoPlay
-            muted
-            playsInline
-            onEnded={handleVideoEnded}
-            onTimeUpdate={handleVideoTimeUpdate}
-          />
-        ) : (
-          <Image
-            key={currentStory._key}
-            src={mediaUrl ?? ""}
-            alt=""
-            fill
-            className="object-cover"
-            priority
+    <>
+      {" "}
+      {/* Video Player Overlay */}
+      {showVideoOverlay && isVideo && mediaUrl && (
+        <div
+          className="fixed inset-0 z-1000 flex items-center justify-center bg-black/90 p-4 cursor-auto"
+          onPointerDown={closeVideoOverlay}
+          onPointerUp={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+        >
+          <div
+            className="relative w-full max-w-[70vw] aspect-video"
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setShowVideoOverlay(false);
+                if (videoRef.current && isVideo) videoRef.current.play();
+              }}
+              className="absolute top-4 right-4 z-10 p-2 text-white/80 hover:text-white transition-colors"
+              aria-label="Close video"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <Player url={mediaUrl} doAutoPlay={true} color={brandColor} />
+          </div>
+        </div>
+      )}
+      <section
+        ref={containerRef}
+        className="w-screen h-svh relative overflow-hidden select-none cursor-none z-10"
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => {
+          setIsHovering(false);
+          handlePointerLeave();
+        }}
+        style={{
+          clipPath: "inset(0% 0% 0% 0%)",
+        }}
+        onMouseDown={handlePointerDown}
+        onMouseUp={handlePointerUp}
+        onTouchStart={handlePointerDown}
+        onTouchEnd={handlePointerUp}
+      >
+        {/* Background Media */}
+        <div className="absolute inset-0 z-0">
+          {isVideo ? (
+            <video
+              ref={videoRef}
+              key={currentStory._key}
+              src={mediaUrl}
+              className="w-full h-full object-cover"
+              autoPlay
+              muted
+              playsInline
+              onEnded={handleVideoEnded}
+              onTimeUpdate={handleVideoTimeUpdate}
+            />
+          ) : (
+            <Image
+              key={currentStory._key}
+              src={mediaUrl ?? ""}
+              alt=""
+              fill
+              className="object-cover"
+              priority
+            />
+          )}
+          {/* Dark overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
+
+        {/* Progress Indicators */}
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 w-[20%] flex flex-col gap-4">
+          <div className="flex flex-row gap-1">
+            {stories.map((_, index) => (
+              <div
+                key={index}
+                className="flex-1 h-[2px] bg-[#949494] rounded-full overflow-hidden"
+              >
+                <div
+                  ref={(el) => {
+                    progressBarsRef.current[index] = el;
+                  }}
+                  className="h-full bg-[#d3d3d3]"
+                  style={{
+                    width: index < currentIndex ? "100%" : "0%",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-row gap-2 items-center">
+            <div className="size-10 rounded-full bg-black flex items-center justify-center overflow-hidden">
+              {logo && (
+                <Image
+                  src={urlForImage(logo)?.width(80).height(80).url() ?? ""}
+                  alt={company}
+                  width={100}
+                  height={100}
+                  className="object-contain w-[60%] invert"
+                />
+              )}
+            </div>
+            <span className="text-white text-xl font-light tracking-tight">
+              {company}
+            </span>
+          </div>
+        </div>
+
+        {/* Description - Bottom Left */}
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 w-[20%] text-white text-sm lg:text-2xl font-light">
+          <PortableText value={currentStory.description ?? []} />
+        </div>
+
+        {/* Watch Video Button - only for video stories */}
+        {isVideo && (
+          <div
+            className="absolute bottom-20 left-[55%] z-20 pointer-events-auto cursor-pointer"
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowVideoOverlay(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-sm font-medium transition-colors"
+              aria-label="Watch video in full player"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+              Watch video
+            </button>
+          </div>
+        )}
+
+        {/* Mouse Follower Cursor */}
+        {isHovering && (
+          <ProjectStoriesCursor
+            brandColor={brandColor}
+            isPaused={isPaused}
+            cursorText={cursorText}
+            mousePosition={mousePosition}
+            isHovering={isHovering}
           />
         )}
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/20" />
-      </div>
-
-      {/* Progress Indicators */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 w-[20%] flex flex-col gap-4">
-        <div className="flex flex-row gap-1">
-          {stories.map((_, index) => (
-            <div
-              key={index}
-              className="flex-1 h-[2px] bg-[#949494] rounded-full overflow-hidden"
-            >
-              <div
-                ref={(el) => {
-                  progressBarsRef.current[index] = el;
-                }}
-                className="h-full bg-[#d3d3d3]"
-                style={{
-                  width: index < currentIndex ? "100%" : "0%",
-                }}
-              />
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-row gap-2 items-center">
-          <div className="size-10 rounded-full bg-black flex items-center justify-center overflow-hidden">
-            {logo && (
-              <Image
-                src={urlForImage(logo)?.width(80).height(80).url() ?? ""}
-                alt={company}
-                width={100}
-                height={100}
-                className="object-contain w-[60%] invert"
-              />
-            )}
-          </div>
-          <span className="text-white text-xl font-light tracking-tight">
-            {company}
-          </span>
-        </div>
-      </div>
-
-      {/* Description - Bottom Left */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 w-[20%]">
-        <p className="text-white text-sm lg:text-2xl font-light">
-          {currentStory.description}
-        </p>
-      </div>
-
-      {/* Mouse Follower Cursor */}
-      {isHovering && (
-        <ProjectStoriesCursor
-          brandColor={brandColor}
-          isPaused={isPaused}
-          cursorText={cursorText}
-          mousePosition={mousePosition}
-          isHovering={isHovering}
-        />
-      )}
-
-      {/* Story Counter - Bottom Right */}
-      {/* <div className="absolute bottom-12 right-12 z-10">
-        <span className="text-white/60 text-sm font-light">
-          {String(currentIndex + 1).padStart(2, "0")} /{" "}
-          {String(stories.length).padStart(2, "0")}
-        </span>
-      </div> */}
-    </section>
+      </section>
+    </>
   );
 }
 
