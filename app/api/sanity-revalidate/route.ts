@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       const message = `Updated routes: /`;
       return NextResponse.json({ body, message });
     } else if (body?.type === "project" && !body?.slug) {
-      const message = "Bad Request";
+      const message = "Bad Request - Project has no slug";
       return new Response(JSON.stringify({ message, body }), { status: 400 });
     } else if (body?.type === "project" && body?.slug) {
       revalidatePath("/");
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ body, message });
     }
 
-    const message = "Bad Request";
+    const message = "Bad Request - Unknown type";
     return new Response(JSON.stringify({ message, body }), { status: 400 });
   } catch (err) {
     console.error(err);
