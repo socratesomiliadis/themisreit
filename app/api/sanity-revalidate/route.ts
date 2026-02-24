@@ -21,18 +21,18 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ message, isValidSignature, body }), {
         status: 401,
       });
-    } else if (body?.type === "client") {
+    } else if (body?._type === "client") {
       revalidatePath("/clients");
       const message = "Updated routes: /clients";
       return NextResponse.json({ body, message });
-    } else if (body?.type === "service") {
+    } else if (body?._type === "service") {
       revalidatePath("/");
       const message = `Updated routes: /`;
       return NextResponse.json({ body, message });
-    } else if (body?.type === "project" && !body?.slug) {
+    } else if (body?._type === "project" && !body?.slug) {
       const message = "Bad Request - Project has no slug";
       return new Response(JSON.stringify({ message, body }), { status: 400 });
-    } else if (body?.type === "project" && body?.slug) {
+    } else if (body?._type === "project" && body?.slug) {
       revalidatePath("/");
       revalidatePath("/work");
       revalidatePath("/universe");
