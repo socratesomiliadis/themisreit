@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * This config is used to set up Sanity Studio that's mounted on the `/pages/studio/[[...index]].tsx` route
  */
@@ -13,8 +15,8 @@ import { orderableDocumentListDeskItem } from "@sanity/orderable-document-list";
 
 export default defineConfig({
   basePath: "/sanity",
-  name: "themisreit",
-  title: "Themisreit",
+  name: "pensatori-irrazionali",
+  title: "Pensatori Irrazionali",
   projectId,
   dataset,
   schema,
