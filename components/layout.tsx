@@ -37,6 +37,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const lenis = useLenis();
   const isWorkPage = pathname === "/work";
   const isNightPage = pathname === "/night";
+  const isContactPage = pathname === "/contact";
   const [isLoading, setIsLoading] = useState(true);
   // Wait for loader to finish before mounting WebGL
   const [showWebGL, setShowWebGL] = useState(false);
@@ -100,7 +101,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <Scrollbar />
         {children}
         {/* WebGL background - components handle staggered initialization automatically */}
-        {showWebGL && !isSanityPage && !isNightPage && (
+        {/* {showWebGL && !isSanityPage && !isNightPage && !isContactPage && (
           <div
             className={cn(
               "absolute top-0 left-1/2 -translate-x-1/2 w-screen z-5 flex flex-col items-center pointer-events-none max-h-full overflow-hidden",
@@ -115,7 +116,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               />
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </LoaderProvider>
   );
