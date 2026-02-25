@@ -366,6 +366,10 @@ function BakedReliefWebGPU({
         }) => {
           const adjustedPixelRatio = pixelRatioToUse;
 
+          // Force canvas to fill its container via CSS instead of ssam's transform scaling
+          canvas.style.width = "100%";
+          canvas.style.height = "100%";
+
           const renderer = new WebGPURenderer({ canvas, antialias: false });
           renderer.setSize(w, h);
           renderer.setPixelRatio(adjustedPixelRatio);
@@ -512,9 +516,13 @@ function BakedReliefWebGPU({
             uEdgeFade,
           };
 
-          // Create plane geometry
-          const planeSize = (Math.min(w, h) / h) * 2.5;
-          const geometry = new PlaneGeometry(planeSize, planeSize);
+          // Size plane to exactly fill the camera frustum at z=0
+          const fov = 50;
+          const cameraZ = 3;
+          const vFovRad = (fov * Math.PI) / 180;
+          const planeHeight = 2 * cameraZ * Math.tan(vFovRad / 2);
+          const planeWidth = planeHeight * (w / h);
+          const geometry = new PlaneGeometry(planeWidth, planeHeight);
 
           // Create material with TSL
           const material = new NodeMaterial();
@@ -667,10 +675,9 @@ function BakedReliefWebGPU({
             camera.updateProjectionMatrix();
             renderer.setSize(newW, newH);
 
-            // Update plane scale to maintain coverage
-            const newPlaneSize = (Math.min(newW, newH) / newH) * 2.5;
-            const scale = newPlaneSize / planeSize;
-            mesh.scale.set(scale, scale, 1);
+            // Recalculate plane scale to fill the new frustum
+            const newPlaneWidth = planeHeight * (newW / newH);
+            mesh.scale.set(newPlaneWidth / planeWidth, 1, 1);
           };
 
           wrap.unload = () => {
@@ -694,8 +701,7 @@ function BakedReliefWebGPU({
           duration: 6_000,
           playFps: quality.targetFps,
           parent: container,
-          scaleToParent: true,
-          // scaleContext: true,
+          scaleToParent: false,
         };
 
         const result = await ssam(sketch as Sketch<"webgpu">, settings);

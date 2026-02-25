@@ -1,8 +1,15 @@
 "use client";
 
-import Image from "next/image";
-import { BakedRelief } from "../WebGL";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
+
+const BakedRelief = dynamic(
+  () => import("@/components/WebGL/baked-relief-webgpu"),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 const CONTACT_FORM_BUTTONS = [
   { value: "$50,000" },
@@ -46,66 +53,65 @@ function ContactFormButton({ value }: { value: string }) {
 
 export default function ContactHero() {
   return (
-    <section className="w-screen h-svh contact-hero relative flex items-center justify-center z-10">
-      <div className="absolute h-full flex items-center justify-center z-10">
-        <svg
-          height="100%"
-          viewBox="0 0 1006 1080"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle
-            cx="501"
-            cy="501"
-            r="501.312"
-            transform="matrix(-1 0 0 1 1004 39)"
-            stroke="#B9B9B9"
-            strokeDasharray="8 8"
-          />
-          <line
-            x1="0.5"
-            y1="1080"
-            x2="0.500047"
-            y2="-2.18556e-08"
-            stroke="#B9B9B9"
-          />
-          <line
-            x1="1005.5"
-            y1="1080"
-            x2="1005.5"
-            y2="-2.18556e-08"
-            stroke="#B9B9B9"
-          />
-        </svg>
-        <div className="absolute flex flex-col items-center justify-center">
-          <p className="text-4xl text-[#4334343] text-center tracking-tighter">
-            Alright, let&apos;s not be strangers. What should <br />I call the
-            genius behind this project?
-          </p>
-          <div className="flex flex-row flex-wrap w-2/3 justify-center mt-6 gap-4">
-            {CONTACT_FORM_BUTTONS.map((button) => (
-              <ContactFormButton key={button.value} value={button.value} />
-            ))}
+    <>
+      <section className="w-screen h-svh contact-hero relative flex items-center justify-center z-10 overflow-hidden">
+        <div className="absolute h-full flex items-center justify-center z-10">
+          <svg
+            height="100%"
+            viewBox="0 0 1006 1080"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="501"
+              cy="501"
+              r="501.312"
+              transform="matrix(-1 0 0 1 1004 39)"
+              stroke="#B9B9B9"
+              strokeDasharray="8 8"
+            />
+            <line
+              x1="0.5"
+              y1="1080"
+              x2="0.500047"
+              y2="-2.18556e-08"
+              stroke="#B9B9B9"
+            />
+            <line
+              x1="1005.5"
+              y1="1080"
+              x2="1005.5"
+              y2="-2.18556e-08"
+              stroke="#B9B9B9"
+            />
+          </svg>
+          <div className="absolute flex flex-col items-center justify-center">
+            <p className="text-4xl text-[#4334343] text-center tracking-tighter">
+              Alright, let&apos;s not be strangers. What should <br />I call the
+              genius behind this project?
+            </p>
+            <div className="flex flex-row flex-wrap w-2/3 justify-center mt-6 gap-4">
+              {CONTACT_FORM_BUTTONS.map((button) => (
+                <ContactFormButton key={button.value} value={button.value} />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-      {/* <Image
+        {/* <Image
         src="/static/images/contactBg.png"
         alt="Contact Hero"
         width={1920 * 1.5}
         height={1080 * 1.5}
         className="w-full h-full absolute top-0 left-0 z-0 object-cover"
       /> */}
-      <div
-        className={cn(
-          "absolute top-0 left-1/2 -translate-x-1/2 w-[170vw] z-5 flex flex-col items-center justify-center pointer-events-none max-h-full overflow-hidden"
-        )}
-      >
-        <BakedRelief
-          className="w-full aspect-square h-auto"
-          textures={WEBGL_TEXTURES}
-        />
-      </div>
-    </section>
+        <div
+          className={cn(
+            "absolute top-[15%] left-1/2 -translate-x-1/2 w-[110vw] h-full z-5 flex flex-col items-center justify-center max-h-full overflow-hidden"
+          )}
+        >
+          <BakedRelief className="w-full h-full" textures={WEBGL_TEXTURES} />
+        </div>
+      </section>
+    </>
   );
 }
