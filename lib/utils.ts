@@ -94,3 +94,10 @@ export function getContrastTextColor(
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5 ? "#434343" : "#ffffff";
 }
+
+export function getMaskImage(radius: string) {
+  return `radial-gradient(circle at 0% 0%, transparent ${radius}, black calc(${radius} + 1px)), 
+  radial-gradient(circle at 100% 0%, transparent ${radius}, black calc(${radius} + 1px)),
+  radial-gradient(circle at 0% 100%, transparent ${radius}, black calc(${radius} + 1px)),
+  radial-gradient(circle at 100% 100%, transparent ${radius}, black calc(${radius} + 1px))`;
+}

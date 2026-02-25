@@ -192,8 +192,8 @@ export default function Nav({
   }, [isOpen]);
 
   return (
-    <div className="w-full h-full relative flex flex-col justify-between pl-10 pr-16 z-[1]">
-      <div className="flex flex-col w-full mt-24 gap-4">
+    <div className="w-full h-full relative flex flex-col justify-between pl-10 pr-16 z-1">
+      <div className="flex flex-col w-full mt-12 gap-4">
         <NavItem
           isMenuOpen={isOpen}
           setIsOpen={setIsOpen}

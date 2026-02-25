@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import NewsItem from "./news-item";
 import Nav from "./Nav";
-import { cn } from "@/lib/utils";
+import { cn, getMaskImage } from "@/lib/utils";
 import StatusBar from "./status-bar";
 import { useLenis } from "lenis/react";
 import Link from "@/components/transition-link";
@@ -76,25 +76,25 @@ export default function Header() {
         },
         0
       );
-      tl.set(
-        ".menu-body",
-        {
-          maskImage:
-            "radial-gradient(circle at 1.375rem 1.375rem, transparent 1px, black 2px), radial-gradient(circle at calc(100% - 0rem) 1.375rem, transparent 0px, black 1px)",
-        },
-        0
-      );
+      // tl.set(
+      //   ".menu-body",
+      //   {
+      //     maskImage:
+      //       "radial-gradient(circle at 1.375rem 1.375rem, transparent 1px, black 2px), radial-gradient(circle at calc(100% - 0rem) 1.375rem, transparent 0px, black 1px)",
+      //   },
+      //   0
+      // );
 
-      tl.to(
-        ".menu-body",
-        {
-          maskImage:
-            "radial-gradient(circle at 1.375rem 1.375rem, transparent 32px, black 33px), radial-gradient(circle at calc(100% - 1.375rem) 1.375rem, transparent 32px, black 33px)",
-          ease: "elastic.out(1.6,1)",
-          duration: 1,
-        },
-        0
-      );
+      // tl.to(
+      //   ".menu-body",
+      //   {
+      //     maskImage:
+      //       "radial-gradient(circle at 1.375rem 1.375rem, transparent 32px, black 33px), radial-gradient(circle at calc(100% - 1.375rem) 1.375rem, transparent 32px, black 33px)",
+      //     ease: "elastic.out(1.6,1)",
+      //     duration: 1,
+      //   },
+      //   0
+      // );
 
       // tl.call(
       //   () => {
@@ -312,17 +312,42 @@ export default function Header() {
             className="relative"
           >
             {/* <StatusBar /> */}
-            <div className="absolute right-0 top-0 z-10 rounded-full bg-[#1E1E1E]/80 backdrop-blur size-11 flex items-center justify-center pointer-events-auto">
+            <button
+              onClick={() => {
+                setMenuOpen((prev) => !prev);
+              }}
+              style={{
+                maskImage: getMaskImage("0.35rem"),
+                maskComposite: "intersect",
+              }}
+              className="absolute bg-[#1E1E1E]/80 overflow-hidden backdrop-blur right-0 h-10 top-0 z-10 flex items-center justify-center cursor-pointer pointer-events-auto text-white pl-4 pr-1"
+            >
+              <span
+                className={cn(
+                  "block tracking-tight transition-transform duration-300 ease-out",
+                  isMenuOpen && "-translate-y-[120%]"
+                )}
+              >
+                MENU
+              </span>
+              <span
+                className={cn(
+                  "block absolute left-4 tracking-tight transition-transform duration-300 ease-out translate-y-[120%]",
+                  isMenuOpen && "translate-y-0"
+                )}
+              >
+                CLOSE
+              </span>
               <div className="scale-75">
                 <Hamburger
                   color="#fff"
                   size={20}
                   toggled={isMenuOpen}
-                  toggle={setMenuOpen}
+                  // toggle={setMenuOpen}
                 />
               </div>
-            </div>
-            <button
+            </button>
+            {/* <button
               onClick={() => {
                 setNewsOpen((prev) => !prev);
               }}
@@ -348,16 +373,17 @@ export default function Header() {
                   strokeWidth="2"
                 />
               </svg>
-            </button>
+            </button> */}
             <div
               style={{
                 pointerEvents: isMenuOpen ? "auto" : "none",
+                maskImage: getMaskImage("1rem"),
                 maskComposite: "intersect",
               }}
-              className="relative z-0 opacity-0 menu-body rounded-2xl h-[92vh] w-[28vw] backdrop-blur-xl will-change-auto"
+              className="relative z-0 opacity-0 menu-body h-[calc(92vh-3.5rem)] mt-14 w-[28vw] backdrop-blur-lg"
             >
               <Nav isOpen={isMenuOpen} setIsOpen={setMenuOpen} />
-              <div className="absolute nav-bg left-0 top-0 z-0 w-full h-full bg-[#1E1E1E]/80 "></div>
+              <div className="absolute nav-bg left-0 top-0 z-0 w-full h-full bg-[#1E1E1E]/80"></div>
             </div>
           </div>
         </div>
