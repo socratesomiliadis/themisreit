@@ -1,14 +1,14 @@
 import * as THREE from "three";
 
 /**
- * Parse hex color string to THREE.Vector3
- * Cached results for performance
+ * Parse hex color string to THREE.Vector3 (0–1 range).
+ * Results are cached to avoid re-parsing the same color.
  */
 const colorCache = new Map<string, THREE.Vector3>();
 
 export function parseHexColor(hex: string): THREE.Vector3 {
   const cached = colorCache.get(hex);
-  if (cached) return cached;
+  if (cached) return cached.clone();
 
   const h = hex.replace("#", "");
   const vector = new THREE.Vector3(
@@ -18,11 +18,12 @@ export function parseHexColor(hex: string): THREE.Vector3 {
   );
 
   colorCache.set(hex, vector);
-  return vector;
+  return vector.clone();
 }
 
 /**
- * Calculate plane size to fill viewport with given aspect ratio
+ * Calculate plane size to fill viewport with the given aspect ratio.
+ * Returns dimensions that fit within the viewport while maintaining the ratio.
  */
 export function calculatePlaneSize(
   viewportWidth: number,
@@ -31,46 +32,10 @@ export function calculatePlaneSize(
   sizeHeight: number,
   aspectRatio: number
 ): { width: number; height: number } {
-  const imageAspect = aspectRatio;
   const viewportAspect = sizeWidth / sizeHeight;
 
-  if (viewportAspect > imageAspect) {
-    return { width: viewportHeight * imageAspect, height: viewportHeight };
+  if (viewportAspect > aspectRatio) {
+    return { width: viewportHeight * aspectRatio, height: viewportHeight };
   }
-  return { width: viewportWidth, height: viewportWidth / imageAspect };
-}
-
-/**
- * Defer execution using requestIdleCallback or fallback
- */
-export function deferExecution(
-  callback: () => void,
-  options?: { timeout?: number }
-): () => void {
-  let cancelled = false;
-  let id: number | ReturnType<typeof setTimeout>;
-
-  const execute = () => {
-    if (!cancelled) callback();
-  };
-
-  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-    id = window.requestIdleCallback(execute, {
-      timeout: options?.timeout ?? 200,
-    });
-    return () => {
-      cancelled = true;
-      window.cancelIdleCallback(id as number);
-    };
-  } else if (typeof window !== "undefined") {
-    id = setTimeout(execute, 0);
-    return () => {
-      cancelled = true;
-      clearTimeout(id);
-    };
-  }
-
-  // SSR fallback
-  callback();
-  return () => {};
+  return { width: viewportWidth, height: viewportWidth / aspectRatio };
 }

@@ -49,7 +49,7 @@ type QueuedInit = {
 const initQueue: QueuedInit[] = [];
 let isProcessingQueue = false;
 let lastInitTime = 0;
-const MIN_INIT_DELAY = 150; // Minimum ms between initializations
+const MIN_INIT_DELAY = 150;
 
 function queueInitialization(id: string, callback: () => void): () => void {
   const item: QueuedInit = { id, callback };
@@ -83,10 +83,8 @@ function processQueue(): void {
       const item = initQueue.shift();
       if (item) {
         lastInitTime = performance.now();
-        // Use requestAnimationFrame to ensure we're not blocking paint
         requestAnimationFrame(() => {
           item.callback();
-          // Use requestIdleCallback for next item to avoid blocking
           if ("requestIdleCallback" in window) {
             window.requestIdleCallback(() => processNext(), { timeout: 200 });
           } else {
@@ -103,8 +101,10 @@ function processQueue(): void {
 }
 
 // ============================================================================
-// MAIN COMPONENT
+// MAIN COMPONENT — single-enum state machine instead of 3+ booleans
 // ============================================================================
+
+type InitPhase = "pending" | "ready" | "active";
 
 function BakedReliefInner({
   textures,
@@ -131,53 +131,43 @@ function BakedReliefInner({
 }: BakedReliefProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceId = useId();
+  const [phase, setPhase] = useState<InitPhase>("pending");
   const [isVisible, setIsVisible] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isCanvasReady, setIsCanvasReady] = useState(false);
-  const [frameloopMode, setFrameloopMode] = useState<"demand" | "always">(
-    "demand"
-  );
 
-  // Get quality settings based on device capabilities
   const qualitySettings = useMemo(() => getQualitySettings(), []);
 
-  // Staggered initialization - prevents multiple instances from blocking
+  // Staggered initialization — queue callback fires rAF then transitions
   useEffect(() => {
+    let rAF: number | undefined;
     const cleanup = queueInitialization(instanceId, () => {
-      // Use startTransition to mark this as non-urgent
-      startTransition(() => {
-        setIsInitialized(true);
+      rAF = requestAnimationFrame(() => {
+        startTransition(() => setPhase("ready"));
       });
     });
 
-    return cleanup;
+    return () => {
+      cleanup();
+      if (rAF !== undefined) cancelAnimationFrame(rAF);
+    };
   }, [instanceId]);
 
-  // Delayed Canvas activation - gives time for shader compilation
+  // Delayed activation — gives time for shader compilation
   useEffect(() => {
-    if (!isInitialized) return;
+    if (phase !== "ready") return;
 
-    // Small delay to allow React to paint the container first
-    const timer = requestAnimationFrame(() => {
-      setIsCanvasReady(true);
+    const timer = setTimeout(() => {
+      startTransition(() => setPhase("active"));
+    }, 200);
 
-      // Switch to continuous rendering after a delay
-      const frameloopTimer = setTimeout(() => {
-        startTransition(() => {
-          setFrameloopMode("always");
-        });
-      }, 200);
-
-      return () => clearTimeout(frameloopTimer);
-    });
-
-    return () => cancelAnimationFrame(timer);
-  }, [isInitialized]);
+    return () => clearTimeout(timer);
+  }, [phase]);
 
   // IntersectionObserver for visibility
   useEffect(() => {
-    if (!pauseWhenHidden || !isCanvasReady) {
-      if (isCanvasReady) setIsVisible(true);
+    if (phase === "pending") return;
+
+    if (!pauseWhenHidden) {
+      setIsVisible(true);
       return;
     }
 
@@ -195,12 +185,11 @@ function BakedReliefInner({
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [pauseWhenHidden, isCanvasReady]);
+  }, [pauseWhenHidden, phase]);
 
   const containerStyle = { width: "100%", height: "100%", ...style };
 
-  // Render placeholder until initialized
-  if (!isInitialized) {
+  if (phase === "pending") {
     return (
       <div ref={containerRef} className={className} style={containerStyle} />
     );
@@ -208,55 +197,48 @@ function BakedReliefInner({
 
   return (
     <div ref={containerRef} className={className} style={containerStyle}>
-      {isCanvasReady && (
-        <Canvas
-          gl={{
-            antialias: false,
-            alpha: true,
-            powerPreference: "high-performance",
-            depth: false,
-            stencil: false,
-            // Reduce memory by limiting precision where possible
-            precision: "mediump",
-            // Prevent preserving drawing buffer (faster)
-            preserveDrawingBuffer: false,
-          }}
-          camera={{ position: [0, 0, 3], fov: 50 }}
-          style={{ width: "100%", height: "100%" }}
-          frameloop={frameloopMode}
-          // Use quality-based DPR
-          dpr={qualitySettings.dpr}
-          // Flat mode skips some R3F overhead
-          flat
-        >
-          <BakedReliefPlane
-            textures={textures}
-            textureScale={textureScale}
-            textureStrength={textureStrength}
-            multiplyColor={multiplyColor}
-            fresnelEnabled={fresnelEnabled}
-            fresnelColor={fresnelColor}
-            fresnelStrength={fresnelStrength}
-            trailSize={trailSize}
-            trailFadeSpeed={trailFadeSpeed}
-            trailMaxAge={trailMaxAge}
-            trailIntensity={trailIntensity}
-            ambientIntensity={ambientIntensity}
-            mouseLerp={mouseLerp}
-            mouseInfluence={mouseInfluence}
-            rotationSpeed={rotationSpeed}
-            edgeFade={edgeFade}
-            aspectRatio={aspectRatio}
-            trailResolution={trailResolution}
-            isVisible={isVisible}
-          />
-        </Canvas>
-      )}
+      <Canvas
+        gl={{
+          antialias: false,
+          alpha: true,
+          powerPreference: "high-performance",
+          depth: false,
+          stencil: false,
+          precision: "mediump",
+          preserveDrawingBuffer: false,
+        }}
+        camera={{ position: [0, 0, 3], fov: 50 }}
+        style={{ width: "100%", height: "100%" }}
+        frameloop={phase === "active" ? "always" : "demand"}
+        dpr={qualitySettings.dpr}
+        flat
+      >
+        <BakedReliefPlane
+          textures={textures}
+          textureScale={textureScale}
+          textureStrength={textureStrength}
+          multiplyColor={multiplyColor}
+          fresnelEnabled={fresnelEnabled}
+          fresnelColor={fresnelColor}
+          fresnelStrength={fresnelStrength}
+          trailSize={trailSize}
+          trailFadeSpeed={trailFadeSpeed}
+          trailMaxAge={trailMaxAge}
+          trailIntensity={trailIntensity}
+          ambientIntensity={ambientIntensity}
+          mouseLerp={mouseLerp}
+          mouseInfluence={mouseInfluence}
+          rotationSpeed={rotationSpeed}
+          edgeFade={edgeFade}
+          aspectRatio={aspectRatio}
+          trailResolution={trailResolution}
+          isVisible={isVisible}
+        />
+      </Canvas>
     </div>
   );
 }
 
-// Memoize the main component
 const BakedRelief = memo(BakedReliefInner);
 
 export default BakedRelief;

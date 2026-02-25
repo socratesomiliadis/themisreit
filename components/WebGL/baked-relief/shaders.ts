@@ -72,9 +72,6 @@ export function createFragmentShader(blurSamples: TrailBlurSamples = 5): string 
     float trail = smoothstep(0.0, 0.3, rawTrail) * smoothstep(0.0, 1.0, rawTrail);
     trail = pow(trail, 0.7);
     
-    // Sample plaster/grunge texture with tiling
-    vec4 plaster = texture2D(tPlaster, uv * uTextureScale);
-    
     // Sample all 6 baked textures
     vec4 bake1 = texture2D(tBake1, uv);
     vec4 bake2 = texture2D(tBake2, uv);
@@ -84,7 +81,6 @@ export function createFragmentShader(blurSamples: TrailBlurSamples = 5): string 
     vec4 bake6 = texture2D(tBake6, uv);
     
     // Progressive blend through the 6 textures based on trail intensity
-    // Using smoothstep for branchless blending (better GPU performance)
     float t = trail * 5.0;
     
     vec4 color = mix(bake1, bake2, smoothstep(0.0, 1.0, t));
@@ -93,11 +89,14 @@ export function createFragmentShader(blurSamples: TrailBlurSamples = 5): string 
     color = mix(color, bake5, smoothstep(3.0, 4.0, t));
     color = mix(color, bake6, smoothstep(4.0, 5.0, t));
     
-    // Apply multiply color - darkens the base
+    // Apply multiply color
     color.rgb *= uMultiplyColor;
     
-    // Apply grunge/plaster texture as multiply
-    color.rgb *= mix(vec3(1.0), plaster.rgb, uTextureStrength);
+    // Plaster / grunge overlay — skip texture fetch when strength is zero
+    if (uTextureStrength > 0.0) {
+      vec4 plaster = texture2D(tPlaster, uv * uTextureScale);
+      color.rgb *= mix(vec3(1.0), plaster.rgb, uTextureStrength);
+    }
     
     // Edge glow effect at trail boundaries (skip if disabled)
     if (uFresnelEnabled > 0.5) {

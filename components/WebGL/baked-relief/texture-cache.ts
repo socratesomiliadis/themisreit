@@ -1,30 +1,31 @@
 import * as THREE from "three";
 import type { CachedTexture } from "./types";
 
-// ============================================================================
-// GLOBAL TEXTURE CACHE - Shared across ALL BakedRelief instances
-// ============================================================================
+// ---------------------------------------------------------------------------
+// Global texture cache — shared across all BakedRelief instances
+// ---------------------------------------------------------------------------
 
 const textureCache = new Map<string, CachedTexture>();
 const textureLoader = new THREE.TextureLoader();
 
-// Pre-created dummy texture for reuse (avoids allocations)
-let sharedDummyTexture: THREE.Texture | null = null;
+// Shared 1x1 gray placeholder (singleton, never disposed)
+let sharedPlaceholder: THREE.DataTexture | null = null;
 
-function getSharedDummyTexture(): THREE.Texture {
-  if (!sharedDummyTexture) {
-    sharedDummyTexture = new THREE.DataTexture(
+function getSharedPlaceholder(): THREE.DataTexture {
+  if (!sharedPlaceholder) {
+    sharedPlaceholder = new THREE.DataTexture(
       new Uint8Array([32, 32, 32, 255]),
       1,
       1,
       THREE.RGBAFormat
     );
-    sharedDummyTexture.needsUpdate = true;
+    sharedPlaceholder.needsUpdate = true;
   }
-  return sharedDummyTexture;
+  return sharedPlaceholder;
 }
 
-export function createDummyTexture(): THREE.Texture {
+/** Create a new 1x1 gray DataTexture (caller owns the lifecycle) */
+export function createDummyTexture(): THREE.DataTexture {
   const tex = new THREE.DataTexture(
     new Uint8Array([32, 32, 32, 255]),
     1,
@@ -35,17 +36,49 @@ export function createDummyTexture(): THREE.Texture {
   return tex;
 }
 
-function createPlaceholderTexture(): THREE.Texture {
-  const placeholder = new THREE.DataTexture(
-    new Uint8Array([32, 32, 32, 255]),
-    1,
-    1,
-    THREE.RGBAFormat
-  );
-  placeholder.needsUpdate = true;
-  return placeholder;
+// ---------------------------------------------------------------------------
+// Optional KTX2 support
+// Consumers call setKTX2Loader() once to enable compressed texture loading.
+// The cache auto-detects .ktx2 extensions and uses the provided loader.
+// ---------------------------------------------------------------------------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let ktx2Loader: any = null;
+
+/**
+ * Register a pre-configured KTX2Loader.
+ *
+ * Usage (call once during app init):
+ * ```ts
+ * import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+ *
+ * const loader = new KTX2Loader()
+ *   .setTranscoderPath('/basis/')
+ *   .detectSupport(renderer);
+ *
+ * setKTX2Loader(loader);
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function setKTX2Loader(loader: any): void {
+  ktx2Loader = loader;
 }
 
+function isKTX2(url: string): boolean {
+  return url.toLowerCase().endsWith(".ktx2");
+}
+
+// ---------------------------------------------------------------------------
+// Core API
+// ---------------------------------------------------------------------------
+
+/**
+ * Load a texture through the cache. Increments the ref count if already cached.
+ * On load error, resolves with a 1x1 gray fallback instead of rejecting.
+ *
+ * Supports both standard image formats (PNG/JPEG/WebP) and KTX2 compressed
+ * textures when a KTX2Loader has been registered via `setKTX2Loader()`.
+ */
 export function getOrLoadTexture(
   url: string,
   repeat = false
@@ -59,38 +92,35 @@ export function getOrLoadTexture(
   }
 
   const promise = new Promise<THREE.Texture>((resolve) => {
-    const load = () => {
-      textureLoader.load(
-        url,
-        (tex) => {
-          tex.minFilter = THREE.LinearFilter;
-          tex.magFilter = THREE.LinearFilter;
-          tex.wrapS = repeat ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
-          tex.wrapT = repeat ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+    const configure = (tex: THREE.Texture) => {
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.wrapS = repeat ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+      tex.wrapT = repeat ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
 
-          const entry = textureCache.get(cacheKey);
-          if (entry) {
-            entry.texture = tex;
-            entry.loading = false;
-          }
-          resolve(tex);
-        },
-        undefined,
-        () => {
-          // On error, resolve with a dummy texture
-          const dummy = new THREE.DataTexture(
-            new Uint8Array([128, 128, 128, 255]),
-            1,
-            1,
-            THREE.RGBAFormat
-          );
-          dummy.needsUpdate = true;
-          resolve(dummy);
-        }
-      );
+      const entry = textureCache.get(cacheKey);
+      if (entry) {
+        entry.texture = tex;
+        entry.loading = false;
+      }
+      resolve(tex);
     };
 
-    // Defer loading to prevent blocking
+    const fallback = () => {
+      console.warn(`Failed to load texture: ${url}, using fallback`);
+      const dummy = createDummyTexture();
+      dummy.colorSpace = THREE.NoColorSpace;
+      resolve(dummy);
+    };
+
+    const load = () => {
+      if (isKTX2(url) && ktx2Loader) {
+        ktx2Loader.load(url, configure, undefined, fallback);
+      } else {
+        textureLoader.load(url, configure, undefined, fallback);
+      }
+    };
+
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
       window.requestIdleCallback(load, { timeout: 200 });
     } else if (typeof window !== "undefined") {
@@ -101,7 +131,7 @@ export function getOrLoadTexture(
   });
 
   textureCache.set(cacheKey, {
-    texture: createPlaceholderTexture(),
+    texture: createDummyTexture(),
     refCount: 1,
     loading: true,
     promise,
@@ -110,6 +140,7 @@ export function getOrLoadTexture(
   return promise;
 }
 
+/** Decrement the ref count and dispose when no longer referenced */
 export function releaseTexture(url: string, repeat = false): void {
   const cacheKey = `${url}:${repeat}`;
   const cached = textureCache.get(cacheKey);
@@ -123,13 +154,14 @@ export function releaseTexture(url: string, repeat = false): void {
   }
 }
 
+/** Get a texture synchronously from cache, or the shared placeholder if not loaded yet */
 export function getTextureSync(url: string, repeat = false): THREE.Texture {
   const cacheKey = `${url}:${repeat}`;
   const cached = textureCache.get(cacheKey);
-  return cached?.texture ?? getSharedDummyTexture();
+  return cached?.texture ?? getSharedPlaceholder();
 }
 
-// Batch loading helper for better performance
+/** Load multiple textures in parallel through the cache */
 export function loadTexturesBatch(
   textures: { url: string; repeat?: boolean }[]
 ): Promise<THREE.Texture[]> {
@@ -138,7 +170,7 @@ export function loadTexturesBatch(
   );
 }
 
-// Batch release helper
+/** Release multiple textures at once */
 export function releaseTexturesBatch(
   textures: { url: string; repeat?: boolean }[]
 ): void {

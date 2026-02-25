@@ -35,10 +35,7 @@ import { vertexShader, createFragmentShader } from "./shaders";
 import { parseHexColor, calculatePlaneSize } from "./utils";
 import { getQualitySettings, type QualitySettings } from "./performance";
 
-// Pre-create reusable objects to avoid allocations in render loop
-const mouseVec2 = new THREE.Vector2(0.5, 0.5);
-
-// Shared dummy trail texture (singleton)
+// 1x1 black trail texture — used before the real trail is initialized.
 let sharedDummyTrailTexture: THREE.DataTexture | null = null;
 function getDummyTrailTexture(): THREE.DataTexture {
   if (!sharedDummyTrailTexture) {
@@ -77,19 +74,23 @@ function BakedReliefPlaneInner({
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const trailRef = useRef<Trail | null>(null);
+  const trailTextureRef = useRef<THREE.CanvasTexture | null>(null);
 
-  // Use refs for mouse to avoid re-renders
+  // Mouse state kept in refs to avoid triggering re-renders each frame
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const targetMouseRef = useRef({ x: 0.5, y: 0.5 });
   const prevMouseRef = useRef({ x: 0.5, y: 0.5 });
   const clientCoordsRef = useRef({ x: 0, y: 0 });
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Get quality settings based on device performance
+  // Cached bounding rect — updated only on resize / scroll (not every frame)
+  const cachedRectRef = useRef<DOMRect | null>(null);
+
+  // Per-instance scratch Vector2 to avoid allocating in the render loop
+  const mouseVec2Ref = useRef(new THREE.Vector2(0.5, 0.5));
+
   const qualitySettings = useMemo(() => getQualitySettings(), []);
   const qualityRef = useRef<QualitySettings>(qualitySettings);
 
-  // Track if trail has been initialized (deferred)
   const [trailReady, setTrailReady] = useState(false);
   const trailParamsRef = useRef({
     trailResolution,
@@ -99,7 +100,6 @@ function BakedReliefPlaneInner({
     trailIntensity,
   });
 
-  // Update params ref
   trailParamsRef.current = {
     trailResolution,
     trailSize,
@@ -110,7 +110,36 @@ function BakedReliefPlaneInner({
 
   const { viewport, size, gl } = useThree();
 
-  // DEFERRED Trail initialization - use requestIdleCallback
+  // -------------------------------------------------------------------------
+  // Cache canvas bounding rect — avoids per-frame getBoundingClientRect()
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    const canvas = gl.domElement;
+    if (!canvas) return;
+
+    const updateRect = () => {
+      cachedRectRef.current = canvas.getBoundingClientRect();
+    };
+    updateRect();
+
+    const observer = new ResizeObserver(updateRect);
+    observer.observe(canvas);
+
+    // Update immediately on scroll — getBoundingClientRect() is cheap inside
+    // a passive scroll handler because layout has already been computed.
+    window.addEventListener("scroll", updateRect, { passive: true });
+    window.addEventListener("resize", updateRect, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", updateRect);
+      window.removeEventListener("resize", updateRect);
+    };
+  }, [gl]);
+
+  // -------------------------------------------------------------------------
+  // Deferred Trail initialization
+  // -------------------------------------------------------------------------
   useEffect(() => {
     let cancelled = false;
 
@@ -119,31 +148,40 @@ function BakedReliefPlaneInner({
 
       const params = trailParamsRef.current;
       const quality = qualityRef.current;
+      const resolution = Math.min(
+        params.trailResolution,
+        quality.trailResolution
+      );
 
-      // Use quality-adjusted resolution
-      const resolution = Math.min(params.trailResolution, quality.trailResolution);
-
-      trailRef.current = new Trail(resolution, resolution, {
+      const trail = new Trail(resolution, resolution, {
         baseSize: params.trailSize,
         fadeSpeed: params.trailFadeSpeed,
         maxAge: params.trailMaxAge,
         intensity: params.trailIntensity,
-        // Quality-specific settings
         gradientStops: quality.trailGradientStops,
         maxPoints: quality.maxTrailPoints,
         updateInterval: quality.trailUpdateInterval,
         ambientParticleCount: quality.ambientParticles,
       });
+
+      trailRef.current = trail;
+
+      const tex = new THREE.CanvasTexture(trail.getCanvas());
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      trailTextureRef.current = tex;
+
       setTrailReady(true);
     };
 
-    // Defer trail creation to avoid blocking
     if ("requestIdleCallback" in window) {
       const id = window.requestIdleCallback(createTrail, { timeout: 300 });
       return () => {
         cancelled = true;
         window.cancelIdleCallback(id);
         trailRef.current?.destroy();
+        trailTextureRef.current?.dispose();
+        trailTextureRef.current = null;
       };
     } else {
       const timer = setTimeout(createTrail, 50);
@@ -151,6 +189,8 @@ function BakedReliefPlaneInner({
         cancelled = true;
         clearTimeout(timer);
         trailRef.current?.destroy();
+        trailTextureRef.current?.dispose();
+        trailTextureRef.current = null;
       };
     }
   }, [trailResolution]);
@@ -165,10 +205,6 @@ function BakedReliefPlaneInner({
       trail.setIntensity(trailIntensity);
     }
   }, [trailSize, trailFadeSpeed, trailMaxAge, trailIntensity]);
-
-  useEffect(() => {
-    canvasRef.current = gl.domElement;
-  }, [gl]);
 
   // Memoize parsed colors
   const parsedFresnelColor = useMemo(
@@ -204,7 +240,6 @@ function BakedReliefPlaneInner({
 
     Promise.all(loadPromises).then(() => {
       if (!cancelled) {
-        // Use requestIdleCallback to avoid blocking
         if ("requestIdleCallback" in window) {
           window.requestIdleCallback(
             () => {
@@ -253,8 +288,7 @@ function BakedReliefPlaneInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textures, texturesReady]);
 
-  // Create shader material once - use shared dummy texture
-  // Generate fragment shader based on quality tier
+  // Create shader material — quality-tiered fragment shader
   const shaderMaterial = useMemo(() => {
     const quality = qualityRef.current;
     const fragmentShader = createFragmentShader(quality.trailBlurSamples);
@@ -285,7 +319,7 @@ function BakedReliefPlaneInner({
     });
   }, []);
 
-  // Update texture uniforms when loaded
+  // Update texture uniforms when loaded (no shader recompilation needed)
   useEffect(() => {
     const uniforms = shaderMaterial.uniforms;
     uniforms.tBake1.value = loadedTextures.bake1;
@@ -295,7 +329,6 @@ function BakedReliefPlaneInner({
     uniforms.tBake5.value = loadedTextures.bake5;
     uniforms.tBake6.value = loadedTextures.bake6;
     uniforms.tPlaster.value = loadedTextures.plaster;
-    shaderMaterial.needsUpdate = true;
   }, [shaderMaterial, loadedTextures]);
 
   // Cleanup shader material
@@ -324,7 +357,7 @@ function BakedReliefPlaneInner({
     edgeFade,
   ]);
 
-  // Mouse handlers - passive listeners for performance
+  // Mouse handlers — passive listeners for performance
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       clientCoordsRef.current.x = e.clientX;
@@ -345,19 +378,19 @@ function BakedReliefPlaneInner({
     };
   }, []);
 
-  // Animation loop - early exit if not ready
+  // -------------------------------------------------------------------------
+  // Animation loop
+  // -------------------------------------------------------------------------
   useFrame((state) => {
     const material = materialRef.current;
     const mesh = meshRef.current;
-
-    // Early exit if not visible or material not ready
     if (!material || !mesh || !isVisible) return;
 
     const trail = trailRef.current;
-    const canvas = canvasRef.current;
 
-    if (canvas) {
-      const rect = canvas.getBoundingClientRect();
+    // Map client coords to UV using cached rect (no reflow)
+    const rect = cachedRectRef.current;
+    if (rect && rect.width > 0) {
       targetMouseRef.current.x =
         (clientCoordsRef.current.x - rect.left) / rect.width;
       targetMouseRef.current.y =
@@ -370,9 +403,7 @@ function BakedReliefPlaneInner({
     mouse.x += (target.x - mouse.x) * mouseLerp;
     mouse.y += (target.y - mouse.y) * mouseLerp;
 
-    // Only do trail operations if trail is ready
     if (trail) {
-      // Add points to trail
       const prev = prevMouseRef.current;
       const dx = mouse.x - prev.x;
       const dy = mouse.y - prev.y;
@@ -389,28 +420,29 @@ function BakedReliefPlaneInner({
       prev.x = mouse.x;
       prev.y = mouse.y;
 
-      // Update ambient trails
       trail.setAmbientIntensity(ambientIntensity);
       trail.updateAmbient(state.clock.elapsedTime);
-      trail.update();
 
-      // Update trail texture uniform
-      material.uniforms.tTrail.value = trail.getTexture();
+      const dirty = trail.update();
+      const tex = trailTextureRef.current;
+      if (tex) {
+        material.uniforms.tTrail.value = tex;
+        if (dirty) {
+          tex.needsUpdate = true;
+        }
+      }
     }
 
-    // Update other uniforms
     material.uniforms.uTime.value = state.clock.elapsedTime;
-    mouseVec2.set(mouse.x, mouse.y);
-    material.uniforms.uMouse.value.copy(mouseVec2);
+    mouseVec2Ref.current.set(mouse.x, mouse.y);
+    material.uniforms.uMouse.value.copy(mouseVec2Ref.current);
 
-    // Subtle rotation
     mesh.rotation.x = (mouse.y - 0.5) * mouseInfluence;
     mesh.rotation.y =
       (mouse.x - 0.5) * mouseInfluence +
       state.clock.elapsedTime * rotationSpeed;
   });
 
-  // Calculate plane size
   const planeSize = useMemo(
     () =>
       calculatePlaneSize(
@@ -431,5 +463,4 @@ function BakedReliefPlaneInner({
   );
 }
 
-// Memoize the component to prevent unnecessary re-renders
 export const BakedReliefPlane = memo(BakedReliefPlaneInner);

@@ -78,6 +78,6 @@ export const DEFAULT_TRAIL_MAX_AGE = 120;
 export const DEFAULT_TRAIL_INTENSITY = 0.15;
 export const DEFAULT_AMBIENT_INTENSITY = 0.2;
 export const DEFAULT_MOUSE_LERP = 1.0;
-export const DEFAULT_MOUSE_INFLUENCE = 0.15;
+export const DEFAULT_MOUSE_INFLUENCE = 0.1;
 export const DEFAULT_ROTATION_SPEED = 0.0003;
 export const DEFAULT_EDGE_FADE = 0.0;
