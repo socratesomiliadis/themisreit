@@ -5,6 +5,15 @@ import Image from "next/image";
 import TitleMarquee from "../title-marquee";
 import SimpleMarquee from "../simple-marquee";
 
+function CapitalizeFirstLetterOfEachWord(str: string) {
+  return str
+    .split(" ")
+    .map(
+      (word) => word.charAt(0).toUpperCase() + word.slice(1).toLocaleLowerCase()
+    )
+    .join(" ");
+}
+
 export default function ProjectHero({
   projectData,
 }: {
@@ -34,7 +43,10 @@ export default function ProjectHero({
         />
       </div>
       <div className="w-full flex flex-col gap-24 mt-24">
-        <TitleMarquee title={projectData.title} number={1} />
+        <TitleMarquee
+          title={CapitalizeFirstLetterOfEachWord(projectData.title)}
+          number={1}
+        />
         <SimpleMarquee
           baseVelocity={5}
           repeat={20}

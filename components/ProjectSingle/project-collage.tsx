@@ -174,11 +174,11 @@ export default function ProjectCollage({
       <div
         ref={cursorRef}
         className={cn(
-          "fixed size-14 gap-2 bg-white rounded-full flex flex-row items-center justify-center pointer-events-none text-black z-100 transition-opacity duration-200 ease-out",
+          "fixed size-14 gap-2 bg-white border border-[#434343]/20 shadow-[0_0_0_3px_#fff] rounded-full flex flex-row items-center justify-center pointer-events-none text-black z-100 transition-opacity duration-200 ease-out",
           !isHovered && "opacity-0"
         )}
       >
-        <span className="w-3 block">
+        <span className="w-3 flex items-center justify-center">
           <svg
             width="100%"
             viewBox="0 0 7 6"
@@ -193,7 +193,7 @@ export default function ProjectCollage({
             />
           </svg>
         </span>
-        <span className="w-3 block">
+        <span className="w-3 flex items-center justify-center">
           <svg
             width="100%"
             viewBox="0 0 7 6"
