@@ -315,9 +315,9 @@ function BakedReliefWebGPU({
           sub,
         } = await import("three/tsl");
 
-        if (disposed) return;
+        if (disposed || !containerRef.current) return;
 
-        const container = containerRef.current!;
+        const container = containerRef.current;
         const width = container.clientWidth || 800;
         const height = container.clientHeight || 800;
 
@@ -378,6 +378,11 @@ function BakedReliefWebGPU({
           renderer.toneMapping = THREE.NoToneMapping;
           renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
           await renderer.init();
+
+          if (disposed) {
+            renderer.dispose();
+            return;
+          }
 
           const camera = new PerspectiveCamera(50, w / h, 0.1, 100);
           camera.position.set(0, 0, 3);
@@ -463,6 +468,11 @@ function BakedReliefWebGPU({
                   })
                 : Promise.resolve(null),
             ]);
+
+          if (disposed) {
+            renderer.dispose();
+            return;
+          }
 
           // Mouse tracking - store client coords and recalculate on each frame
           // This ensures scroll position changes are accounted for
@@ -621,8 +631,12 @@ function BakedReliefWebGPU({
           const mesh = new Mesh(geometry, material);
           scene.add(mesh);
 
+          let isUnloaded = false;
+
           // Render loop
           wrap.render = ({ playhead }) => {
+            if (disposed || isUnloaded) return;
+
             const time = playhead * 6;
 
             // Skip trail updates when not visible (performance optimization)
@@ -666,11 +680,17 @@ function BakedReliefWebGPU({
                 (mouse.x - 0.5) * currentValues.mouseInfluence +
                 time * currentValues.rotationSpeed;
 
-              renderer.render(scene, camera);
+              try {
+                renderer.render(scene, camera);
+              } catch {
+                isUnloaded = true;
+              }
             }
           };
 
           wrap.resize = ({ width: newW, height: newH }) => {
+            if (disposed || isUnloaded) return;
+
             camera.aspect = newW / newH;
             camera.updateProjectionMatrix();
             renderer.setSize(newW, newH);
@@ -681,15 +701,28 @@ function BakedReliefWebGPU({
           };
 
           wrap.unload = () => {
+            isUnloaded = true;
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("touchmove", handleTouchMove);
-            trail.destroy();
-            renderer.dispose();
-            geometry.dispose();
-            material.dispose();
-            // Clear refs
+            try {
+              trail.destroy();
+            } catch {}
+            // Clear refs immediately
             trailRef.current = null;
             uniformsRef.current = null;
+            // Defer GPU resource disposal to avoid crashing during synchronous teardown
+            // (WebGPU device destruction while commands are pending causes validation errors)
+            setTimeout(() => {
+              try {
+                renderer.dispose();
+              } catch {}
+              try {
+                geometry.dispose();
+              } catch {}
+              try {
+                material.dispose();
+              } catch {}
+            }, 0);
           };
         };
 
@@ -705,11 +738,21 @@ function BakedReliefWebGPU({
         };
 
         const result = await ssam(sketch as Sketch<"webgpu">, settings);
-        const dispose = result?.dispose ?? (() => {});
+        // ssam returns a Wrap instance — dispose() only saves HMR state,
+        // unloadCombined() actually stops the animation loop and calls wrap.unload
+        const teardown = () => {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (result as any)?.unloadCombined?.();
+          } catch {}
+          try {
+            result?.dispose?.();
+          } catch {}
+        };
         if (disposed) {
-          dispose();
+          teardown();
         } else {
-          disposeRef.current = dispose;
+          disposeRef.current = teardown;
         }
       } catch (error) {
         // Check if this might be a texture size error and we haven't tried reduced ratio yet
