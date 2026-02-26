@@ -183,7 +183,7 @@ function ProjectStoriesContent({
       // Only navigate if it wasn't a hold (short click)
       if (!wasHoldingRef.current && containerRef.current) {
         const clientX =
-          "clientX" in e ? e.clientX : e.changedTouches?.[0]?.clientX ?? 0;
+          "clientX" in e ? e.clientX : (e.changedTouches?.[0]?.clientX ?? 0);
         const rect = containerRef.current.getBoundingClientRect();
         const x = clientX - rect.left;
 
@@ -227,15 +227,34 @@ function ProjectStoriesContent({
     goToNext();
   }, [goToNext]);
 
-  // Handle video time update for progress
-  const handleVideoTimeUpdate = useCallback(() => {
+  // Smooth progress for video via requestAnimationFrame (timeupdate fires ~4/sec, too choppy)
+  useEffect(() => {
+    if (!isVideo || isPaused || showVideoOverlay) return;
+
     const video = videoRef.current;
     const progressBar = progressBarsRef.current[currentIndex];
-    if (video && progressBar && video.duration > 0) {
-      const percent = (video.currentTime / video.duration) * 100;
-      gsap.set(progressBar, { width: `${percent}%` });
-    }
-  }, [currentIndex]);
+    if (!video || !progressBar) return;
+
+    let rafId: number;
+
+    const updateProgress = () => {
+      const v = videoRef.current;
+      const bar = progressBarsRef.current[currentIndex];
+      if (!v || !bar || v.readyState < 2 || v.duration <= 0) {
+        rafId = requestAnimationFrame(updateProgress);
+        return;
+      }
+      const percent = (v.currentTime / v.duration) * 100;
+      gsap.set(bar, { width: `${percent}%` });
+      if (!v.paused && !v.ended) {
+        rafId = requestAnimationFrame(updateProgress);
+      }
+    };
+
+    rafId = requestAnimationFrame(updateProgress);
+
+    return () => cancelAnimationFrame(rafId);
+  }, [currentIndex, isVideo, isPaused, showVideoOverlay]);
 
   // Set up progress animation
   useEffect(() => {
@@ -393,7 +412,6 @@ function ProjectStoriesContent({
               muted
               playsInline
               onEnded={handleVideoEnded}
-              onTimeUpdate={handleVideoTimeUpdate}
             />
           ) : (
             <Image
