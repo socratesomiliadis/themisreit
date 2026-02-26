@@ -1,20 +1,24 @@
----
+## <!-- prettier-ignore -->
+
 # 📦 Pensatori Monorepo
 
 Multi-tenant SaaS platform consisting of:
-  - 🌍 **Marketing Website**
-  - 🧑‍💼 **Client Portal**
-  - 🎥 **Pensatori Meets (Video Meetings)**
-  - ⚙️ **Convex Backend (DB + ACL + Realtime)**
+
+- 🌍 **Marketing Website**
+- 🧑‍💼 **Client Portal**
+- 🎥 **Pensatori Meets (Video Meetings)**
+- ⚙️ **Convex Backend (DB + ACL + Realtime)**
 
 Built with:
-  - Next.js 14+
-  - Turborepo
-  - pnpm workspaces
-  - Convex
-  - Clerk (Auth + Organizations)
-  - Stream Video
-  - Vercel (multi-project deployment)
+
+- Next.js 14+
+- Turborepo
+- pnpm workspaces
+- Convex
+- Clerk (Auth + Organizations)
+- Stream Video
+- Vercel (multi-project deployment)
+
 ---
 
 # 🏗 Architecture Overview
