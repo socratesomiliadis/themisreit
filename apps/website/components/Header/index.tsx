@@ -320,9 +320,9 @@ export default function Header() {
                 maskImage: getMaskImage("0.35rem"),
                 maskComposite: "intersect",
               }}
-              className="absolute bg-[#1E1E1E]/80 overflow-hidden backdrop-blur right-0 h-10 top-0 z-10 flex items-center justify-center cursor-pointer pointer-events-auto text-white pl-4 pr-1"
+              className="absolute bg-[#1E1E1E]/80 overflow-hidden backdrop-blur right-0 size-11 top-0 z-10 flex items-center justify-center cursor-pointer pointer-events-auto text-white"
             >
-              <span
+              {/* <span
                 className={cn(
                   "block tracking-tight transition-transform duration-300 ease-out",
                   isMenuOpen && "-translate-y-[120%]"
@@ -337,7 +337,7 @@ export default function Header() {
                 )}
               >
                 CLOSE
-              </span>
+              </span> */}
               <div className="scale-75">
                 <Hamburger
                   color="#fff"
@@ -377,10 +377,10 @@ export default function Header() {
             <div
               style={{
                 pointerEvents: isMenuOpen ? "auto" : "none",
-                maskImage: getMaskImage("1rem"),
-                maskComposite: "intersect",
+                // maskImage: getMaskImage("1rem"),
+                // maskComposite: "intersect",
               }}
-              className="relative z-0 opacity-0 menu-body h-[calc(92vh-3.5rem)] mt-14 w-[28vw] backdrop-blur-lg"
+              className="relative origin-top-right z-0 opacity-0 menu-body h-[calc(92vh-3.5rem)] mt-14 w-[28vw] backdrop-blur-lg"
             >
               <Nav isOpen={isMenuOpen} setIsOpen={setMenuOpen} />
               <div className="absolute nav-bg left-0 top-0 z-0 w-full h-full bg-[#1E1E1E]/80"></div>

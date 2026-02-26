@@ -67,16 +67,6 @@ function Slide({
         "h-auto aspect-12/16"
       )}
     >
-      <div className="size-10 bg-[#f5f5f5] border border-[#434343]/5 shadow-[0_0_0_3px_#fff] absolute top-4 left-4 z-10 flex items-center justify-center">
-        <Image
-          src={urlForImage(project.logo)?.url() ?? ""}
-          alt={project.title}
-          width={100}
-          height={100}
-          className="w-[70%] h-[60%] object-center object-contain select-none"
-          draggable={false}
-        />
-      </div>
       <div className="w-full h-full overflow-hidden flex items-center justify-center">
         <div
           ref={imageRef}
@@ -92,10 +82,19 @@ function Slide({
           />
         </div>
       </div>
-      <div className="absolute z-10 left-0 -bottom-8 w-full overflow-hidden">
+      <div className="absolute z-10 left-0 -bottom-8 w-full flex items-center justify-between overflow-hidden">
         <span className="text-[#434343] text-xl tracking-tighter translate-y-[120%] group-hover:translate-y-0 transition-transform duration-300 ease-out block">
-          {project.title}
+          {project.title}{" "}
+          <span className="text-[#434343]/40">— {project.company}</span>
         </span>
+        {/* <Image
+          src={urlForImage(project.logo)?.url() ?? ""}
+          alt={project.title}
+          width={100}
+          height={100}
+          className="size-5 object-center object-contain select-none translate-y-[120%] group-hover:translate-y-0 transition-transform duration-300 ease-out"
+          draggable={false}
+        /> */}
       </div>
     </div>
   );
