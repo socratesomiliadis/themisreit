@@ -22,21 +22,10 @@ const nextConfig: NextConfig = {
         has: [
           {
             type: "host",
-            value: "sanity.themisreit.com",
+            value: "sanity.pensatori-irrazionali.com",
           },
         ],
-        destination: "https://alpha.themisreit.com/sanity/:path*",
-        permanent: false,
-      },
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "sanity.localhost",
-          },
-        ],
-        destination: "http://localhost:3000/sanity/:path*",
+        destination: "https://dev.pensatori-irrazionali.com/sanity/:path*",
         permanent: false,
       },
     ];

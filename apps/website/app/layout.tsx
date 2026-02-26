@@ -38,7 +38,7 @@ export const metadata = {
       "We help visionary brands flourish by crafting digital experiences that let audiences feel the depth, elegance, and essence of their products.",
     images: [
       {
-        url: "https://themisreit.vercel.app/ogImage.png",
+        url: "https://dev.pensatori-irrazionali.com/ogImage.png",
         width: 1600,
         height: 900,
         alt: "Pensatori Irrazionali",

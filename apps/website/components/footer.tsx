@@ -195,12 +195,12 @@ export default function Footer() {
                     Jobs
                   </span>
                   <FooterSmallLink
-                    href="mailto:hello@themisreit.com"
-                    text="hello@themisreit.com"
+                    href="mailto:hello@pensatori-irrazionali.com"
+                    text="hello@pensatori-irrazionali.com"
                   />
                   <FooterSmallLink
-                    href="mailto:jobs@themisreit.com"
-                    text="jobs@themisreit.com"
+                    href="mailto:jobs@pensatori-irrazionali.com"
+                    text="jobs@pensatori-irrazionali.com"
                   />
                 </div>
               </div>

@@ -18,6 +18,10 @@ import { useLenis } from "lenis/react";
 import { useRouter } from "next/navigation";
 import { ProjectItem } from "./Home/home-projects";
 
+const SLIDE_WIDTH_VW = 17;
+const GAP_VW = 1;
+const UNIT_VW = SLIDE_WIDTH_VW + GAP_VW;
+
 interface SlideProps {
   project: ProjectsQueryResult[0];
   index: number;
@@ -54,11 +58,25 @@ function Slide({
       onClick={() => {
         setOpen(index);
       }}
+      style={{
+        width: `${SLIDE_WIDTH_VW}vw`,
+        flexShrink: 0,
+      }}
       className={cn(
         "group relative overflow-visible flex flex-col cursor-pointer work-slide",
-        "h-auto aspect-12/16 w-[20vw]"
+        "h-auto aspect-12/16"
       )}
     >
+      <div className="size-10 bg-[#f5f5f5] border border-[#434343]/5 shadow-[0_0_0_3px_#fff] absolute top-4 left-4 z-10 flex items-center justify-center">
+        <Image
+          src={urlForImage(project.logo)?.url() ?? ""}
+          alt={project.title}
+          width={100}
+          height={100}
+          className="w-[70%] h-[60%] object-center object-contain select-none"
+          draggable={false}
+        />
+      </div>
       <div className="w-full h-full overflow-hidden flex items-center justify-center">
         <div
           ref={imageRef}
@@ -94,9 +112,41 @@ export default function ProjectsSliderNew({
   const [activeIndex, setActiveIndex] = useState(0);
   const isAnimating = useRef(false);
   const isExpanding = useRef(false);
-  const duplicatedProjects = [...projects, ...projects];
 
-  const totalSlides = duplicatedProjects.length;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Clone enough slides after the original set to visually fill one viewport
+  // (+1 to cover partial-slide remainders at the wrap boundary).
+  const numClones = Math.ceil(100 / UNIT_VW) + 1;
+  const allProjects = useMemo(() => {
+    const clones: ProjectsQueryResult = [];
+    for (let i = 0; i < numClones; i++) {
+      clones.push(projects[i % projects.length]);
+    }
+    return [...projects, ...clones];
+  }, [projects, numClones]);
+
+  const totalSlides = allProjects.length;
+
+  // Set exact container width so Lenis's limit equals one full set period.
+  // The container uses overflow-x:clip so overflowing clones don't inflate
+  // the document's scrollWidth beyond this value.
+  useIsomorphicLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container || projects.length === 0) return;
+
+    const updateWidth = () => {
+      const vwToPx = window.innerWidth / 100;
+      const periodPx = projects.length * UNIT_VW * vwToPx;
+      container.style.width = `${periodPx + window.innerWidth}px`;
+      lenis?.resize();
+      ScrollTrigger.refresh();
+    };
+
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, [projects.length, lenis]);
 
   const openDataIndex = useMemo(() => {
     return open !== null ? open % projects.length : 0;
@@ -321,8 +371,12 @@ export default function ProjectsSliderNew({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-[1vw] w-[200vw]">
-        {duplicatedProjects.map((project, index) => {
+      <div
+        ref={containerRef}
+        className="flex items-center gap-[1vw]"
+        style={{ overflowX: "clip" }}
+      >
+        {allProjects.map((project, index) => {
           const dataIndex = index % projects.length;
           return (
             <Slide

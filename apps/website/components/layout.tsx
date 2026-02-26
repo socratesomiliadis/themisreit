@@ -84,7 +84,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <LoaderProvider isLoaderPlaying={isLoading}>
-      <div className="layout-wrapper w-screen relative bg-[#f5f5f5]">
+      <div className={cn("layout-wrapper w-screen relative bg-[#f5f5f5]")}>
         {isLoading && !isSanityPage && (
           <Loader onComplete={() => setIsLoading(false)} />
         )}
