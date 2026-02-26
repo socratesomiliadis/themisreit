@@ -173,8 +173,8 @@ export default function HomeProjects({
 }: {
   projects: ProjectsQueryResult;
 }) {
-  const firstHalfOfProjects = projects.slice(0, 3);
-  const secondHalfOfProjects = projects.slice(3);
+  const firstHalfOfProjects = projects.slice(0, projects.length / 2);
+  const secondHalfOfProjects = projects.slice(projects.length / 2);
 
   return (
     <>
