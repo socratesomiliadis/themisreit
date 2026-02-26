@@ -1,0 +1,41 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "ui": "tui",
+    "globalEnv": [
+      "NODE_ENV",
+      "CI",
+      "TURBO_TELEMETRY_DISABLED"
+    ],
+    "tasks": {
+      "dev": {
+        "cache": false,
+        "persistent": true,
+        "dependsOn": ["^dev"]
+      },
+      "build": {
+        "dependsOn": ["^build"],
+        "outputs": [
+          ".next/**",
+          "dist/**",
+          ".vercel/**",
+          "build/**",
+          "coverage/**"
+        ]
+      },
+      "lint": {
+        "dependsOn": ["^lint"],
+        "outputs": []
+      },
+      "typecheck": {
+        "dependsOn": ["^typecheck"],
+        "outputs": []
+      },
+      "test": {
+        "dependsOn": ["^test"],
+        "outputs": ["coverage/**"]
+      },
+      "clean": {
+        "cache": false
+      }
+    }
+  }
