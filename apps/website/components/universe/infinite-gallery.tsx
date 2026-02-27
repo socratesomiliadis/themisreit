@@ -143,11 +143,9 @@ export default function InfiniteGallery({
               backgroundColor: "rgb(245, 245, 245)",
             }}
             onCreated={(state) => {
-              const bgColor = rgbaToArray(config.backgroundColor);
-              state.gl.setClearColor(
-                new THREE.Color(bgColor[0], bgColor[1], bgColor[2]),
-                bgColor[3]
-              );
+              const [r = 1, g = 1, b = 1, a = 1] =
+                rgbaToArray(config.backgroundColor);
+              state.gl.setClearColor(new THREE.Color(r, g, b), a);
             }}
           >
             <Suspense fallback={null}>

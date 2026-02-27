@@ -25,7 +25,7 @@ export const useMousePositionRef = (
 
     const handleTouchMove = (ev: TouchEvent) => {
       const touch = ev.touches[0];
-      updatePosition(touch.clientX, touch.clientY);
+      if (touch) updatePosition(touch.clientX, touch.clientY);
     };
 
     // Listen for both mouse and touch events

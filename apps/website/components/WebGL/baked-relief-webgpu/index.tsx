@@ -360,8 +360,15 @@ function BakedReliefWebGPU({
             plasterPromise,
           ]);
 
-          const [bake1, bake2, bake3, bake4, bake5, bake6] = bakes;
-
+          const bakeTextures = bakes.filter(
+            (t): t is NonNullable<typeof t> => t != null
+          );
+          if (bakeTextures.length < 6) {
+            textureUrls.forEach((url) => releaseTexture(url));
+            if (textures.plaster) releaseTexture(textures.plaster, true);
+            renderer.dispose();
+            return;
+          }
           if (disposed) {
             textureUrls.forEach((url) => releaseTexture(url));
             if (textures.plaster) releaseTexture(textures.plaster, true);
@@ -370,7 +377,7 @@ function BakedReliefWebGPU({
           }
 
           // Set colorSpace for bakes (linear data)
-          bakes.forEach((t) => {
+          bakeTextures.forEach((t) => {
             t.colorSpace = THREE.NoColorSpace;
           });
           if (plasterTex) {
@@ -407,6 +414,7 @@ function BakedReliefWebGPU({
 
           const handleTouchMove = (e: TouchEvent) => {
             const touch = e.touches[0];
+            if (!touch) return;
             clientCoords.x = touch.clientX;
             clientCoords.y = touch.clientY;
           };
@@ -430,7 +438,7 @@ function BakedReliefWebGPU({
           // -- Material (TSL shader) --
           const { material, uniforms } = await createReliefMaterial({
             trailTexture,
-            bakeTextures: [bake1, bake2, bake3, bake4, bake5, bake6],
+            bakeTextures,
             plasterTexture: plasterTex,
             multiplyColor: initialValues.multiplyColor,
             textureScale: initialValues.textureScale,

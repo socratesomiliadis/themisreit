@@ -149,6 +149,7 @@ export class Trail {
   addPoint(x: number, y: number): void {
     const tail = (this.ringHead + this.ringCount) % this.capacity;
     const p = this.points[tail];
+    if (!p) return;
     p.x = x * this.width;
     p.y = (1 - y) * this.height;
     p.age = 0;
@@ -173,6 +174,7 @@ export class Trail {
 
     for (let i = 0; i < len; i++) {
       const particle = particles[i];
+      if (!particle) continue;
       const wobbleX = Math.sin(time * particle.speed + particle.phase) * 0.003;
       const wobbleY =
         Math.cos(time * particle.speed * 0.7 + particle.phase) * 0.003;
@@ -227,22 +229,23 @@ export class Trail {
 
     // Age all active points
     for (let i = 0; i < this.ringCount; i++) {
-      this.points[(this.ringHead + i) % cap].age += frameMultiplier;
+      const pt = this.points[(this.ringHead + i) % cap];
+      if (pt) pt.age += frameMultiplier;
     }
 
     // Evict expired from the head (points are ordered oldest-first)
-    while (
-      this.ringCount > 0 &&
-      this.points[this.ringHead].age > maxAge
-    ) {
+    let headPoint = this.points[this.ringHead];
+    while (this.ringCount > 0 && headPoint && headPoint.age > maxAge) {
       this.ringHead = (this.ringHead + 1) % cap;
       this.ringCount--;
+      headPoint = this.points[this.ringHead];
     }
 
     // Draw active points using the pre-rendered stamp
     const stamp = this.stampCanvas;
     for (let i = 0; i < this.ringCount; i++) {
       const point = this.points[(this.ringHead + i) % cap];
+      if (!point) continue;
 
       const lifeRatio = 1 - point.age / maxAge;
       const opacity = lifeRatio * lifeRatio * intensity;

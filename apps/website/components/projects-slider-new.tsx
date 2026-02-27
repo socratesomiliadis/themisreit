@@ -119,8 +119,10 @@ export default function ProjectsSliderNew({
   const numClones = Math.ceil(100 / UNIT_VW) + 1;
   const allProjects = useMemo(() => {
     const clones: ProjectsQueryResult = [];
+    if (projects.length === 0) return [];
     for (let i = 0; i < numClones; i++) {
-      clones.push(projects[i % projects.length]);
+      const project = projects[i % projects.length];
+      if (project) clones.push(project);
     }
     return [...projects, ...clones];
   }, [projects, numClones]);
@@ -150,6 +152,8 @@ export default function ProjectsSliderNew({
   const openDataIndex = useMemo(() => {
     return open !== null ? open % projects.length : 0;
   }, [open, projects]);
+
+  const activeProject = projects[openDataIndex];
 
   const slideRefs = useMemo(
     () =>
@@ -227,7 +231,12 @@ export default function ProjectsSliderNew({
     }
 
     const dataIndex = open % projects.length;
-    const slug = projects[dataIndex].slug.current;
+    const project = projects[dataIndex];
+    if (!project) {
+      isAnimating.current = false;
+      return;
+    }
+    const slug = project.slug.current;
     router.prefetch(`/work/${slug}`);
 
     const rect = slideEl.getBoundingClientRect();
@@ -350,17 +359,19 @@ export default function ProjectsSliderNew({
             className="w-full work-open-item relative"
           >
             <div
-              style={{ backgroundColor: projects[openDataIndex].brandColor }}
+              style={{ backgroundColor: activeProject?.brandColor ?? "#f5f5f5" }}
               className="absolute w-full h-full right-0 top-0 work-open-item-bg z-50"
             />
-            <ProjectItem
-              projectData={projects[openDataIndex]}
-              isProjectPage={true}
-            />
+            {activeProject && (
+              <ProjectItem
+                projectData={activeProject}
+                isProjectPage={true}
+              />
+            )}
           </div>
           <div className="w-full mt-8 opacity-0 pointer-events-none work-open-item-image">
             <Image
-              src={urlForImage(projects[openDataIndex].mainImage)?.url() ?? ""}
+              src={activeProject ? urlForImage(activeProject.mainImage)?.url() ?? "" : ""}
               alt=""
               priority
               width={1920}
@@ -382,8 +393,8 @@ export default function ProjectsSliderNew({
               key={index}
               project={project}
               index={index}
-              slideRef={slideRefs[index]}
-              imageRef={imageRefs[index]}
+              slideRef={slideRefs[index]!}
+              imageRef={imageRefs[index]!}
               dataIndex={dataIndex}
               setActiveIndex={setActiveIndex}
               setOpen={handleSetOpen}

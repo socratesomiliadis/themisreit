@@ -19,8 +19,9 @@ import type {
 // Color utilities
 export const rgbaToArray = (rgba: string): number[] => {
   const match = rgba.match(/rgba?\(([^)]+)\)/);
-  if (!match) return [1, 1, 1, 1];
-  return match[1].split(",").map((value, index) => {
+  const values = match?.[1];
+  if (!values) return [1, 1, 1, 1];
+  return values.split(",").map((value, index) => {
     const normalized = parseFloat(value.trim() || "1");
     return index < 3 ? normalized / 255 : normalized;
   });

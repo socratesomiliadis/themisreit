@@ -1,8 +1,11 @@
 "use client";
 
+/// <reference path="../../../types/react-three-fiber.d.ts" />
 import React, { useRef, useMemo, useEffect, useState, memo } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree, extend } from "@react-three/fiber";
 import * as THREE from "three";
+
+extend({ Mesh: THREE.Mesh, PlaneGeometry: THREE.PlaneGeometry });
 
 import type { BakedReliefPlaneProps } from "./types";
 import {
@@ -322,13 +325,13 @@ function BakedReliefPlaneInner({
   // Update texture uniforms when loaded (no shader recompilation needed)
   useEffect(() => {
     const uniforms = shaderMaterial.uniforms;
-    uniforms.tBake1.value = loadedTextures.bake1;
-    uniforms.tBake2.value = loadedTextures.bake2;
-    uniforms.tBake3.value = loadedTextures.bake3;
-    uniforms.tBake4.value = loadedTextures.bake4;
-    uniforms.tBake5.value = loadedTextures.bake5;
-    uniforms.tBake6.value = loadedTextures.bake6;
-    uniforms.tPlaster.value = loadedTextures.plaster;
+    if (uniforms.tBake1) uniforms.tBake1.value = loadedTextures.bake1;
+    if (uniforms.tBake2) uniforms.tBake2.value = loadedTextures.bake2;
+    if (uniforms.tBake3) uniforms.tBake3.value = loadedTextures.bake3;
+    if (uniforms.tBake4) uniforms.tBake4.value = loadedTextures.bake4;
+    if (uniforms.tBake5) uniforms.tBake5.value = loadedTextures.bake5;
+    if (uniforms.tBake6) uniforms.tBake6.value = loadedTextures.bake6;
+    if (uniforms.tPlaster) uniforms.tPlaster.value = loadedTextures.plaster;
   }, [shaderMaterial, loadedTextures]);
 
   // Cleanup shader material
@@ -339,13 +342,18 @@ function BakedReliefPlaneInner({
   // Update uniforms when props change
   useEffect(() => {
     const uniforms = shaderMaterial.uniforms;
-    uniforms.uTextureScale.value = textureScale;
-    uniforms.uTextureStrength.value = textureStrength;
-    uniforms.uMultiplyColor.value = parsedMultiplyColor;
-    uniforms.uFresnelEnabled.value = fresnelEnabled ? 1.0 : 0.0;
-    uniforms.uFresnelColor.value = parsedFresnelColor;
-    uniforms.uFresnelStrength.value = fresnelStrength;
-    uniforms.uEdgeFade.value = edgeFade;
+    if (uniforms.uTextureScale) uniforms.uTextureScale.value = textureScale;
+    if (uniforms.uTextureStrength)
+      uniforms.uTextureStrength.value = textureStrength;
+    if (uniforms.uMultiplyColor)
+      uniforms.uMultiplyColor.value = parsedMultiplyColor;
+    if (uniforms.uFresnelEnabled)
+      uniforms.uFresnelEnabled.value = fresnelEnabled ? 1.0 : 0.0;
+    if (uniforms.uFresnelColor)
+      uniforms.uFresnelColor.value = parsedFresnelColor;
+    if (uniforms.uFresnelStrength)
+      uniforms.uFresnelStrength.value = fresnelStrength;
+    if (uniforms.uEdgeFade) uniforms.uEdgeFade.value = edgeFade;
   }, [
     shaderMaterial,
     textureScale,
@@ -365,6 +373,7 @@ function BakedReliefPlaneInner({
     };
     const handleTouchMove = (e: TouchEvent) => {
       const touch = e.touches[0];
+      if (!touch) return;
       clientCoordsRef.current.x = touch.clientX;
       clientCoordsRef.current.y = touch.clientY;
     };
@@ -425,17 +434,20 @@ function BakedReliefPlaneInner({
 
       const dirty = trail.update();
       const tex = trailTextureRef.current;
-      if (tex) {
-        material.uniforms.tTrail.value = tex;
+      const tTrail = material.uniforms.tTrail;
+      if (tex && tTrail) {
+        tTrail.value = tex;
         if (dirty) {
           tex.needsUpdate = true;
         }
       }
     }
 
-    material.uniforms.uTime.value = state.clock.elapsedTime;
+    const uTime = material.uniforms.uTime;
+    const uMouse = material.uniforms.uMouse;
+    if (uTime) uTime.value = state.clock.elapsedTime;
     mouseVec2Ref.current.set(mouse.x, mouse.y);
-    material.uniforms.uMouse.value.copy(mouseVec2Ref.current);
+    if (uMouse) uMouse.value.copy(mouseVec2Ref.current);
 
     mesh.rotation.x = (mouse.y - 0.5) * mouseInfluence;
     mesh.rotation.y =
@@ -458,7 +470,11 @@ function BakedReliefPlaneInner({
   return (
     <mesh ref={meshRef}>
       <planeGeometry args={[planeSize.width * 0.95, planeSize.height * 0.95]} />
-      <primitive object={shaderMaterial} attach="material" ref={materialRef} />
+      <primitive
+        object={shaderMaterial}
+        attach="material"
+        ref={materialRef}
+      />
     </mesh>
   );
 }

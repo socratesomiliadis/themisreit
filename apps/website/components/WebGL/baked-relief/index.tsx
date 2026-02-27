@@ -176,9 +176,11 @@ function BakedReliefInner({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        startTransition(() => {
-          setIsVisible(entry.isIntersecting);
-        });
+        if (entry) {
+          startTransition(() => {
+            setIsVisible(entry.isIntersecting);
+          });
+        }
       },
       { threshold: 0.01, rootMargin: "100px" }
     );

@@ -405,7 +405,7 @@ function ProjectStoriesContent({
           {isVideo ? (
             <video
               ref={videoRef}
-              key={currentStory._key}
+              key={currentStory?._key ?? `story-${currentIndex}`}
               src={mediaUrl}
               className="w-full h-full object-cover"
               autoPlay
@@ -415,7 +415,7 @@ function ProjectStoriesContent({
             />
           ) : (
             <Image
-              key={currentStory._key}
+              key={currentStory?._key ?? `story-${currentIndex}`}
               src={mediaUrl ?? ""}
               alt=""
               fill
@@ -467,7 +467,7 @@ function ProjectStoriesContent({
 
         {/* Description - Bottom Left */}
         <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 w-[20%] text-white text-sm lg:text-2xl font-light">
-          <PortableText value={currentStory.description ?? []} />
+          <PortableText value={currentStory?.description ?? []} />
         </div>
 
         {/* Watch Video Button - only for video stories */}

@@ -69,19 +69,19 @@ export function getContrastTextColor(
     /rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/
   );
   if (rgbMatch) {
-    r = parseInt(rgbMatch[1], 10);
-    g = parseInt(rgbMatch[2], 10);
-    b = parseInt(rgbMatch[3], 10);
+    r = parseInt(rgbMatch[1] ?? "0", 10);
+    g = parseInt(rgbMatch[2] ?? "0", 10);
+    b = parseInt(rgbMatch[3] ?? "0", 10);
   } else {
     const hex = backgroundColor.replace(/^#/, "");
     if (hex.length === 3) {
-      r = parseInt(hex[0] + hex[0], 16);
-      g = parseInt(hex[1] + hex[1], 16);
-      b = parseInt(hex[2] + hex[2], 16);
+      r = parseInt((hex[0] ?? "f") + (hex[0] ?? "f"), 16);
+      g = parseInt((hex[1] ?? "f") + (hex[1] ?? "f"), 16);
+      b = parseInt((hex[2] ?? "f") + (hex[2] ?? "f"), 16);
     } else if (hex.length === 6) {
-      r = parseInt(hex.slice(0, 2), 16);
-      g = parseInt(hex.slice(2, 4), 16);
-      b = parseInt(hex.slice(4, 6), 16);
+      r = parseInt(hex.slice(0, 2) || "ff", 16);
+      g = parseInt(hex.slice(2, 4) || "ff", 16);
+      b = parseInt(hex.slice(4, 6) || "ff", 16);
     } else {
       return "#434343";
     }
