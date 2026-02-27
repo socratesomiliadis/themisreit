@@ -1,14 +1,15 @@
 {
   "name": "@pensatori/website",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@workspace/ui": "workspace:*",
     "@portabletext/react": "^6.0.2",
     "@radix-ui/react-slider": "^1.3.6",
     "@react-three/drei": "^10.7.7",
@@ -48,15 +49,10 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^9.39.1",
-    "eslint-config-next": "16.0.1",
-    "tailwindcss": "^4.1.17",
+    "@workspace/eslint-config": "workspace:^",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "^9.39.2",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "19.2.2",
-      "@types/react-dom": "19.2.2"
-    }
   }
 }

@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   reactCompiler: true,
   devIndicators: false,
+  transpilePackages: ["@workspace/ui"],
   images: {
     remotePatterns: [
       {
