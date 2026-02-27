@@ -63,17 +63,17 @@ function ProofBox({
         scale: 0.9,
       });
 
-      // Show first logo
-      gsap.set(logos[0], {
+      // Show first logo (logos.length > 0 guaranteed by early return above)
+      gsap.set(logos[0]!, {
         opacity: 1,
         filter: "blur(0px)",
         scale: 1,
       });
 
       const cycleLogos = () => {
-        const currentLogo = logos[currentIndexRef.current];
+        const currentLogo = logos[currentIndexRef.current]!;
         const nextIndex = (currentIndexRef.current + 1) % logos.length;
-        const nextLogo = logos[nextIndex];
+        const nextLogo = logos[nextIndex]!;
 
         // Create timeline for smooth transition
         const tl = gsap.timeline();

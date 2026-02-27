@@ -137,7 +137,7 @@ export default function HomeEllipsisText() {
 
       boxRefs.current.forEach((box, i) => {
         if (!box) return;
-        const angle = anglesRef.current[i] * (Math.PI / 180);
+        const angle = anglesRef.current[i] ?? 0 * (Math.PI / 180);
         const dims = boxDimensionsRef.current[i] || { width: 0, height: 0 };
 
         // Calculate position on un-rotated ellipse
