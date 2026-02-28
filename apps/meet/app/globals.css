@@ -1,0 +1,31 @@
+@import "@workspace/ui/globals.css";
+@import "@stream-io/video-react-sdk/dist/css/styles.css";
+
+@theme inline {
+  --font-helvetica-now: var(--font-helvetica-now);
+  --font-ballet: var(--font-ballet);
+  --font-pp-editorial: var(--font-pp-editorial);
+  --font-some-type-mono: var(--font-some-type-mono);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(circle at 85% 5%, rgba(242, 197, 124, 0.22), transparent 45%),
+    radial-gradient(circle at 10% 85%, rgba(102, 148, 255, 0.18), transparent 55%),
+    linear-gradient(160deg, #f1efe8 0%, #f6f6f4 45%, #ede9e1 100%);
+}
+
+.stream-theme {
+  --str-video__primary-color: #111827;
+  --str-video__accent-color: #ce9f52;
+  --str-video__text-color1: #111827;
+  --str-video__text-color2: #374151;
+  --str-video__border-radius-sm: 8px;
+  --str-video__border-radius-md: 12px;
+  --str-video__border-radius-lg: 16px;
+}

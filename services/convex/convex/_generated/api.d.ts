@@ -9,7 +9,9 @@
  */
 
 import type * as http from "../http.js";
+import type * as meetings from "../meetings.js";
 import type * as organizations from "../organizations.js";
+import type * as stream from "../stream.js";
 import type * as users from "../users.js";
 
 import type {
@@ -20,7 +22,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   http: typeof http;
+  meetings: typeof meetings;
   organizations: typeof organizations;
+  stream: typeof stream;
   users: typeof users;
 }>;
 
