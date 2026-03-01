@@ -21,42 +21,6 @@ function formatDate(ts?: number) {
   }).format(new Date(ts));
 }
 
-function MeetingTranscriptsSection({ meetingId }: { meetingId: Id<"meetings"> }) {
-  const transcripts = useQuery(api.meetings.listMeetingTranscripts, { meetingId });
-
-  if (transcripts === undefined) {
-    return (
-      <div className="mt-3 rounded-xl border border-black/10 bg-white/70 p-3 text-sm text-black/60">
-        Loading transcripts...
-      </div>
-    );
-  }
-
-  if (transcripts.length === 0) {
-    return (
-      <div className="mt-3 rounded-xl border border-black/10 bg-white/70 p-3 text-sm text-black/60">
-        No transcript text synced yet.
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-3 space-y-2">
-      {transcripts.map((transcript) => (
-        <article key={transcript._id} className="rounded-xl border border-black/10 bg-white p-3">
-          <p className="text-xs uppercase tracking-[0.16em] text-black/50">
-            {formatDate(new Date(transcript.startTime).getTime())} -{" "}
-            {formatDate(new Date(transcript.endTime).getTime())}
-          </p>
-          <pre className="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap text-xs text-black/80">
-            {transcript.text}
-          </pre>
-        </article>
-      ))}
-    </div>
-  );
-}
-
 export function MeetingDashboard() {
   const meetingsQuery = useQuery(api.meetings.listForViewer);
   const meetings = useMemo(() => meetingsQuery ?? [], [meetingsQuery]);
@@ -65,7 +29,7 @@ export function MeetingDashboard() {
   const createInvite = useMutation(api.meetings.createInvite);
   const revokeInvite = useMutation(api.meetings.revokeInvite);
   const endMeeting = useAction(api.stream.endMeetingForAll);
-  const syncMeetingTranscripts = useAction(api.stream.syncMeetingTranscripts);
+  const openMeetingTranscriptFile = useAction(api.stream.openMeetingTranscriptFile);
 
   const [instantTitle, setInstantTitle] = useState("");
   const [instantTranscriptionEnabled, setInstantTranscriptionEnabled] = useState(false);
@@ -200,32 +164,27 @@ export function MeetingDashboard() {
 
       try {
         const result = await endMeeting({ meetingId });
-        const transcriptStatus = result.transcriptSync
-          ? ` Transcript sync: ${result.transcriptSync.syncedCount}/${result.transcriptSync.availableCount} (failed: ${result.transcriptSync.failedCount}, empty: ${result.transcriptSync.emptyCount}).`
-          : "";
-        setStatus(`Meeting ended for all participants: /room/${result.callId}.${transcriptStatus}`);
+        setStatus(`Meeting ended for all participants: /room/${result.callId}.`);
       } catch (error) {
         setStatus(error instanceof Error ? error.message : "Could not end the meeting.");
       }
     });
   };
 
-  const onSyncTranscripts = (meetingId: Id<"meetings">, title: string) => {
+  const onOpenTranscriptFile = (meetingId: Id<"meetings">, title: string) => {
     startTransition(async () => {
       setStatus(null);
 
       try {
-        const result = await syncMeetingTranscripts({ meetingId });
-        if (result.skipped) {
-          setStatus(`Transcription is disabled for "${title}".`);
+        const result = await openMeetingTranscriptFile({ meetingId });
+        const opened = window.open(result.url, "_blank", "noopener,noreferrer");
+        if (!opened) {
+          setStatus(`Transcript file is ready for "${title}": ${result.url}`);
           return;
         }
-
-        setStatus(
-          `Transcript sync finished for "${title}": ${result.syncedCount}/${result.availableCount} (failed: ${result.failedCount}, empty: ${result.emptyCount}).`,
-        );
+        setStatus(`Opened transcript file for "${title}".`);
       } catch (error) {
-        setStatus(error instanceof Error ? error.message : "Could not sync transcripts.");
+        setStatus(error instanceof Error ? error.message : "Could not open transcript file.");
       }
     });
   };
@@ -365,10 +324,10 @@ export function MeetingDashboard() {
                       {meeting.transcriptionEnabled ? (
                         <Button
                           variant="outline"
-                          onClick={() => onSyncTranscripts(meetingId, meeting.title)}
+                          onClick={() => onOpenTranscriptFile(meetingId, meeting.title)}
                           disabled={isPending}
                         >
-                          Sync transcripts
+                          Open transcript file
                         </Button>
                       ) : null}
                     </div>
@@ -448,14 +407,6 @@ export function MeetingDashboard() {
                     ))}
                   </div>
 
-                  {meeting.transcriptionEnabled ? (
-                    <div className="mt-4 rounded-xl border border-black/10 bg-[#f8f7f2] p-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
-                        Transcript
-                      </p>
-                      <MeetingTranscriptsSection meetingId={meetingId} />
-                    </div>
-                  ) : null}
                 </article>
               );
             })}

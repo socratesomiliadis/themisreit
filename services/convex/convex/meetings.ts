@@ -928,69 +928,27 @@ export const touchGuestSession = internalMutation({
   },
 });
 
-export const upsertMeetingTranscript = internalMutation({
+export const getMeetingForTranscriptAccess = internalQuery({
   args: {
     meetingId: v.id("meetings"),
-    streamCallSessionId: v.string(),
-    filename: v.string(),
-    startTime: v.string(),
-    endTime: v.string(),
-    text: v.string(),
-    syncedAt: v.number(),
+    clerkId: v.string(),
   },
   handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("meetingTranscripts")
-      .withIndex("by_meeting_and_file", (q) =>
-        q
-          .eq("meetingId", args.meetingId)
-          .eq("streamCallSessionId", args.streamCallSessionId)
-          .eq("filename", args.filename),
-      )
-      .unique();
-
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        startTime: args.startTime,
-        endTime: args.endTime,
-        text: args.text,
-        syncedAt: args.syncedAt,
-        updatedAt: args.syncedAt,
-      });
-
-      return existing._id;
+    const meeting = await ctx.db.get(args.meetingId);
+    if (!meeting) {
+      return null;
     }
 
-    return await ctx.db.insert("meetingTranscripts", {
-      meetingId: args.meetingId,
-      streamCallSessionId: args.streamCallSessionId,
-      filename: args.filename,
-      startTime: args.startTime,
-      endTime: args.endTime,
-      text: args.text,
-      syncedAt: args.syncedAt,
-      updatedAt: args.syncedAt,
-    });
-  },
-});
-
-export const listMeetingTranscripts = query({
-  args: {
-    meetingId: v.id("meetings"),
-  },
-  handler: async (ctx, args) => {
-    const auth = await requireAuthDetails(ctx);
-    const canAccess = await canAccessMeeting(ctx, args.meetingId, auth.clerkId);
+    const canAccess = await canAccessMeeting(ctx, args.meetingId, args.clerkId);
     if (!canAccess) {
-      throw new Error("You do not have permission to view this meeting transcripts.");
+      return null;
     }
 
-    const transcripts = await ctx.db
-      .query("meetingTranscripts")
-      .withIndex("by_meeting", (q) => q.eq("meetingId", args.meetingId))
-      .collect();
-
-    transcripts.sort((a, b) => b.syncedAt - a.syncedAt);
-    return transcripts;
+    return {
+      meetingId: meeting._id,
+      callId: meeting.callId,
+      callType: meeting.callType,
+      transcriptionEnabled: meeting.transcriptionEnabled,
+    };
   },
 });

@@ -3,12 +3,19 @@
 import { createHmac } from "crypto";
 import { v } from "convex/values";
 import { StreamChat } from "stream-chat";
-import { action, type ActionCtx } from "./_generated/server";
+import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 const internalApi = internal as any;
 const CHAT_CHANNEL_TYPE = "messaging";
-const TRANSCRIPT_CONTENT_MAX_CHARS = 180_000;
+
+type StreamCallTranscription = {
+  session_id: string;
+  filename: string;
+  url: string;
+  start_time: string;
+  end_time: string;
+};
 
 function readRequiredEnv(name: "STREAM_API_KEY" | "STREAM_API_SECRET") {
   const raw = process.env[name];
@@ -84,14 +91,6 @@ function getStreamRequestHeaders(token: string) {
     "Content-Type": "application/json",
   };
 }
-
-type StreamCallTranscription = {
-  session_id: string;
-  filename: string;
-  url: string;
-  start_time: string;
-  end_time: string;
-};
 
 async function getOrCreateStreamCall({
   apiKey,
@@ -182,220 +181,6 @@ async function listStreamCallTranscriptions({
   return transcriptions as StreamCallTranscription[];
 }
 
-function truncateTranscriptContent(raw: string) {
-  if (raw.length <= TRANSCRIPT_CONTENT_MAX_CHARS) {
-    return raw;
-  }
-
-  const marker = "\n\n[Transcript truncated before saving to Convex]";
-  const allowedLength = Math.max(0, TRANSCRIPT_CONTENT_MAX_CHARS - marker.length);
-  return `${raw.slice(0, allowedLength)}${marker}`;
-}
-
-function collectTextFromKnownJsonShape(parsed: unknown): string[] {
-  const lines: string[] = [];
-
-  const add = (value: unknown) => {
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      if (trimmed) {
-        lines.push(trimmed);
-      }
-    }
-  };
-
-  const asObject = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
-  if (!asObject) {
-    return lines;
-  }
-
-  // Common ASR shape: { results: { transcripts: [{ transcript: "..." }] } }
-  const results = asObject.results;
-  if (results && typeof results === "object") {
-    const resultsObj = results as Record<string, unknown>;
-    const transcripts = Array.isArray(resultsObj.transcripts) ? resultsObj.transcripts : [];
-    for (const entry of transcripts) {
-      if (entry && typeof entry === "object") {
-        add((entry as Record<string, unknown>).transcript);
-      }
-    }
-  }
-
-  // Common segment-based shapes.
-  const segmentCollections = [
-    asObject.segments,
-    asObject.utterances,
-    asObject.items,
-    asObject.chunks,
-    asObject.words,
-    asObject.transcript,
-    asObject.transcripts,
-  ];
-
-  for (const collection of segmentCollections) {
-    if (Array.isArray(collection)) {
-      for (const entry of collection) {
-        if (!entry || typeof entry !== "object") {
-          add(entry);
-          continue;
-        }
-
-        const item = entry as Record<string, unknown>;
-        add(item.text);
-        add(item.transcript);
-        add(item.utterance);
-        add(item.sentence);
-        add(item.content);
-        add(item.word);
-      }
-      continue;
-    }
-
-    add(collection);
-  }
-
-  if (lines.length > 0) {
-    return lines;
-  }
-
-  // Generic deep fallback for unknown JSON shapes.
-  const seen = new Set<string>();
-  const walk = (value: unknown, depth: number) => {
-    if (depth > 7 || value == null) {
-      return;
-    }
-
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      if (!trimmed) {
-        return;
-      }
-
-      if (
-        trimmed.includes("-->") ||
-        /^\d{4}-\d{2}-\d{2}/.test(trimmed) ||
-        /^\d+$/.test(trimmed)
-      ) {
-        return;
-      }
-
-      if (!seen.has(trimmed)) {
-        seen.add(trimmed);
-        lines.push(trimmed);
-      }
-      return;
-    }
-
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        walk(item, depth + 1);
-      }
-      return;
-    }
-
-    if (typeof value === "object") {
-      for (const entry of Object.values(value as Record<string, unknown>)) {
-        walk(entry, depth + 1);
-      }
-    }
-  };
-
-  walk(parsed, 0);
-  return lines;
-}
-
-function extractTranscriptText(raw: string, filename: string, contentType?: string | null) {
-  const trimmed = raw.trim();
-  if (!trimmed) {
-    return "";
-  }
-
-  const lowerFilename = filename.toLowerCase();
-  const isJson =
-    contentType?.toLowerCase().includes("application/json") ||
-    lowerFilename.endsWith(".json") ||
-    trimmed.startsWith("{") ||
-    trimmed.startsWith("[");
-
-  if (isJson) {
-    try {
-      const parsed = JSON.parse(trimmed) as unknown;
-      const knownJsonText = collectTextFromKnownJsonShape(parsed);
-      if (knownJsonText.length > 0) {
-        return knownJsonText.join("\n");
-      }
-    } catch {
-      // fall through to raw formatting.
-    }
-  }
-
-  const isVtt =
-    contentType?.toLowerCase().includes("text/vtt") ||
-    lowerFilename.endsWith(".vtt") ||
-    trimmed.startsWith("WEBVTT");
-
-  if (isVtt) {
-    const lines = trimmed.split(/\r?\n/);
-    const textLines: string[] = [];
-
-    for (const line of lines) {
-      const value = line.trim();
-      if (!value) {
-        continue;
-      }
-
-      if (value === "WEBVTT") {
-        continue;
-      }
-
-      if (/^\d+$/.test(value)) {
-        continue;
-      }
-
-      if (value.includes("-->")) {
-        continue;
-      }
-
-      textLines.push(value);
-    }
-
-    return textLines.join("\n");
-  }
-
-  return trimmed;
-}
-
-async function downloadTranscriptText(url: string, token: string, filename: string) {
-  const directResponse = await fetch(url);
-  if (directResponse.ok) {
-    const rawText = await directResponse.text();
-    return {
-      text: truncateTranscriptContent(
-        extractTranscriptText(rawText, filename, directResponse.headers.get("content-type")),
-      ),
-    };
-  }
-
-  const authenticatedResponse = await fetch(url, {
-    headers: {
-      Authorization: token,
-      "stream-auth-type": "jwt",
-      "X-Stream-Client": "pensatori-meet-server",
-    },
-  });
-
-  if (authenticatedResponse.ok) {
-    const rawText = await authenticatedResponse.text();
-    return {
-      text: truncateTranscriptContent(
-        extractTranscriptText(rawText, filename, authenticatedResponse.headers.get("content-type")),
-      ),
-    };
-  }
-
-  throw new Error(`Could not download transcript file (${authenticatedResponse.status}).`);
-}
-
 async function markStreamCallEnded({
   apiKey,
   token,
@@ -407,9 +192,7 @@ async function markStreamCallEnded({
   callType: string;
   callId: string;
 }) {
-  const url = new URL(
-    `${getStreamCallBaseUrl(callType, callId)}/mark_ended`,
-  );
+  const url = new URL(`${getStreamCallBaseUrl(callType, callId)}/mark_ended`);
   url.searchParams.set("api_key", apiKey);
 
   const response = await fetch(url, {
@@ -534,63 +317,6 @@ async function ensureStreamTranscriptionConfigured({
       `Could not patch Stream transcription settings (${patchResult.status}). ${patchResult.body || "No response body."}`,
     );
   }
-}
-
-async function syncTranscriptionsToConvex({
-  ctx,
-  apiKey,
-  token,
-  meetingId,
-  callType,
-  callId,
-}: {
-  ctx: ActionCtx;
-  apiKey: string;
-  token: string;
-  meetingId: any;
-  callType: string;
-  callId: string;
-}) {
-  const transcriptions = await listStreamCallTranscriptions({
-    apiKey,
-    token,
-    callType,
-    callId,
-  });
-
-  let syncedCount = 0;
-  let failedCount = 0;
-  const syncedAt = Date.now();
-
-  for (const transcription of transcriptions) {
-    try {
-      const downloaded = await downloadTranscriptText(transcription.url, token, transcription.filename);
-      if (!downloaded.text.trim()) {
-        continue;
-      }
-
-      await ctx.runMutation(internalApi.meetings.upsertMeetingTranscript, {
-        meetingId,
-        streamCallSessionId: transcription.session_id,
-        filename: transcription.filename,
-        startTime: transcription.start_time,
-        endTime: transcription.end_time,
-        text: downloaded.text,
-        syncedAt,
-      });
-      syncedCount += 1;
-    } catch (error) {
-      failedCount += 1;
-      console.error("Failed to sync one transcript file", error);
-    }
-  }
-
-  return {
-    availableCount: transcriptions.length,
-    syncedCount,
-    failedCount,
-    emptyCount: transcriptions.length - syncedCount - failedCount,
-  };
 }
 
 function getMeetingChatChannelId(callId: string) {
@@ -791,37 +517,11 @@ export const endMeetingForAll = action({
     });
 
     if (meeting.endedAt) {
-      let transcriptSync:
-        | {
-            availableCount: number;
-            syncedCount: number;
-            failedCount: number;
-            emptyCount: number;
-          }
-        | undefined;
-
-      if (meeting.transcriptionEnabled) {
-        try {
-          const hostToken = createStreamUserToken(`clerk_${identity.subject}`, streamApiSecret);
-          transcriptSync = await syncTranscriptionsToConvex({
-            ctx,
-            apiKey: streamApiKey,
-            token: hostToken,
-            meetingId: meeting.meetingId,
-            callType: meeting.callType,
-            callId: meeting.callId,
-          });
-        } catch (error) {
-          console.error("Failed to sync transcripts for ended meeting", error);
-        }
-      }
-
       return {
         meetingId: meeting.meetingId,
         callId: meeting.callId,
         endedAt: meeting.endedAt,
         streamStatus: "already_ended",
-        transcriptSync,
       };
     }
 
@@ -854,38 +554,14 @@ export const endMeetingForAll = action({
       endedAt,
     });
 
-    let transcriptSync:
-      | {
-          availableCount: number;
-          syncedCount: number;
-          failedCount: number;
-          emptyCount: number;
-        }
-      | undefined;
-    if (meeting.transcriptionEnabled) {
-      try {
-        transcriptSync = await syncTranscriptionsToConvex({
-          ctx,
-          apiKey: streamApiKey,
-          token: hostToken,
-          meetingId: meeting.meetingId,
-          callType: meeting.callType,
-          callId: meeting.callId,
-        });
-      } catch (error) {
-        console.error("Failed to sync transcripts after ending meeting", error);
-      }
-    }
-
     return {
       ...finalized,
       streamStatus: streamResult.ok ? "ended" : streamNotFound ? "not_found" : "already_ended",
-      transcriptSync,
     };
   },
 });
 
-export const syncMeetingTranscripts = action({
+export const openMeetingTranscriptFile = action({
   args: {
     meetingId: v.id("meetings"),
   },
@@ -899,38 +575,48 @@ export const syncMeetingTranscripts = action({
     const streamApiSecret = readRequiredEnv("STREAM_API_SECRET");
     assertLooksLikeStreamCredentials(streamApiKey, streamApiSecret);
 
-    const meeting = await ctx.runQuery(internalApi.meetings.getMeetingForEnding, {
+    const meeting = await ctx.runQuery(internalApi.meetings.getMeetingForTranscriptAccess, {
       meetingId: args.meetingId,
       clerkId: identity.subject,
     });
 
-    if (!meeting.transcriptionEnabled) {
-      return {
-        meetingId: meeting.meetingId,
-        callId: meeting.callId,
-        availableCount: 0,
-        syncedCount: 0,
-        failedCount: 0,
-        emptyCount: 0,
-        skipped: true,
-      };
+    if (!meeting) {
+      throw new Error("You do not have permission to access this meeting transcript.");
     }
 
-    const hostToken = createStreamUserToken(`clerk_${identity.subject}`, streamApiSecret);
-    const synced = await syncTranscriptionsToConvex({
-      ctx,
+    if (!meeting.transcriptionEnabled) {
+      throw new Error("Transcription is disabled for this meeting.");
+    }
+
+    const token = createStreamUserToken(`clerk_${identity.subject}`, streamApiSecret);
+    const transcriptions = await listStreamCallTranscriptions({
       apiKey: streamApiKey,
-      token: hostToken,
-      meetingId: meeting.meetingId,
+      token,
       callType: meeting.callType,
       callId: meeting.callId,
     });
 
+    if (transcriptions.length === 0) {
+      throw new Error("No transcript file is available yet. Try again in a minute.");
+    }
+
+    transcriptions.sort((a, b) => {
+      const aTime = Date.parse(a.end_time || a.start_time || "");
+      const bTime = Date.parse(b.end_time || b.start_time || "");
+      return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+    });
+
+    const latest = transcriptions[0];
+    if (!latest) {
+      throw new Error("No transcript file is available yet. Try again in a minute.");
+    }
+
     return {
-      meetingId: meeting.meetingId,
-      callId: meeting.callId,
-      ...synced,
-      skipped: false,
+      url: latest.url,
+      filename: latest.filename,
+      availableCount: transcriptions.length,
+      startTime: latest.start_time,
+      endTime: latest.end_time,
     };
   },
 });
@@ -957,9 +643,11 @@ export const startMeetingTranscription = action({
     if (!authJoin) {
       throw new Error("You are not allowed to join this meeting.");
     }
+
     if (!authJoin.canManageCallSettings) {
       throw new Error("Only meeting hosts can start transcription.");
     }
+
     if (!authJoin.meeting.transcriptionEnabled) {
       return { skipped: true, reason: "disabled" as const };
     }

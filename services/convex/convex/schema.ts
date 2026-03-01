@@ -45,19 +45,6 @@ export default defineSchema({
     .index("by_creator", ["createdByClerkId"])
     .index("by_startsAt", ["startsAt"]),
 
-  meetingTranscripts: defineTable({
-    meetingId: v.id("meetings"),
-    streamCallSessionId: v.string(),
-    filename: v.string(),
-    startTime: v.string(),
-    endTime: v.string(),
-    text: v.string(),
-    syncedAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_meeting", ["meetingId"])
-    .index("by_meeting_and_file", ["meetingId", "streamCallSessionId", "filename"]),
-
   meetingInvites: defineTable({
     meetingId: v.id("meetings"),
     code: v.string(),
