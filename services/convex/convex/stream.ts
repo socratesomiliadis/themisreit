@@ -87,7 +87,7 @@ type StreamCallTranscription = {
   end_time: string;
 };
 
-async function createOrUpdateStreamCall({
+async function getOrCreateStreamCall({
   apiKey,
   token,
   callType,
@@ -105,6 +105,36 @@ async function createOrUpdateStreamCall({
 
   const response = await fetch(url, {
     method: "POST",
+    headers: getStreamRequestHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+  const text = await response.text();
+  return {
+    ok: response.ok,
+    status: response.status,
+    body: text,
+  };
+}
+
+async function patchStreamCall({
+  apiKey,
+  token,
+  callType,
+  callId,
+  payload,
+}: {
+  apiKey: string;
+  token: string;
+  callType: string;
+  callId: string;
+  payload: Record<string, unknown>;
+}) {
+  const url = new URL(getStreamCallBaseUrl(callType, callId));
+  url.searchParams.set("api_key", apiKey);
+
+  const response = await fetch(url, {
+    method: "PATCH",
     headers: getStreamRequestHeaders(token),
     body: JSON.stringify(payload),
   });
@@ -308,7 +338,7 @@ async function ensureStreamTranscriptionConfigured({
   callId: string;
   startsAt?: number;
 }) {
-  const payload: Record<string, unknown> = {
+  const getOrCreatePayload: Record<string, unknown> = {
     data: {
       settings_override: {
         transcription: {
@@ -321,20 +351,48 @@ async function ensureStreamTranscriptionConfigured({
   };
 
   if (typeof startsAt === "number") {
-    (payload.data as { starts_at?: string }).starts_at = new Date(startsAt).toISOString();
+    (getOrCreatePayload.data as { starts_at?: string }).starts_at = new Date(startsAt).toISOString();
   }
 
-  const result = await createOrUpdateStreamCall({
+  const getOrCreateResult = await getOrCreateStreamCall({
     apiKey,
     token,
     callType,
     callId,
-    payload,
+    payload: getOrCreatePayload,
   });
 
-  if (!result.ok) {
+  if (!getOrCreateResult.ok) {
     throw new Error(
-      `Could not configure Stream transcription (${result.status}). ${result.body || "No response body."}`,
+      `Could not configure Stream transcription (${getOrCreateResult.status}). ${getOrCreateResult.body || "No response body."}`,
+    );
+  }
+
+  const patchPayload: Record<string, unknown> = {
+    settings_override: {
+      transcription: {
+        mode: "auto-on",
+        closed_caption_mode: "available",
+        language: "auto",
+      },
+    },
+  };
+
+  if (typeof startsAt === "number") {
+    patchPayload.starts_at = new Date(startsAt).toISOString();
+  }
+
+  const patchResult = await patchStreamCall({
+    apiKey,
+    token,
+    callType,
+    callId,
+    payload: patchPayload,
+  });
+
+  if (!patchResult.ok) {
+    throw new Error(
+      `Could not patch Stream transcription settings (${patchResult.status}). ${patchResult.body || "No response body."}`,
     );
   }
 }
@@ -362,29 +420,36 @@ async function syncTranscriptionsToConvex({
   });
 
   let syncedCount = 0;
+  let failedCount = 0;
   const syncedAt = Date.now();
 
   for (const transcription of transcriptions) {
-    const downloaded = await downloadTranscriptText(transcription.url, token, transcription.filename);
-    if (!downloaded.text.trim()) {
-      continue;
-    }
+    try {
+      const downloaded = await downloadTranscriptText(transcription.url, token, transcription.filename);
+      if (!downloaded.text.trim()) {
+        continue;
+      }
 
-    await ctx.runMutation(internalApi.meetings.upsertMeetingTranscript, {
-      meetingId,
-      streamCallSessionId: transcription.session_id,
-      filename: transcription.filename,
-      startTime: transcription.start_time,
-      endTime: transcription.end_time,
-      text: downloaded.text,
-      syncedAt,
-    });
-    syncedCount += 1;
+      await ctx.runMutation(internalApi.meetings.upsertMeetingTranscript, {
+        meetingId,
+        streamCallSessionId: transcription.session_id,
+        filename: transcription.filename,
+        startTime: transcription.start_time,
+        endTime: transcription.end_time,
+        text: downloaded.text,
+        syncedAt,
+      });
+      syncedCount += 1;
+    } catch (error) {
+      failedCount += 1;
+      console.error("Failed to sync one transcript file", error);
+    }
   }
 
   return {
     availableCount: transcriptions.length,
     syncedCount,
+    failedCount,
   };
 }
 
@@ -500,18 +565,14 @@ export const issueStreamCredentials = action({
       });
 
       const userToken = createStreamUserToken(authJoin.streamUser.id, streamApiSecret);
-      if (authJoin.meeting.transcriptionEnabled) {
-        try {
-          await ensureStreamTranscriptionConfigured({
-            apiKey: streamApiKey,
-            token: userToken,
-            callType: authJoin.call.callType,
-            callId: authJoin.call.callId,
-            startsAt: authJoin.meeting.startsAt,
-          });
-        } catch (error) {
-          console.error("Failed to configure Stream transcription for authenticated joiner", error);
-        }
+      if (authJoin.meeting.transcriptionEnabled && authJoin.canManageCallSettings) {
+        await ensureStreamTranscriptionConfigured({
+          apiKey: streamApiKey,
+          token: userToken,
+          callType: authJoin.call.callType,
+          callId: authJoin.call.callId,
+          startsAt: authJoin.meeting.startsAt,
+        });
       }
 
       const chat = await ensureChatChannelMembership({
@@ -551,20 +612,6 @@ export const issueStreamCredentials = action({
     });
 
     const userToken = createStreamUserToken(guestJoin.streamUser.id, streamApiSecret);
-    if (guestJoin.meeting.transcriptionEnabled) {
-      try {
-        await ensureStreamTranscriptionConfigured({
-          apiKey: streamApiKey,
-          token: userToken,
-          callType: guestJoin.call.callType,
-          callId: guestJoin.call.callId,
-          startsAt: guestJoin.meeting.startsAt,
-        });
-      } catch (error) {
-        console.error("Failed to configure Stream transcription for guest joiner", error);
-      }
-    }
-
     const chat = await ensureChatChannelMembership({
       apiKey: streamApiKey,
       apiSecret: streamApiSecret,
@@ -608,6 +655,7 @@ export const endMeetingForAll = action({
         | {
             availableCount: number;
             syncedCount: number;
+            failedCount: number;
           }
         | undefined;
 
@@ -669,6 +717,7 @@ export const endMeetingForAll = action({
       | {
           availableCount: number;
           syncedCount: number;
+          failedCount: number;
         }
       | undefined;
     if (meeting.transcriptionEnabled) {
@@ -719,6 +768,7 @@ export const syncMeetingTranscripts = action({
         callId: meeting.callId,
         availableCount: 0,
         syncedCount: 0,
+        failedCount: 0,
         skipped: true,
       };
     }

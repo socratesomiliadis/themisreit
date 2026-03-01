@@ -21,11 +21,23 @@ type ConnectedState = {
     title: string;
     kind: "instant" | "scheduled";
     startsAt?: number;
+    transcriptionEnabled?: boolean;
   };
   userId: string;
   userLabel: string;
   userImage?: string;
 };
+
+function isExpectedTranscriptionStartError(message: string) {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("already") ||
+    normalized.includes("in progress") ||
+    normalized.includes("not allowed") ||
+    normalized.includes("forbidden") ||
+    normalized.includes("permission")
+  );
+}
 
 async function disconnectRoom(state: ConnectedState) {
   try {
@@ -215,6 +227,22 @@ export function MeetingRoom({
 
     try {
       await connectedState.call.join({ create: true });
+
+      if (connectedState.meeting.transcriptionEnabled) {
+        try {
+          await connectedState.call.startTranscription();
+        } catch (startError) {
+          const message =
+            startError instanceof Error
+              ? startError.message
+              : "Could not start transcription for this call.";
+
+          if (!isExpectedTranscriptionStartError(message)) {
+            setError(`Joined call, but transcription failed to start: ${message}`);
+          }
+        }
+      }
+
       setJoinState("in-call");
     } catch (joinError) {
       setJoinState("preview");

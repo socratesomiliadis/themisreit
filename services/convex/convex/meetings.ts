@@ -773,16 +773,15 @@ export const resolveAuthenticatedJoiner = internalQuery({
       return null;
     }
 
-    const allowed =
-      meeting.createdByClerkId === args.clerkId ||
-      Boolean(
-        await ctx.db
-          .query("meetingParticipants")
-          .withIndex("by_meeting_and_clerk", (q) =>
-            q.eq("meetingId", meeting._id).eq("clerkId", args.clerkId),
-          )
-          .unique(),
-      );
+    const participant = await ctx.db
+      .query("meetingParticipants")
+      .withIndex("by_meeting_and_clerk", (q) =>
+        q.eq("meetingId", meeting._id).eq("clerkId", args.clerkId),
+      )
+      .unique();
+
+    const isCreator = meeting.createdByClerkId === args.clerkId;
+    const allowed = isCreator || Boolean(participant);
 
     if (!allowed) {
       return null;
@@ -794,6 +793,7 @@ export const resolveAuthenticatedJoiner = internalQuery({
 
     return {
       meetingId: meeting._id,
+      canManageCallSettings: isCreator || participant?.role === "host",
       meeting: {
         title: meeting.title,
         kind: meeting.kind,

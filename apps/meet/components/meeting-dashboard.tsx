@@ -201,7 +201,7 @@ export function MeetingDashboard() {
       try {
         const result = await endMeeting({ meetingId });
         const transcriptStatus = result.transcriptSync
-          ? ` Transcript sync: ${result.transcriptSync.syncedCount}/${result.transcriptSync.availableCount}.`
+          ? ` Transcript sync: ${result.transcriptSync.syncedCount}/${result.transcriptSync.availableCount} (failed: ${result.transcriptSync.failedCount}).`
           : "";
         setStatus(`Meeting ended for all participants: /room/${result.callId}.${transcriptStatus}`);
       } catch (error) {
@@ -222,7 +222,7 @@ export function MeetingDashboard() {
         }
 
         setStatus(
-          `Transcript sync finished for "${title}": ${result.syncedCount}/${result.availableCount}.`,
+          `Transcript sync finished for "${title}": ${result.syncedCount}/${result.availableCount} (failed: ${result.failedCount}).`,
         );
       } catch (error) {
         setStatus(error instanceof Error ? error.message : "Could not sync transcripts.");
