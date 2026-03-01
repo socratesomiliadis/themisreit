@@ -192,6 +192,118 @@ function truncateTranscriptContent(raw: string) {
   return `${raw.slice(0, allowedLength)}${marker}`;
 }
 
+function collectTextFromKnownJsonShape(parsed: unknown): string[] {
+  const lines: string[] = [];
+
+  const add = (value: unknown) => {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed) {
+        lines.push(trimmed);
+      }
+    }
+  };
+
+  const asObject = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
+  if (!asObject) {
+    return lines;
+  }
+
+  // Common ASR shape: { results: { transcripts: [{ transcript: "..." }] } }
+  const results = asObject.results;
+  if (results && typeof results === "object") {
+    const resultsObj = results as Record<string, unknown>;
+    const transcripts = Array.isArray(resultsObj.transcripts) ? resultsObj.transcripts : [];
+    for (const entry of transcripts) {
+      if (entry && typeof entry === "object") {
+        add((entry as Record<string, unknown>).transcript);
+      }
+    }
+  }
+
+  // Common segment-based shapes.
+  const segmentCollections = [
+    asObject.segments,
+    asObject.utterances,
+    asObject.items,
+    asObject.chunks,
+    asObject.words,
+    asObject.transcript,
+    asObject.transcripts,
+  ];
+
+  for (const collection of segmentCollections) {
+    if (Array.isArray(collection)) {
+      for (const entry of collection) {
+        if (!entry || typeof entry !== "object") {
+          add(entry);
+          continue;
+        }
+
+        const item = entry as Record<string, unknown>;
+        add(item.text);
+        add(item.transcript);
+        add(item.utterance);
+        add(item.sentence);
+        add(item.content);
+        add(item.word);
+      }
+      continue;
+    }
+
+    add(collection);
+  }
+
+  if (lines.length > 0) {
+    return lines;
+  }
+
+  // Generic deep fallback for unknown JSON shapes.
+  const seen = new Set<string>();
+  const walk = (value: unknown, depth: number) => {
+    if (depth > 7 || value == null) {
+      return;
+    }
+
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      if (
+        trimmed.includes("-->") ||
+        /^\d{4}-\d{2}-\d{2}/.test(trimmed) ||
+        /^\d+$/.test(trimmed)
+      ) {
+        return;
+      }
+
+      if (!seen.has(trimmed)) {
+        seen.add(trimmed);
+        lines.push(trimmed);
+      }
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        walk(item, depth + 1);
+      }
+      return;
+    }
+
+    if (typeof value === "object") {
+      for (const entry of Object.values(value as Record<string, unknown>)) {
+        walk(entry, depth + 1);
+      }
+    }
+  };
+
+  walk(parsed, 0);
+  return lines;
+}
+
 function extractTranscriptText(raw: string, filename: string, contentType?: string | null) {
   const trimmed = raw.trim();
   if (!trimmed) {
@@ -208,26 +320,9 @@ function extractTranscriptText(raw: string, filename: string, contentType?: stri
   if (isJson) {
     try {
       const parsed = JSON.parse(trimmed) as unknown;
-      if (Array.isArray(parsed)) {
-        const chunks = parsed
-          .map((entry) => {
-            if (!entry || typeof entry !== "object") {
-              return "";
-            }
-            const maybeText = (entry as { text?: unknown }).text;
-            return typeof maybeText === "string" ? maybeText.trim() : "";
-          })
-          .filter(Boolean);
-        if (chunks.length > 0) {
-          return chunks.join("\n");
-        }
-      }
-
-      if (parsed && typeof parsed === "object") {
-        const objectText = (parsed as { text?: unknown }).text;
-        if (typeof objectText === "string" && objectText.trim()) {
-          return objectText.trim();
-        }
+      const knownJsonText = collectTextFromKnownJsonShape(parsed);
+      if (knownJsonText.length > 0) {
+        return knownJsonText.join("\n");
       }
     } catch {
       // fall through to raw formatting.
@@ -494,6 +589,7 @@ async function syncTranscriptionsToConvex({
     availableCount: transcriptions.length,
     syncedCount,
     failedCount,
+    emptyCount: transcriptions.length - syncedCount - failedCount,
   };
 }
 
@@ -700,6 +796,7 @@ export const endMeetingForAll = action({
             availableCount: number;
             syncedCount: number;
             failedCount: number;
+            emptyCount: number;
           }
         | undefined;
 
@@ -762,6 +859,7 @@ export const endMeetingForAll = action({
           availableCount: number;
           syncedCount: number;
           failedCount: number;
+          emptyCount: number;
         }
       | undefined;
     if (meeting.transcriptionEnabled) {
@@ -813,6 +911,7 @@ export const syncMeetingTranscripts = action({
         availableCount: 0,
         syncedCount: 0,
         failedCount: 0,
+        emptyCount: 0,
         skipped: true,
       };
     }
