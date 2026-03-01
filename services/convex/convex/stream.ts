@@ -525,6 +525,40 @@ function sortTranscriptionsByNewest(items: StreamCallTranscription[]) {
   });
 }
 
+function normalizeSpeakerId(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function resolveSpeakerDisplayName(
+  rawSpeaker: string,
+  directory: Map<string, string>,
+) {
+  const trimmed = rawSpeaker.trim();
+  if (!trimmed) {
+    return "Unknown speaker";
+  }
+
+  const normalized = normalizeSpeakerId(trimmed);
+  const variants = new Set<string>([
+    trimmed,
+    normalized,
+    `clerk_${normalized}`,
+  ]);
+
+  if (normalized.startsWith("clerk_")) {
+    variants.add(normalized.slice("clerk_".length));
+  }
+
+  for (const variant of variants) {
+    const mapped = directory.get(variant);
+    if (mapped) {
+      return mapped;
+    }
+  }
+
+  return trimmed;
+}
+
 async function fetchStreamTranscriptText({
   transcriptUrl,
   token,
@@ -898,6 +932,25 @@ export const openMeetingTranscriptFile = action({
       );
     }
 
+    const speakerDirectoryEntries = await ctx.runQuery(
+      internalApi.meetings.getMeetingSpeakerDirectory,
+      {
+        meetingId: meeting.meetingId,
+      },
+    );
+    const speakerDirectory = new Map<string, string>();
+    for (const entry of speakerDirectoryEntries) {
+      const key = normalizeSpeakerId(entry.streamUserId);
+      if (key && entry.displayName) {
+        speakerDirectory.set(key, entry.displayName);
+      }
+    }
+
+    const normalizedUtterances = utterances.map((utterance) => ({
+      ...utterance,
+      speaker: resolveSpeakerDisplayName(utterance.speaker, speakerDirectory),
+    }));
+
     return {
       meetingId: meeting.meetingId,
       callId: meeting.callId,
@@ -905,7 +958,7 @@ export const openMeetingTranscriptFile = action({
       availableCount: transcriptions.length,
       startTime: latest.start_time,
       endTime: latest.end_time,
-      utterances,
+      utterances: normalizedUtterances,
     };
   },
 });

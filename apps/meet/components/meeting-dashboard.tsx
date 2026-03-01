@@ -1,21 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { UserButton } from "@clerk/nextjs";
 import { useAction, useMutation, useQuery } from "convex/react";
 import type { Id } from "@convex/_generated/dataModel";
-
 import { api } from "@/lib/convex-api";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@workspace/ui/components/sheet";
+import { DashboardHeader } from "@/components/meeting-dashboard/dashboard-header";
+import { MeetingCreationSection } from "@/components/meeting-dashboard/meeting-creation-section";
+import { MeetingList } from "@/components/meeting-dashboard/meeting-list";
+import { TranscriptSheet } from "@/components/meeting-dashboard/transcript-sheet";
+import type { DashboardMeeting, TranscriptPanelData } from "@/components/meeting-dashboard/types";
 
 function formatDate(ts?: number) {
   if (!ts) {
@@ -28,66 +21,9 @@ function formatDate(ts?: number) {
   }).format(new Date(ts));
 }
 
-function formatTranscriptTime(ms?: number | null) {
-  if (typeof ms !== "number" || !Number.isFinite(ms)) {
-    return "Unknown";
-  }
-
-  if (ms > 1_000_000_000_000) {
-    return new Intl.DateTimeFormat("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    }).format(new Date(ms));
-  }
-
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  }
-
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
-
-function formatTranscriptRange(startMs?: number | null, endMs?: number | null) {
-  const start = formatTranscriptTime(startMs);
-  const end = formatTranscriptTime(endMs);
-  if (start === "Unknown" && end === "Unknown") {
-    return "Time unavailable";
-  }
-
-  if (end === "Unknown" || start === end) {
-    return start;
-  }
-
-  return `${start} - ${end}`;
-}
-
-type TranscriptUtterance = {
-  id: string;
-  speaker: string;
-  text: string;
-  startMs: number | null;
-  endMs: number | null;
-};
-
-type TranscriptPanelData = {
-  meetingTitle: string;
-  callId: string;
-  filename: string;
-  availableCount: number;
-  startTime: string;
-  endTime: string;
-  utterances: TranscriptUtterance[];
-};
-
 export function MeetingDashboard() {
   const meetingsQuery = useQuery(api.meetings.listForViewer);
-  const meetings = useMemo(() => meetingsQuery ?? [], [meetingsQuery]);
+  const meetings = useMemo(() => (meetingsQuery ?? []) as DashboardMeeting[], [meetingsQuery]);
   const createInstantMeeting = useMutation(api.meetings.createInstantMeeting);
   const scheduleMeeting = useMutation(api.meetings.scheduleMeeting);
   const createInvite = useMutation(api.meetings.createInvite);
@@ -101,12 +37,8 @@ export function MeetingDashboard() {
   const [scheduledFor, setScheduledFor] = useState("");
   const [scheduledTranscriptionEnabled, setScheduledTranscriptionEnabled] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
-  const [inviteEmailByMeeting, setInviteEmailByMeeting] = useState<
-    Record<string, string>
-  >({});
-  const [inviteNameByMeeting, setInviteNameByMeeting] = useState<
-    Record<string, string>
-  >({});
+  const [inviteEmailByMeeting, setInviteEmailByMeeting] = useState<Record<string, string>>({});
+  const [inviteNameByMeeting, setInviteNameByMeeting] = useState<Record<string, string>>({});
   const [transcriptPanel, setTranscriptPanel] = useState<TranscriptPanelData | null>(null);
   const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
   const [nowMs, setNowMs] = useState(0);
@@ -120,17 +52,13 @@ export function MeetingDashboard() {
   }, []);
 
   const nextMeeting = useMemo(() => {
-    return meetings.find(
-      (meeting) => !meeting.endedAt && (meeting.startsAt ?? nowMs) >= nowMs,
-    );
+    return meetings.find((meeting) => !meeting.endedAt && (meeting.startsAt ?? nowMs) >= nowMs);
   }, [meetings, nowMs]);
 
   const copyInvite = async (inviteCode: string) => {
     const invitePath = `/join/${inviteCode}`;
     const fullInvite =
-      typeof window === "undefined"
-        ? invitePath
-        : new URL(invitePath, window.location.origin).toString();
+      typeof window === "undefined" ? invitePath : new URL(invitePath, window.location.origin).toString();
 
     await navigator.clipboard.writeText(fullInvite);
     setStatus(`Copied invite link: ${fullInvite}`);
@@ -260,86 +188,30 @@ export function MeetingDashboard() {
     });
   };
 
+  const nextMeetingLabel = nextMeeting
+    ? `Next: ${nextMeeting.title} • ${formatDate(nextMeeting.startsAt)}`
+    : "No upcoming meetings yet";
+
   return (
     <main className="min-h-screen px-4 py-8 md:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <header className="rounded-2xl border border-black/10 bg-white/75 p-5 backdrop-blur-sm md:p-7">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-black/55">Pensatori Meet</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-black md:text-4xl">
-                Meetings for staff and clients
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm text-black/70">
-                Create instant or scheduled sessions, generate invitation links, and let guests join
-                without Clerk sign-in.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl border border-black/10 bg-white/70 px-3 py-2 text-sm text-black/70">
-                {nextMeeting
-                  ? `Next: ${nextMeeting.title} • ${formatDate(nextMeeting.startsAt)}`
-                  : "No upcoming meetings yet"}
-              </div>
-              <UserButton />
-            </div>
-          </div>
-        </header>
+        <DashboardHeader nextMeetingLabel={nextMeetingLabel} />
 
-        <section className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-black/10 bg-white/80 p-5">
-            <h2 className="text-lg font-semibold text-black">Start now</h2>
-            <p className="mt-1 text-sm text-black/65">Open an instant room and share invites.</p>
-            <div className="mt-4 flex gap-2">
-              <Input
-                placeholder="Instant meeting title"
-                value={instantTitle}
-                onChange={(event) => setInstantTitle(event.target.value)}
-              />
-              <Button onClick={onCreateInstantMeeting} disabled={isPending}>
-                Create
-              </Button>
-            </div>
-            <label className="mt-3 flex items-center gap-2 text-sm text-black/70">
-              <input
-                type="checkbox"
-                checked={instantTranscriptionEnabled}
-                onChange={(event) => setInstantTranscriptionEnabled(event.target.checked)}
-              />
-              Enable transcription
-            </label>
-          </div>
-
-          <div className="rounded-2xl border border-black/10 bg-white/80 p-5">
-            <h2 className="text-lg font-semibold text-black">Schedule</h2>
-            <p className="mt-1 text-sm text-black/65">
-              Create a meeting in advance and send the join links.
-            </p>
-            <div className="mt-4 grid gap-2 md:grid-cols-[1fr_190px_auto]">
-              <Input
-                placeholder="Scheduled meeting title"
-                value={scheduledTitle}
-                onChange={(event) => setScheduledTitle(event.target.value)}
-              />
-              <Input
-                type="datetime-local"
-                value={scheduledFor}
-                onChange={(event) => setScheduledFor(event.target.value)}
-              />
-              <Button onClick={onScheduleMeeting} disabled={isPending}>
-                Schedule
-              </Button>
-            </div>
-            <label className="mt-3 flex items-center gap-2 text-sm text-black/70">
-              <input
-                type="checkbox"
-                checked={scheduledTranscriptionEnabled}
-                onChange={(event) => setScheduledTranscriptionEnabled(event.target.checked)}
-              />
-              Enable transcription
-            </label>
-          </div>
-        </section>
+        <MeetingCreationSection
+          instantTitle={instantTitle}
+          setInstantTitle={setInstantTitle}
+          instantTranscriptionEnabled={instantTranscriptionEnabled}
+          setInstantTranscriptionEnabled={setInstantTranscriptionEnabled}
+          onCreateInstantMeeting={onCreateInstantMeeting}
+          scheduledTitle={scheduledTitle}
+          setScheduledTitle={setScheduledTitle}
+          scheduledFor={scheduledFor}
+          setScheduledFor={setScheduledFor}
+          scheduledTranscriptionEnabled={scheduledTranscriptionEnabled}
+          setScheduledTranscriptionEnabled={setScheduledTranscriptionEnabled}
+          onScheduleMeeting={onScheduleMeeting}
+          isPending={isPending}
+        />
 
         {status ? (
           <section className="rounded-xl border border-black/15 bg-black px-4 py-3 text-sm text-white">
@@ -347,197 +219,27 @@ export function MeetingDashboard() {
           </section>
         ) : null}
 
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold tracking-tight text-black">Your meetings</h2>
-          <div className="grid gap-4">
-            {meetings.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-black/20 bg-white/60 p-8 text-sm text-black/65">
-                No meetings yet. Create one above to get started.
-              </div>
-            ) : null}
-
-            {meetings.map((meeting) => {
-              const meetingId = meeting._id as Id<"meetings">;
-              const meetingKey = meetingId as string;
-              return (
-                <article
-                  key={meeting._id}
-                  className="rounded-2xl border border-black/10 bg-white/85 p-5 shadow-sm"
-                >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <h3 className="text-xl font-semibold text-black">{meeting.title}</h3>
-                      <p className="mt-1 text-sm text-black/70">
-                        {meeting.kind === "scheduled" ? "Scheduled" : "Instant"} • {" "}
-                        {formatDate(meeting.startsAt)}
-                        {meeting.transcriptionEnabled ? " • Transcription enabled" : ""}
-                        {meeting.endedAt ? " • Ended" : ""}
-                      </p>
-                      {meeting.description ? (
-                        <p className="mt-1 text-sm text-black/60">{meeting.description}</p>
-                      ) : null}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button asChild>
-                        <Link href={`/room/${meeting.callId}`}>
-                          {meeting.endedAt ? "View room" : "Join room"}
-                        </Link>
-                      </Button>
-                      {!meeting.endedAt ? (
-                        <Button
-                          variant="destructive"
-                          onClick={() => onEndMeeting(meetingId, meeting.title)}
-                          disabled={isPending}
-                        >
-                          End call for all
-                        </Button>
-                      ) : null}
-                      {meeting.transcriptionEnabled ? (
-                        <Button
-                          variant="outline"
-                          onClick={() => onOpenTranscriptFile(meetingId, meeting.title)}
-                          disabled={isPending}
-                        >
-                          View transcript
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  {!meeting.endedAt ? (
-                    <div className="mt-4 rounded-xl border border-black/10 bg-[#f8f7f2] p-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
-                        Invite people
-                      </p>
-                      <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
-                        <Input
-                          type="email"
-                          placeholder="Optional email restriction"
-                          value={inviteEmailByMeeting[meetingKey] ?? ""}
-                          onChange={(event) =>
-                            setInviteEmailByMeeting((current) => ({
-                              ...current,
-                              [meetingKey]: event.target.value,
-                            }))
-                          }
-                        />
-                        <Input
-                          placeholder="Invite display name"
-                          value={inviteNameByMeeting[meetingKey] ?? ""}
-                          onChange={(event) =>
-                            setInviteNameByMeeting((current) => ({
-                              ...current,
-                              [meetingKey]: event.target.value,
-                            }))
-                          }
-                        />
-                        <Button onClick={() => onCreateInvite(meetingId)} disabled={isPending}>
-                          New invite link
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-4 rounded-xl border border-black/10 bg-[#f8f7f2] p-3 text-sm text-black/60">
-                      This meeting has ended and invite links are disabled.
-                    </div>
-                  )}
-
-                  <div className="mt-4 space-y-2">
-                    {meeting.invites.length === 0 ? (
-                      <p className="text-sm text-black/55">No invites yet.</p>
-                    ) : null}
-                    {meeting.invites.map((invite) => (
-                      <div
-                        key={invite._id}
-                        className="flex flex-col gap-2 rounded-xl border border-black/10 bg-white p-3 md:flex-row md:items-center md:justify-between"
-                      >
-                        <div>
-                          <p className="font-mono text-xs text-black/80">/join/{invite.code}</p>
-                          <p className="text-xs text-black/55">
-                            {invite.email ? `Restricted to ${invite.email}` : "Open guest invite"}
-                            {invite.revokedAt ? " • Revoked" : ""}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            disabled={Boolean(invite.revokedAt)}
-                            onClick={() => copyInvite(invite.code)}
-                          >
-                            Copy link
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            disabled={Boolean(invite.revokedAt)}
-                            onClick={() => onRevokeInvite(invite._id as Id<"meetingInvites">)}
-                          >
-                            Revoke
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                </article>
-              );
-            })}
-          </div>
-        </section>
+        <MeetingList
+          meetings={meetings}
+          formatDate={formatDate}
+          isPending={isPending}
+          inviteEmailByMeeting={inviteEmailByMeeting}
+          inviteNameByMeeting={inviteNameByMeeting}
+          setInviteEmailByMeeting={setInviteEmailByMeeting}
+          setInviteNameByMeeting={setInviteNameByMeeting}
+          onEndMeeting={onEndMeeting}
+          onOpenTranscriptFile={onOpenTranscriptFile}
+          onCreateInvite={onCreateInvite}
+          onRevokeInvite={onRevokeInvite}
+          copyInvite={copyInvite}
+        />
       </div>
 
-      <Sheet open={isTranscriptOpen} onOpenChange={setIsTranscriptOpen}>
-        <SheetContent className="w-full gap-0 p-0 sm:max-w-3xl">
-          <SheetHeader className="border-b border-black/10 pb-4">
-            <SheetTitle>Transcript</SheetTitle>
-            <SheetDescription>
-              {transcriptPanel
-                ? `${transcriptPanel.meetingTitle} • ${transcriptPanel.filename}`
-                : "Meeting transcript"}
-            </SheetDescription>
-            {transcriptPanel ? (
-              <div className="mt-2 flex flex-wrap gap-2 text-xs text-black/60">
-                <span className="rounded-full border border-black/10 px-2 py-1">
-                  Call: {transcriptPanel.callId}
-                </span>
-                <span className="rounded-full border border-black/10 px-2 py-1">
-                  Segments: {transcriptPanel.utterances.length}
-                </span>
-                <span className="rounded-full border border-black/10 px-2 py-1">
-                  Files: {transcriptPanel.availableCount}
-                </span>
-                <span className="rounded-full border border-black/10 px-2 py-1">
-                  {transcriptPanel.startTime || transcriptPanel.endTime
-                    ? `${transcriptPanel.startTime || "?"} -> ${transcriptPanel.endTime || "?"}`
-                    : "Timing unavailable"}
-                </span>
-              </div>
-            ) : null}
-          </SheetHeader>
-
-          <div className="flex-1 overflow-y-auto p-4">
-            {!transcriptPanel ? (
-              <p className="text-sm text-black/60">No transcript loaded.</p>
-            ) : (
-              <div className="space-y-2">
-                {transcriptPanel.utterances.map((utterance) => (
-                  <article
-                    key={utterance.id}
-                    className="rounded-xl border border-black/10 bg-white px-3 py-2"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-black">{utterance.speaker}</p>
-                      <p className="font-mono text-xs text-black/55">
-                        {formatTranscriptRange(utterance.startMs, utterance.endMs)}
-                      </p>
-                    </div>
-                    <p className="mt-1 text-sm leading-relaxed text-black/80">{utterance.text}</p>
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
+      <TranscriptSheet
+        open={isTranscriptOpen}
+        onOpenChange={setIsTranscriptOpen}
+        transcriptPanel={transcriptPanel}
+      />
     </main>
   );
 }

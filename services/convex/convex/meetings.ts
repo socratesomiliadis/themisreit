@@ -226,6 +226,31 @@ async function findUserProfile(ctx: QueryCtx | MutationCtx, clerkId: string) {
     .unique();
 }
 
+function getDisplayNameFromProfile(
+  profile: {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+  } | null,
+  clerkId: string,
+) {
+  const composedName = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ").trim();
+  if (composedName) {
+    return composedName;
+  }
+
+  if (profile?.username?.trim()) {
+    return profile.username.trim();
+  }
+
+  if (profile?.email?.trim()) {
+    return profile.email.split("@")[0] || clerkId.slice(0, 8);
+  }
+
+  return clerkId.slice(0, 8);
+}
+
 export const createInstantMeeting = mutation({
   args: {
     title: v.optional(v.string()),
@@ -788,8 +813,7 @@ export const resolveAuthenticatedJoiner = internalQuery({
     }
 
     const profile = await findUserProfile(ctx, args.clerkId);
-    const fallbackName = profile?.email ? profile.email.split("@")[0] : args.clerkId.slice(0, 8);
-    const composedName = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ").trim();
+    const displayName = getDisplayNameFromProfile(profile, args.clerkId);
 
     return {
       meetingId: meeting._id,
@@ -806,7 +830,7 @@ export const resolveAuthenticatedJoiner = internalQuery({
       },
       streamUser: {
         id: `clerk_${args.clerkId}`,
-        name: composedName || profile?.username || fallbackName,
+        name: displayName,
         image: profile?.imageUrl,
       },
     };
@@ -925,6 +949,72 @@ export const touchGuestSession = internalMutation({
       createdAt: timestamp,
       joinedAt: timestamp,
     });
+  },
+});
+
+export const getMeetingSpeakerDirectory = internalQuery({
+  args: {
+    meetingId: v.id("meetings"),
+  },
+  handler: async (ctx, args) => {
+    const meeting = await ctx.db.get(args.meetingId);
+    if (!meeting) {
+      return [];
+    }
+
+    const participants = await ctx.db
+      .query("meetingParticipants")
+      .withIndex("by_meeting", (q) => q.eq("meetingId", args.meetingId))
+      .collect();
+
+    const guestSessions = await ctx.db
+      .query("meetingGuestSessions")
+      .withIndex("by_meeting", (q) => q.eq("meetingId", args.meetingId))
+      .collect();
+
+    const byStreamUserId = new Map<string, string>();
+    const byClerkId = new Map<string, string>();
+
+    for (const session of guestSessions) {
+      if (session.streamUserId && session.guestName) {
+        byStreamUserId.set(session.streamUserId, session.guestName);
+      }
+    }
+
+    const participantClerkIds = new Set<string>();
+    for (const participant of participants) {
+      if (participant.kind === "clerk" && participant.clerkId) {
+        participantClerkIds.add(participant.clerkId);
+      }
+
+      if (participant.kind === "guest") {
+        if (participant.guestName && participant.guestSessionId) {
+          const session = guestSessions.find((row) => row._id === participant.guestSessionId);
+          if (session?.streamUserId) {
+            byStreamUserId.set(session.streamUserId, participant.guestName);
+          }
+        }
+      }
+    }
+
+    participantClerkIds.add(meeting.createdByClerkId);
+
+    await Promise.all(
+      [...participantClerkIds].map(async (clerkId) => {
+        const profile = await findUserProfile(ctx, clerkId);
+        byClerkId.set(clerkId, getDisplayNameFromProfile(profile, clerkId));
+      }),
+    );
+
+    for (const [clerkId, name] of byClerkId.entries()) {
+      byStreamUserId.set(`clerk_${clerkId}`, name);
+      byStreamUserId.set(clerkId, name);
+    }
+
+    return [...byStreamUserId.entries()].map(([streamUserId, displayName]) => ({
+      streamUserId,
+      displayName,
+    }));
   },
 });
 
