@@ -17,6 +17,14 @@ type StreamCallTranscription = {
   end_time: string;
 };
 
+type TranscriptUtterance = {
+  id: string;
+  speaker: string;
+  text: string;
+  startMs: number | null;
+  endMs: number | null;
+};
+
 function readRequiredEnv(name: "STREAM_API_KEY" | "STREAM_API_SECRET") {
   const raw = process.env[name];
   const normalized = raw?.trim().replace(/^['"]|['"]$/g, "");
@@ -83,11 +91,17 @@ function getStreamCallBaseUrl(callType: string, callId: string) {
   return `https://video.stream-io-api.com/video/call/${encodeURIComponent(callType)}/${encodeURIComponent(callId)}`;
 }
 
-function getStreamRequestHeaders(token: string) {
+function getStreamAuthHeaders(token: string) {
   return {
     Authorization: token,
     "stream-auth-type": "jwt",
     "X-Stream-Client": "pensatori-meet-server",
+  };
+}
+
+function getStreamJsonRequestHeaders(token: string) {
+  return {
+    ...getStreamAuthHeaders(token),
     "Content-Type": "application/json",
   };
 }
@@ -110,7 +124,7 @@ async function getOrCreateStreamCall({
 
   const response = await fetch(url, {
     method: "POST",
-    headers: getStreamRequestHeaders(token),
+    headers: getStreamJsonRequestHeaders(token),
     body: JSON.stringify(payload),
   });
 
@@ -140,7 +154,7 @@ async function patchStreamCall({
 
   const response = await fetch(url, {
     method: "PATCH",
-    headers: getStreamRequestHeaders(token),
+    headers: getStreamJsonRequestHeaders(token),
     body: JSON.stringify(payload),
   });
 
@@ -168,7 +182,7 @@ async function listStreamCallTranscriptions({
 
   const response = await fetch(url, {
     method: "GET",
-    headers: getStreamRequestHeaders(token),
+    headers: getStreamAuthHeaders(token),
   });
 
   const text = await response.text();
@@ -197,7 +211,7 @@ async function markStreamCallEnded({
 
   const response = await fetch(url, {
     method: "POST",
-    headers: getStreamRequestHeaders(token),
+    headers: getStreamJsonRequestHeaders(token),
     body: "{}",
   });
 
@@ -235,7 +249,7 @@ async function startStreamCallTranscription({
 
   const response = await fetch(url, {
     method: "POST",
-    headers: getStreamRequestHeaders(token),
+    headers: getStreamJsonRequestHeaders(token),
     body: JSON.stringify(body),
   });
 
@@ -317,6 +331,191 @@ async function ensureStreamTranscriptionConfigured({
       `Could not patch Stream transcription settings (${patchResult.status}). ${patchResult.body || "No response body."}`,
     );
   }
+}
+
+function parseTimeValue(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const numeric = Number(trimmed);
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+
+    const parsedDate = Date.parse(trimmed);
+    if (Number.isFinite(parsedDate)) {
+      return parsedDate;
+    }
+  }
+
+  return null;
+}
+
+function pickFirstNonEmptyString(values: unknown[]): string {
+  for (const value of values) {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (trimmed) {
+        return trimmed;
+      }
+    }
+  }
+
+  return "";
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function parseTranscriptWords(words: unknown): string {
+  if (!Array.isArray(words)) {
+    return "";
+  }
+
+  return words
+    .map((word) => {
+      if (!word || typeof word !== "object") {
+        return "";
+      }
+
+      const typed = word as Record<string, unknown>;
+      const text = pickFirstNonEmptyString([typed.word, typed.text, typed.token]);
+      return text;
+    })
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
+function parseTranscriptJsonl(raw: string): TranscriptUtterance[] {
+  const parsed: TranscriptUtterance[] = [];
+  const lines = raw.split(/\r?\n/);
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const trimmed = line?.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    let record: unknown;
+    try {
+      record = JSON.parse(trimmed);
+    } catch {
+      continue;
+    }
+
+    const typed = asRecord(record);
+    if (!typed) {
+      continue;
+    }
+
+    const candidates = [typed];
+    const nestedKeys = ["event", "payload", "data", "transcription", "utterance"];
+    for (const key of nestedKeys) {
+      const nested = asRecord(typed[key]);
+      if (nested) {
+        candidates.push(nested);
+      }
+    }
+
+    let matched: TranscriptUtterance | null = null;
+    for (const candidate of candidates) {
+      const text = pickFirstNonEmptyString([
+        candidate.text,
+        candidate.transcript,
+        candidate.content,
+        parseTranscriptWords(candidate.words),
+      ]);
+      if (!text) {
+        continue;
+      }
+
+      const speaker = pickFirstNonEmptyString([
+        candidate.speaker_id,
+        candidate.speaker,
+        candidate.user_id,
+        candidate.participant_id,
+        candidate.person_id,
+        candidate.name,
+      ]);
+
+      matched = {
+        id: pickFirstNonEmptyString([candidate.id, typed.id]) || `line_${index + 1}`,
+        speaker: speaker || "Unknown speaker",
+        text,
+        startMs: parseTimeValue(
+          candidate.start_time ??
+            candidate.start ??
+            candidate.start_ms ??
+            candidate.timestamp_ms ??
+            typed.start_time ??
+            typed.start ??
+            typed.start_ms,
+        ),
+        endMs: parseTimeValue(
+          candidate.end_time ?? candidate.end ?? candidate.end_ms ?? typed.end_time ?? typed.end,
+        ),
+      };
+      break;
+    }
+
+    if (matched) {
+      parsed.push(matched);
+    }
+  }
+
+  return parsed;
+}
+
+function sortTranscriptionsByNewest(items: StreamCallTranscription[]) {
+  items.sort((a, b) => {
+    const aTime = Date.parse(a.end_time || a.start_time || "");
+    const bTime = Date.parse(b.end_time || b.start_time || "");
+    return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+  });
+}
+
+async function fetchStreamTranscriptText({
+  transcriptUrl,
+  token,
+}: {
+  transcriptUrl: string;
+  token: string;
+}) {
+  const authorizedResponse = await fetch(transcriptUrl, {
+    method: "GET",
+    headers: getStreamAuthHeaders(token),
+  });
+
+  if (authorizedResponse.ok) {
+    return authorizedResponse.text();
+  }
+
+  const fallbackResponse = await fetch(transcriptUrl, { method: "GET" });
+  if (fallbackResponse.ok) {
+    return fallbackResponse.text();
+  }
+
+  const authorizedBody = await authorizedResponse.text();
+  const fallbackBody = await fallbackResponse.text();
+  throw new Error(
+    `Could not fetch transcript file (${authorizedResponse.status}/${fallbackResponse.status}). ${
+      authorizedBody || fallbackBody || "No response body."
+    }`,
+  );
 }
 
 function getMeetingChatChannelId(callId: string) {
@@ -600,23 +799,30 @@ export const openMeetingTranscriptFile = action({
       throw new Error("No transcript file is available yet. Try again in a minute.");
     }
 
-    transcriptions.sort((a, b) => {
-      const aTime = Date.parse(a.end_time || a.start_time || "");
-      const bTime = Date.parse(b.end_time || b.start_time || "");
-      return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
-    });
+    sortTranscriptionsByNewest(transcriptions);
 
     const latest = transcriptions[0];
     if (!latest) {
       throw new Error("No transcript file is available yet. Try again in a minute.");
     }
 
+    const transcriptRaw = await fetchStreamTranscriptText({
+      transcriptUrl: latest.url,
+      token,
+    });
+    const utterances = parseTranscriptJsonl(transcriptRaw);
+    if (utterances.length === 0) {
+      throw new Error("Transcript file was found but no readable transcript lines were detected.");
+    }
+
     return {
-      url: latest.url,
+      meetingId: meeting.meetingId,
+      callId: meeting.callId,
       filename: latest.filename,
       availableCount: transcriptions.length,
       startTime: latest.start_time,
       endTime: latest.end_time,
+      utterances,
     };
   },
 });

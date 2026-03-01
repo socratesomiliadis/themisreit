@@ -9,6 +9,13 @@ import type { Id } from "@convex/_generated/dataModel";
 import { api } from "@/lib/convex-api";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@workspace/ui/components/sheet";
 
 function formatDate(ts?: number) {
   if (!ts) {
@@ -20,6 +27,63 @@ function formatDate(ts?: number) {
     timeStyle: "short",
   }).format(new Date(ts));
 }
+
+function formatTranscriptTime(ms?: number | null) {
+  if (typeof ms !== "number" || !Number.isFinite(ms)) {
+    return "Unknown";
+  }
+
+  if (ms > 1_000_000_000_000) {
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).format(new Date(ms));
+  }
+
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatTranscriptRange(startMs?: number | null, endMs?: number | null) {
+  const start = formatTranscriptTime(startMs);
+  const end = formatTranscriptTime(endMs);
+  if (start === "Unknown" && end === "Unknown") {
+    return "Time unavailable";
+  }
+
+  if (end === "Unknown" || start === end) {
+    return start;
+  }
+
+  return `${start} - ${end}`;
+}
+
+type TranscriptUtterance = {
+  id: string;
+  speaker: string;
+  text: string;
+  startMs: number | null;
+  endMs: number | null;
+};
+
+type TranscriptPanelData = {
+  meetingTitle: string;
+  callId: string;
+  filename: string;
+  availableCount: number;
+  startTime: string;
+  endTime: string;
+  utterances: TranscriptUtterance[];
+};
 
 export function MeetingDashboard() {
   const meetingsQuery = useQuery(api.meetings.listForViewer);
@@ -43,6 +107,8 @@ export function MeetingDashboard() {
   const [inviteNameByMeeting, setInviteNameByMeeting] = useState<
     Record<string, string>
   >({});
+  const [transcriptPanel, setTranscriptPanel] = useState<TranscriptPanelData | null>(null);
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
   const [nowMs, setNowMs] = useState(0);
   const [isPending, startTransition] = useTransition();
 
@@ -177,14 +243,19 @@ export function MeetingDashboard() {
 
       try {
         const result = await openMeetingTranscriptFile({ meetingId });
-        const opened = window.open(result.url, "_blank", "noopener,noreferrer");
-        if (!opened) {
-          setStatus(`Transcript file is ready for "${title}": ${result.url}`);
-          return;
-        }
-        setStatus(`Opened transcript file for "${title}".`);
+        setTranscriptPanel({
+          meetingTitle: title,
+          callId: result.callId,
+          filename: result.filename,
+          availableCount: result.availableCount,
+          startTime: result.startTime,
+          endTime: result.endTime,
+          utterances: result.utterances,
+        });
+        setIsTranscriptOpen(true);
+        setStatus(`Loaded transcript for "${title}".`);
       } catch (error) {
-        setStatus(error instanceof Error ? error.message : "Could not open transcript file.");
+        setStatus(error instanceof Error ? error.message : "Could not load transcript.");
       }
     });
   };
@@ -327,7 +398,7 @@ export function MeetingDashboard() {
                           onClick={() => onOpenTranscriptFile(meetingId, meeting.title)}
                           disabled={isPending}
                         >
-                          Open transcript file
+                          View transcript
                         </Button>
                       ) : null}
                     </div>
@@ -413,6 +484,60 @@ export function MeetingDashboard() {
           </div>
         </section>
       </div>
+
+      <Sheet open={isTranscriptOpen} onOpenChange={setIsTranscriptOpen}>
+        <SheetContent className="w-full gap-0 p-0 sm:max-w-3xl">
+          <SheetHeader className="border-b border-black/10 pb-4">
+            <SheetTitle>Transcript</SheetTitle>
+            <SheetDescription>
+              {transcriptPanel
+                ? `${transcriptPanel.meetingTitle} • ${transcriptPanel.filename}`
+                : "Meeting transcript"}
+            </SheetDescription>
+            {transcriptPanel ? (
+              <div className="mt-2 flex flex-wrap gap-2 text-xs text-black/60">
+                <span className="rounded-full border border-black/10 px-2 py-1">
+                  Call: {transcriptPanel.callId}
+                </span>
+                <span className="rounded-full border border-black/10 px-2 py-1">
+                  Segments: {transcriptPanel.utterances.length}
+                </span>
+                <span className="rounded-full border border-black/10 px-2 py-1">
+                  Files: {transcriptPanel.availableCount}
+                </span>
+                <span className="rounded-full border border-black/10 px-2 py-1">
+                  {transcriptPanel.startTime || transcriptPanel.endTime
+                    ? `${transcriptPanel.startTime || "?"} -> ${transcriptPanel.endTime || "?"}`
+                    : "Timing unavailable"}
+                </span>
+              </div>
+            ) : null}
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            {!transcriptPanel ? (
+              <p className="text-sm text-black/60">No transcript loaded.</p>
+            ) : (
+              <div className="space-y-2">
+                {transcriptPanel.utterances.map((utterance) => (
+                  <article
+                    key={utterance.id}
+                    className="rounded-xl border border-black/10 bg-white px-3 py-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-black">{utterance.speaker}</p>
+                      <p className="font-mono text-xs text-black/55">
+                        {formatTranscriptRange(utterance.startMs, utterance.endMs)}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-sm leading-relaxed text-black/80">{utterance.text}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </main>
   );
 }
