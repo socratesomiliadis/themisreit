@@ -32,6 +32,7 @@ export default defineSchema({
     callType: v.string(),
     title: v.string(),
     description: v.optional(v.string()),
+    transcriptionEnabled: v.boolean(),
     kind: v.union(v.literal("instant"), v.literal("scheduled")),
     startsAt: v.optional(v.number()),
     endedAt: v.optional(v.number()),
@@ -43,6 +44,19 @@ export default defineSchema({
     .index("by_callId", ["callId"])
     .index("by_creator", ["createdByClerkId"])
     .index("by_startsAt", ["startsAt"]),
+
+  meetingTranscripts: defineTable({
+    meetingId: v.id("meetings"),
+    streamCallSessionId: v.string(),
+    filename: v.string(),
+    startTime: v.string(),
+    endTime: v.string(),
+    text: v.string(),
+    syncedAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_meeting", ["meetingId"])
+    .index("by_meeting_and_file", ["meetingId", "streamCallSessionId", "filename"]),
 
   meetingInvites: defineTable({
     meetingId: v.id("meetings"),

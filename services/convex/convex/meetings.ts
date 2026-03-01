@@ -230,6 +230,7 @@ export const createInstantMeeting = mutation({
   args: {
     title: v.optional(v.string()),
     description: v.optional(v.string()),
+    transcriptionEnabled: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const auth = await requireAuthDetails(ctx);
@@ -241,6 +242,7 @@ export const createInstantMeeting = mutation({
       callType: "default",
       title: meetingTitle(args.title, "instant"),
       description: args.description?.trim() || undefined,
+      transcriptionEnabled: Boolean(args.transcriptionEnabled),
       kind: "instant",
       startsAt: timestamp,
       createdByClerkId: auth.clerkId,
@@ -266,6 +268,7 @@ export const scheduleMeeting = mutation({
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     startsAt: v.number(),
+    transcriptionEnabled: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const auth = await requireAuthDetails(ctx);
@@ -282,6 +285,7 @@ export const scheduleMeeting = mutation({
       callType: "default",
       title: meetingTitle(args.title, "scheduled"),
       description: args.description?.trim() || undefined,
+      transcriptionEnabled: Boolean(args.transcriptionEnabled),
       kind: "scheduled",
       startsAt: args.startsAt,
       createdByClerkId: auth.clerkId,
@@ -390,6 +394,7 @@ export const getMeetingForEnding = internalQuery({
       callId: meeting.callId,
       callType: meeting.callType,
       endedAt: meeting.endedAt,
+      transcriptionEnabled: meeting.transcriptionEnabled,
     };
   },
 });
@@ -493,6 +498,7 @@ export const listForViewer = query({
           callId: meeting.callId,
           title: meeting.title,
           description: meeting.description,
+          transcriptionEnabled: meeting.transcriptionEnabled,
           kind: meeting.kind,
           startsAt: meeting.startsAt,
           endedAt: meeting.endedAt,
@@ -698,6 +704,7 @@ export const getMeetingForCall = query({
       _id: meeting._id,
       callId: meeting.callId,
       title: meeting.title,
+      transcriptionEnabled: meeting.transcriptionEnabled,
       kind: meeting.kind,
       startsAt: meeting.startsAt,
       endedAt: meeting.endedAt,
@@ -791,6 +798,7 @@ export const resolveAuthenticatedJoiner = internalQuery({
         title: meeting.title,
         kind: meeting.kind,
         startsAt: meeting.startsAt,
+        transcriptionEnabled: meeting.transcriptionEnabled,
       },
       call: {
         callId: meeting.callId,
@@ -835,6 +843,7 @@ export const resolveGuestJoiner = internalQuery({
         title: meeting.title,
         kind: meeting.kind,
         startsAt: meeting.startsAt,
+        transcriptionEnabled: meeting.transcriptionEnabled,
       },
       call: {
         callId: meeting.callId,
@@ -916,5 +925,72 @@ export const touchGuestSession = internalMutation({
       createdAt: timestamp,
       joinedAt: timestamp,
     });
+  },
+});
+
+export const upsertMeetingTranscript = internalMutation({
+  args: {
+    meetingId: v.id("meetings"),
+    streamCallSessionId: v.string(),
+    filename: v.string(),
+    startTime: v.string(),
+    endTime: v.string(),
+    text: v.string(),
+    syncedAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("meetingTranscripts")
+      .withIndex("by_meeting_and_file", (q) =>
+        q
+          .eq("meetingId", args.meetingId)
+          .eq("streamCallSessionId", args.streamCallSessionId)
+          .eq("filename", args.filename),
+      )
+      .unique();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        startTime: args.startTime,
+        endTime: args.endTime,
+        text: args.text,
+        syncedAt: args.syncedAt,
+        updatedAt: args.syncedAt,
+      });
+
+      return existing._id;
+    }
+
+    return await ctx.db.insert("meetingTranscripts", {
+      meetingId: args.meetingId,
+      streamCallSessionId: args.streamCallSessionId,
+      filename: args.filename,
+      startTime: args.startTime,
+      endTime: args.endTime,
+      text: args.text,
+      syncedAt: args.syncedAt,
+      updatedAt: args.syncedAt,
+    });
+  },
+});
+
+export const listMeetingTranscripts = query({
+  args: {
+    meetingId: v.id("meetings"),
+  },
+  handler: async (ctx, args) => {
+    const auth = await requireAuthDetails(ctx);
+    const canAccess = await canAccessMeeting(ctx, args.meetingId, auth.clerkId);
+    if (!canAccess) {
+      throw new Error("You do not have permission to view this meeting transcripts.");
+    }
+
+    const transcripts = await ctx.db
+      .query("meetingTranscripts")
+      .withIndex("by_meeting", (q) => q.eq("meetingId", args.meetingId))
+      .collect();
+
+    transcripts.sort((a, b) => b.syncedAt - a.syncedAt);
+    return transcripts;
   },
 });

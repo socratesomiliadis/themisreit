@@ -21,6 +21,42 @@ function formatDate(ts?: number) {
   }).format(new Date(ts));
 }
 
+function MeetingTranscriptsSection({ meetingId }: { meetingId: Id<"meetings"> }) {
+  const transcripts = useQuery(api.meetings.listMeetingTranscripts, { meetingId });
+
+  if (transcripts === undefined) {
+    return (
+      <div className="mt-3 rounded-xl border border-black/10 bg-white/70 p-3 text-sm text-black/60">
+        Loading transcripts...
+      </div>
+    );
+  }
+
+  if (transcripts.length === 0) {
+    return (
+      <div className="mt-3 rounded-xl border border-black/10 bg-white/70 p-3 text-sm text-black/60">
+        No transcript text synced yet.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      {transcripts.map((transcript) => (
+        <article key={transcript._id} className="rounded-xl border border-black/10 bg-white p-3">
+          <p className="text-xs uppercase tracking-[0.16em] text-black/50">
+            {formatDate(new Date(transcript.startTime).getTime())} -{" "}
+            {formatDate(new Date(transcript.endTime).getTime())}
+          </p>
+          <pre className="mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap text-xs text-black/80">
+            {transcript.text}
+          </pre>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 export function MeetingDashboard() {
   const meetingsQuery = useQuery(api.meetings.listForViewer);
   const meetings = useMemo(() => meetingsQuery ?? [], [meetingsQuery]);
@@ -29,10 +65,13 @@ export function MeetingDashboard() {
   const createInvite = useMutation(api.meetings.createInvite);
   const revokeInvite = useMutation(api.meetings.revokeInvite);
   const endMeeting = useAction(api.stream.endMeetingForAll);
+  const syncMeetingTranscripts = useAction(api.stream.syncMeetingTranscripts);
 
   const [instantTitle, setInstantTitle] = useState("");
+  const [instantTranscriptionEnabled, setInstantTranscriptionEnabled] = useState(false);
   const [scheduledTitle, setScheduledTitle] = useState("");
   const [scheduledFor, setScheduledFor] = useState("");
+  const [scheduledTranscriptionEnabled, setScheduledTranscriptionEnabled] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [inviteEmailByMeeting, setInviteEmailByMeeting] = useState<
     Record<string, string>
@@ -73,9 +112,11 @@ export function MeetingDashboard() {
       try {
         const result = await createInstantMeeting({
           title: instantTitle.trim() || undefined,
+          transcriptionEnabled: instantTranscriptionEnabled,
         });
 
         setInstantTitle("");
+        setInstantTranscriptionEnabled(false);
         setStatus(`Instant meeting ready: /room/${result.callId}`);
       } catch (error) {
         setStatus(error instanceof Error ? error.message : "Could not create meeting.");
@@ -99,10 +140,12 @@ export function MeetingDashboard() {
         const result = await scheduleMeeting({
           title: scheduledTitle.trim() || undefined,
           startsAt,
+          transcriptionEnabled: scheduledTranscriptionEnabled,
         });
 
         setScheduledTitle("");
         setScheduledFor("");
+        setScheduledTranscriptionEnabled(false);
         setStatus(`Scheduled meeting created: /room/${result.callId}`);
       } catch (error) {
         setStatus(error instanceof Error ? error.message : "Could not schedule meeting.");
@@ -157,9 +200,32 @@ export function MeetingDashboard() {
 
       try {
         const result = await endMeeting({ meetingId });
-        setStatus(`Meeting ended for all participants: /room/${result.callId}`);
+        const transcriptStatus = result.transcriptSync
+          ? ` Transcript sync: ${result.transcriptSync.syncedCount}/${result.transcriptSync.availableCount}.`
+          : "";
+        setStatus(`Meeting ended for all participants: /room/${result.callId}.${transcriptStatus}`);
       } catch (error) {
         setStatus(error instanceof Error ? error.message : "Could not end the meeting.");
+      }
+    });
+  };
+
+  const onSyncTranscripts = (meetingId: Id<"meetings">, title: string) => {
+    startTransition(async () => {
+      setStatus(null);
+
+      try {
+        const result = await syncMeetingTranscripts({ meetingId });
+        if (result.skipped) {
+          setStatus(`Transcription is disabled for "${title}".`);
+          return;
+        }
+
+        setStatus(
+          `Transcript sync finished for "${title}": ${result.syncedCount}/${result.availableCount}.`,
+        );
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : "Could not sync transcripts.");
       }
     });
   };
@@ -204,6 +270,14 @@ export function MeetingDashboard() {
                 Create
               </Button>
             </div>
+            <label className="mt-3 flex items-center gap-2 text-sm text-black/70">
+              <input
+                type="checkbox"
+                checked={instantTranscriptionEnabled}
+                onChange={(event) => setInstantTranscriptionEnabled(event.target.checked)}
+              />
+              Enable transcription
+            </label>
           </div>
 
           <div className="rounded-2xl border border-black/10 bg-white/80 p-5">
@@ -226,6 +300,14 @@ export function MeetingDashboard() {
                 Schedule
               </Button>
             </div>
+            <label className="mt-3 flex items-center gap-2 text-sm text-black/70">
+              <input
+                type="checkbox"
+                checked={scheduledTranscriptionEnabled}
+                onChange={(event) => setScheduledTranscriptionEnabled(event.target.checked)}
+              />
+              Enable transcription
+            </label>
           </div>
         </section>
 
@@ -258,6 +340,7 @@ export function MeetingDashboard() {
                       <p className="mt-1 text-sm text-black/70">
                         {meeting.kind === "scheduled" ? "Scheduled" : "Instant"} • {" "}
                         {formatDate(meeting.startsAt)}
+                        {meeting.transcriptionEnabled ? " • Transcription enabled" : ""}
                         {meeting.endedAt ? " • Ended" : ""}
                       </p>
                       {meeting.description ? (
@@ -277,6 +360,15 @@ export function MeetingDashboard() {
                           disabled={isPending}
                         >
                           End call for all
+                        </Button>
+                      ) : null}
+                      {meeting.transcriptionEnabled ? (
+                        <Button
+                          variant="outline"
+                          onClick={() => onSyncTranscripts(meetingId, meeting.title)}
+                          disabled={isPending}
+                        >
+                          Sync transcripts
                         </Button>
                       ) : null}
                     </div>
@@ -355,6 +447,15 @@ export function MeetingDashboard() {
                       </div>
                     ))}
                   </div>
+
+                  {meeting.transcriptionEnabled ? (
+                    <div className="mt-4 rounded-xl border border-black/10 bg-[#f8f7f2] p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
+                        Transcript
+                      </p>
+                      <MeetingTranscriptsSection meetingId={meetingId} />
+                    </div>
+                  ) : null}
                 </article>
               );
             })}
