@@ -28,17 +28,6 @@ type ConnectedState = {
   userImage?: string;
 };
 
-function isExpectedTranscriptionStartError(message: string) {
-  const normalized = message.toLowerCase();
-  return (
-    normalized.includes("already") ||
-    normalized.includes("in progress") ||
-    normalized.includes("not allowed") ||
-    normalized.includes("forbidden") ||
-    normalized.includes("permission")
-  );
-}
-
 async function disconnectRoom(state: ConnectedState) {
   try {
     await state.call.leave();
@@ -73,6 +62,7 @@ export function MeetingRoom({
   guestSessionToken?: string;
 }) {
   const issueStreamCredentials = useAction(api.stream.issueStreamCredentials);
+  const startMeetingTranscription = useAction(api.stream.startMeetingTranscription);
   const roomStatus = useQuery(api.meetings.getRoomStatus, {
     callId,
     guestSessionToken,
@@ -228,17 +218,20 @@ export function MeetingRoom({
     try {
       await connectedState.call.join({ create: true });
 
-      if (connectedState.meeting.transcriptionEnabled) {
+      if (
+        connectedState.meeting.transcriptionEnabled &&
+        connectedState.userId.startsWith("clerk_")
+      ) {
         try {
-          await connectedState.call.startTranscription();
-        } catch (startError) {
+          await startMeetingTranscription({ callId });
+        } catch (transcriptionError) {
           const message =
-            startError instanceof Error
-              ? startError.message
+            transcriptionError instanceof Error
+              ? transcriptionError.message
               : "Could not start transcription for this call.";
 
-          if (!isExpectedTranscriptionStartError(message)) {
-            setError(`Joined call, but transcription failed to start: ${message}`);
+          if (!message.toLowerCase().includes("only meeting hosts can start transcription")) {
+            console.error("Joined call, but transcription did not start:", message);
           }
         }
       }
@@ -248,7 +241,7 @@ export function MeetingRoom({
       setJoinState("preview");
       setError(joinError instanceof Error ? joinError.message : "Could not join this meeting.");
     }
-  }, [connectedState]);
+  }, [callId, connectedState, startMeetingTranscription]);
 
   const onCancelOrLeave = useCallback(async () => {
     if (connectedState) {

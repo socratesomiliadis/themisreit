@@ -21,6 +21,12 @@ function readRequiredEnv(name: "STREAM_API_KEY" | "STREAM_API_SECRET") {
   return normalized;
 }
 
+function readOptionalEnv(name: string) {
+  const raw = process.env[name];
+  const normalized = raw?.trim().replace(/^['"]|['"]$/g, "");
+  return normalized || undefined;
+}
+
 function assertLooksLikeStreamCredentials(apiKey: string, apiSecret: string) {
   const keyPreview =
     apiKey.length >= 8 ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : apiKey;
@@ -315,6 +321,44 @@ async function markStreamCallEnded({
     method: "POST",
     headers: getStreamRequestHeaders(token),
     body: "{}",
+  });
+
+  const text = await response.text();
+  return {
+    ok: response.ok,
+    status: response.status,
+    body: text,
+  };
+}
+
+async function startStreamCallTranscription({
+  apiKey,
+  token,
+  callType,
+  callId,
+  transcriptionExternalStorage,
+}: {
+  apiKey: string;
+  token: string;
+  callType: string;
+  callId: string;
+  transcriptionExternalStorage?: string;
+}) {
+  const url = new URL(`${getStreamCallBaseUrl(callType, callId)}/start_transcription`);
+  url.searchParams.set("api_key", apiKey);
+
+  const body: Record<string, unknown> = {
+    enable_closed_captions: true,
+    language: "auto",
+  };
+  if (transcriptionExternalStorage) {
+    body.transcription_external_storage = transcriptionExternalStorage;
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: getStreamRequestHeaders(token),
+    body: JSON.stringify(body),
   });
 
   const text = await response.text();
@@ -788,6 +832,80 @@ export const syncMeetingTranscripts = action({
       callId: meeting.callId,
       ...synced,
       skipped: false,
+    };
+  },
+});
+
+export const startMeetingTranscription = action({
+  args: {
+    callId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("You must be signed in to perform this action.");
+    }
+
+    const streamApiKey = readRequiredEnv("STREAM_API_KEY");
+    const streamApiSecret = readRequiredEnv("STREAM_API_SECRET");
+    assertLooksLikeStreamCredentials(streamApiKey, streamApiSecret);
+
+    const authJoin = await ctx.runQuery(internalApi.meetings.resolveAuthenticatedJoiner, {
+      callId: args.callId,
+      clerkId: identity.subject,
+    });
+
+    if (!authJoin) {
+      throw new Error("You are not allowed to join this meeting.");
+    }
+    if (!authJoin.canManageCallSettings) {
+      throw new Error("Only meeting hosts can start transcription.");
+    }
+    if (!authJoin.meeting.transcriptionEnabled) {
+      return { skipped: true, reason: "disabled" as const };
+    }
+
+    const hostToken = createStreamUserToken(`clerk_${identity.subject}`, streamApiSecret);
+    await ensureStreamTranscriptionConfigured({
+      apiKey: streamApiKey,
+      token: hostToken,
+      callType: authJoin.call.callType,
+      callId: authJoin.call.callId,
+      startsAt: authJoin.meeting.startsAt,
+    });
+
+    const transcriptionExternalStorage = readOptionalEnv("STREAM_TRANSCRIPTION_STORAGE_NAME");
+    const startResult = await startStreamCallTranscription({
+      apiKey: streamApiKey,
+      token: hostToken,
+      callType: authJoin.call.callType,
+      callId: authJoin.call.callId,
+      transcriptionExternalStorage,
+    });
+
+    if (!startResult.ok) {
+      const normalizedBody = startResult.body.toLowerCase();
+      const alreadyStarted =
+        startResult.status === 409 ||
+        normalizedBody.includes("already started") ||
+        normalizedBody.includes("already running");
+
+      if (!alreadyStarted) {
+        throw new Error(
+          `Stream failed to start transcription (${startResult.status}). ${startResult.body || "No response body."}`,
+        );
+      }
+
+      return {
+        skipped: true,
+        reason: "already_started" as const,
+      };
+    }
+
+    return {
+      skipped: false,
+      reason: "started" as const,
+      storage: transcriptionExternalStorage ?? "default",
     };
   },
 });
