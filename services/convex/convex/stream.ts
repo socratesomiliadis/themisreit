@@ -458,15 +458,23 @@ function parseTranscriptJsonl(raw: string): TranscriptUtterance[] {
         text,
         startMs: parseTimeValue(
           candidate.start_time ??
+            candidate.stop_time ??
             candidate.start ??
             candidate.start_ms ??
             candidate.timestamp_ms ??
             typed.start_time ??
+            typed.stop_time ??
             typed.start ??
             typed.start_ms,
         ),
         endMs: parseTimeValue(
-          candidate.end_time ?? candidate.end ?? candidate.end_ms ?? typed.end_time ?? typed.end,
+          candidate.stop_time ??
+            candidate.end_time ??
+            candidate.end ??
+            candidate.end_ms ??
+            typed.stop_time ??
+            typed.end_time ??
+            typed.end,
         ),
       };
       break;
@@ -495,25 +503,26 @@ async function fetchStreamTranscriptText({
   transcriptUrl: string;
   token: string;
 }) {
+  // Stream docs: transcription list URLs are signed; fetch them directly.
+  const signedUrlResponse = await fetch(transcriptUrl, { method: "GET" });
+  if (signedUrlResponse.ok) {
+    return signedUrlResponse.text();
+  }
+
+  // Fallback for non-signed/internal storage paths.
   const authorizedResponse = await fetch(transcriptUrl, {
     method: "GET",
     headers: getStreamAuthHeaders(token),
   });
-
   if (authorizedResponse.ok) {
     return authorizedResponse.text();
   }
 
-  const fallbackResponse = await fetch(transcriptUrl, { method: "GET" });
-  if (fallbackResponse.ok) {
-    return fallbackResponse.text();
-  }
-
+  const signedBody = await signedUrlResponse.text();
   const authorizedBody = await authorizedResponse.text();
-  const fallbackBody = await fallbackResponse.text();
   throw new Error(
-    `Could not fetch transcript file (${authorizedResponse.status}/${fallbackResponse.status}). ${
-      authorizedBody || fallbackBody || "No response body."
+    `Could not fetch transcript file (${signedUrlResponse.status}/${authorizedResponse.status}). ${
+      signedBody || authorizedBody || "No response body."
     }`,
   );
 }
