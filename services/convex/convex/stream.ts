@@ -46,19 +46,21 @@ function assertLooksLikeStreamCredentials(apiKey: string, apiSecret: string) {
   const keyPreview =
     apiKey.length >= 8 ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` : apiKey;
   const secretPreview =
-    apiSecret.length >= 8 ? `${apiSecret.slice(0, 4)}...${apiSecret.slice(-4)}` : apiSecret;
+    apiSecret.length >= 8
+      ? `${apiSecret.slice(0, 4)}...${apiSecret.slice(-4)}`
+      : apiSecret;
 
   // Stream API keys are short public identifiers.
   if (apiKey.length > 32) {
     throw new Error(
-      `STREAM_API_KEY looks invalid (${keyPreview}). It may be the secret by mistake.`,
+      `STREAM_API_KEY looks invalid (${keyPreview}). It may be the secret by mistake.`
     );
   }
 
   // Stream secrets are longer server-only credentials.
   if (apiSecret.length < 16) {
     throw new Error(
-      `STREAM_API_SECRET looks invalid (${secretPreview}). It may be the API key by mistake.`,
+      `STREAM_API_SECRET looks invalid (${secretPreview}). It may be the API key by mistake.`
     );
   }
 }
@@ -82,7 +84,9 @@ function createStreamUserToken(userId: string, secret: string) {
   };
 
   const unsigned = `${base64Url(JSON.stringify(header))}.${base64Url(JSON.stringify(payload))}`;
-  const signature = createHmac("sha256", secret).update(unsigned).digest("base64url");
+  const signature = createHmac("sha256", secret)
+    .update(unsigned)
+    .digest("base64url");
 
   return `${unsigned}.${signature}`;
 }
@@ -177,7 +181,9 @@ async function listStreamCallTranscriptions({
   callType: string;
   callId: string;
 }): Promise<StreamCallTranscription[]> {
-  const url = new URL(`${getStreamCallBaseUrl(callType, callId)}/transcriptions`);
+  const url = new URL(
+    `${getStreamCallBaseUrl(callType, callId)}/transcriptions`
+  );
   url.searchParams.set("api_key", apiKey);
 
   const response = await fetch(url, {
@@ -187,11 +193,15 @@ async function listStreamCallTranscriptions({
 
   const text = await response.text();
   if (!response.ok) {
-    throw new Error(`Stream transcription list failed (${response.status}). ${text || "No body."}`);
+    throw new Error(
+      `Stream transcription list failed (${response.status}). ${text || "No body."}`
+    );
   }
 
   const parsed = text ? JSON.parse(text) : {};
-  const transcriptions = Array.isArray(parsed?.transcriptions) ? parsed.transcriptions : [];
+  const transcriptions = Array.isArray(parsed?.transcriptions)
+    ? parsed.transcriptions
+    : [];
   return transcriptions as StreamCallTranscription[];
 }
 
@@ -236,12 +246,14 @@ async function startStreamCallTranscription({
   callId: string;
   transcriptionExternalStorage?: string;
 }) {
-  const url = new URL(`${getStreamCallBaseUrl(callType, callId)}/start_transcription`);
+  const url = new URL(
+    `${getStreamCallBaseUrl(callType, callId)}/start_transcription`
+  );
   url.searchParams.set("api_key", apiKey);
 
   const body: Record<string, unknown> = {
     enable_closed_captions: true,
-    language: "auto",
+    language: "en",
   };
   if (transcriptionExternalStorage) {
     body.transcription_external_storage = transcriptionExternalStorage;
@@ -280,14 +292,16 @@ async function ensureStreamTranscriptionConfigured({
         transcription: {
           mode: "auto-on",
           closed_caption_mode: "available",
-          language: "auto",
+          language: "en",
         },
       },
     },
   };
 
   if (typeof startsAt === "number") {
-    (getOrCreatePayload.data as { starts_at?: string }).starts_at = new Date(startsAt).toISOString();
+    (getOrCreatePayload.data as { starts_at?: string }).starts_at = new Date(
+      startsAt
+    ).toISOString();
   }
 
   const getOrCreateResult = await getOrCreateStreamCall({
@@ -300,7 +314,7 @@ async function ensureStreamTranscriptionConfigured({
 
   if (!getOrCreateResult.ok) {
     throw new Error(
-      `Could not configure Stream transcription (${getOrCreateResult.status}). ${getOrCreateResult.body || "No response body."}`,
+      `Could not configure Stream transcription (${getOrCreateResult.status}). ${getOrCreateResult.body || "No response body."}`
     );
   }
 
@@ -309,7 +323,7 @@ async function ensureStreamTranscriptionConfigured({
       transcription: {
         mode: "auto-on",
         closed_caption_mode: "available",
-        language: "auto",
+        language: "en",
       },
     },
   };
@@ -328,7 +342,7 @@ async function ensureStreamTranscriptionConfigured({
 
   if (!patchResult.ok) {
     throw new Error(
-      `Could not patch Stream transcription settings (${patchResult.status}). ${patchResult.body || "No response body."}`,
+      `Could not patch Stream transcription settings (${patchResult.status}). ${patchResult.body || "No response body."}`
     );
   }
 }
@@ -391,7 +405,11 @@ function parseTranscriptWords(words: unknown): string {
       }
 
       const typed = word as Record<string, unknown>;
-      const text = pickFirstNonEmptyString([typed.word, typed.text, typed.token]);
+      const text = pickFirstNonEmptyString([
+        typed.word,
+        typed.text,
+        typed.token,
+      ]);
       return text;
     })
     .filter(Boolean)
@@ -423,7 +441,13 @@ function parseTranscriptJsonl(raw: string): TranscriptUtterance[] {
     }
 
     const candidates = [typed];
-    const nestedKeys = ["event", "payload", "data", "transcription", "utterance"];
+    const nestedKeys = [
+      "event",
+      "payload",
+      "data",
+      "transcription",
+      "utterance",
+    ];
     for (const key of nestedKeys) {
       const nested = asRecord(typed[key]);
       if (nested) {
@@ -453,7 +477,9 @@ function parseTranscriptJsonl(raw: string): TranscriptUtterance[] {
       ]);
 
       matched = {
-        id: pickFirstNonEmptyString([candidate.id, typed.id]) || `line_${index + 1}`,
+        id:
+          pickFirstNonEmptyString([candidate.id, typed.id]) ||
+          `line_${index + 1}`,
         speaker: speaker || "Unknown speaker",
         text,
         startMs: parseTimeValue(
@@ -465,7 +491,7 @@ function parseTranscriptJsonl(raw: string): TranscriptUtterance[] {
             typed.start_time ??
             typed.stop_time ??
             typed.start ??
-            typed.start_ms,
+            typed.start_ms
         ),
         endMs: parseTimeValue(
           candidate.stop_time ??
@@ -474,7 +500,7 @@ function parseTranscriptJsonl(raw: string): TranscriptUtterance[] {
             candidate.end_ms ??
             typed.stop_time ??
             typed.end_time ??
-            typed.end,
+            typed.end
         ),
       };
       break;
@@ -492,7 +518,10 @@ function sortTranscriptionsByNewest(items: StreamCallTranscription[]) {
   items.sort((a, b) => {
     const aTime = Date.parse(a.end_time || a.start_time || "");
     const bTime = Date.parse(b.end_time || b.start_time || "");
-    return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+    return (
+      (Number.isFinite(bTime) ? bTime : 0) -
+      (Number.isFinite(aTime) ? aTime : 0)
+    );
   });
 }
 
@@ -523,7 +552,7 @@ async function fetchStreamTranscriptText({
   throw new Error(
     `Could not fetch transcript file (${signedUrlResponse.status}/${authorizedResponse.status}). ${
       signedBody || authorizedBody || "No response body."
-    }`,
+    }`
   );
 }
 
@@ -624,22 +653,34 @@ export const issueStreamCredentials = action({
     const identity = await ctx.auth.getUserIdentity();
 
     if (identity) {
-      const authJoin = await ctx.runQuery(internalApi.meetings.resolveAuthenticatedJoiner, {
-        callId: args.callId,
-        clerkId: identity.subject,
-      });
+      const authJoin = await ctx.runQuery(
+        internalApi.meetings.resolveAuthenticatedJoiner,
+        {
+          callId: args.callId,
+          clerkId: identity.subject,
+        }
+      );
 
       if (!authJoin) {
         throw new Error("You are not allowed to join this meeting.");
       }
 
-      await ctx.runMutation(internalApi.meetings.touchAuthenticatedParticipant, {
-        meetingId: authJoin.meetingId,
-        clerkId: identity.subject,
-      });
+      await ctx.runMutation(
+        internalApi.meetings.touchAuthenticatedParticipant,
+        {
+          meetingId: authJoin.meetingId,
+          clerkId: identity.subject,
+        }
+      );
 
-      const userToken = createStreamUserToken(authJoin.streamUser.id, streamApiSecret);
-      if (authJoin.meeting.transcriptionEnabled && authJoin.canManageCallSettings) {
+      const userToken = createStreamUserToken(
+        authJoin.streamUser.id,
+        streamApiSecret
+      );
+      if (
+        authJoin.meeting.transcriptionEnabled &&
+        authJoin.canManageCallSettings
+      ) {
         await ensureStreamTranscriptionConfigured({
           apiKey: streamApiKey,
           token: userToken,
@@ -671,10 +712,13 @@ export const issueStreamCredentials = action({
       throw new Error("Guest join requires a guest session token.");
     }
 
-    const guestJoin = await ctx.runQuery(internalApi.meetings.resolveGuestJoiner, {
-      callId: args.callId,
-      guestSessionToken: args.guestSessionToken,
-    });
+    const guestJoin = await ctx.runQuery(
+      internalApi.meetings.resolveGuestJoiner,
+      {
+        callId: args.callId,
+        guestSessionToken: args.guestSessionToken,
+      }
+    );
 
     if (!guestJoin) {
       throw new Error("Guest session is invalid for this meeting.");
@@ -685,7 +729,10 @@ export const issueStreamCredentials = action({
       sessionId: guestJoin.sessionId,
     });
 
-    const userToken = createStreamUserToken(guestJoin.streamUser.id, streamApiSecret);
+    const userToken = createStreamUserToken(
+      guestJoin.streamUser.id,
+      streamApiSecret
+    );
     const chat = await ensureChatChannelMembership({
       apiKey: streamApiKey,
       apiSecret: streamApiSecret,
@@ -719,10 +766,13 @@ export const endMeetingForAll = action({
     const streamApiSecret = readRequiredEnv("STREAM_API_SECRET");
     assertLooksLikeStreamCredentials(streamApiKey, streamApiSecret);
 
-    const meeting = await ctx.runQuery(internalApi.meetings.getMeetingForEnding, {
-      meetingId: args.meetingId,
-      clerkId: identity.subject,
-    });
+    const meeting = await ctx.runQuery(
+      internalApi.meetings.getMeetingForEnding,
+      {
+        meetingId: args.meetingId,
+        clerkId: identity.subject,
+      }
+    );
 
     if (meeting.endedAt) {
       return {
@@ -733,7 +783,10 @@ export const endMeetingForAll = action({
       };
     }
 
-    const hostToken = createStreamUserToken(`clerk_${identity.subject}`, streamApiSecret);
+    const hostToken = createStreamUserToken(
+      `clerk_${identity.subject}`,
+      streamApiSecret
+    );
 
     const streamResult = await markStreamCallEnded({
       apiKey: streamApiKey,
@@ -751,20 +804,27 @@ export const endMeetingForAll = action({
 
     if (!streamResult.ok && !streamNotFound && !streamAlreadyEnded) {
       throw new Error(
-        `Stream failed to end this call (${streamResult.status}). ${streamResult.body || "No response body."}`,
+        `Stream failed to end this call (${streamResult.status}). ${streamResult.body || "No response body."}`
       );
     }
 
     const endedAt = Date.now();
-    const finalized = await ctx.runMutation(internalApi.meetings.finalizeEndedMeeting, {
-      meetingId: meeting.meetingId,
-      clerkId: identity.subject,
-      endedAt,
-    });
+    const finalized = await ctx.runMutation(
+      internalApi.meetings.finalizeEndedMeeting,
+      {
+        meetingId: meeting.meetingId,
+        clerkId: identity.subject,
+        endedAt,
+      }
+    );
 
     return {
       ...finalized,
-      streamStatus: streamResult.ok ? "ended" : streamNotFound ? "not_found" : "already_ended",
+      streamStatus: streamResult.ok
+        ? "ended"
+        : streamNotFound
+          ? "not_found"
+          : "already_ended",
     };
   },
 });
@@ -783,20 +843,28 @@ export const openMeetingTranscriptFile = action({
     const streamApiSecret = readRequiredEnv("STREAM_API_SECRET");
     assertLooksLikeStreamCredentials(streamApiKey, streamApiSecret);
 
-    const meeting = await ctx.runQuery(internalApi.meetings.getMeetingForTranscriptAccess, {
-      meetingId: args.meetingId,
-      clerkId: identity.subject,
-    });
+    const meeting = await ctx.runQuery(
+      internalApi.meetings.getMeetingForTranscriptAccess,
+      {
+        meetingId: args.meetingId,
+        clerkId: identity.subject,
+      }
+    );
 
     if (!meeting) {
-      throw new Error("You do not have permission to access this meeting transcript.");
+      throw new Error(
+        "You do not have permission to access this meeting transcript."
+      );
     }
 
     if (!meeting.transcriptionEnabled) {
       throw new Error("Transcription is disabled for this meeting.");
     }
 
-    const token = createStreamUserToken(`clerk_${identity.subject}`, streamApiSecret);
+    const token = createStreamUserToken(
+      `clerk_${identity.subject}`,
+      streamApiSecret
+    );
     const transcriptions = await listStreamCallTranscriptions({
       apiKey: streamApiKey,
       token,
@@ -805,14 +873,18 @@ export const openMeetingTranscriptFile = action({
     });
 
     if (transcriptions.length === 0) {
-      throw new Error("No transcript file is available yet. Try again in a minute.");
+      throw new Error(
+        "No transcript file is available yet. Try again in a minute."
+      );
     }
 
     sortTranscriptionsByNewest(transcriptions);
 
     const latest = transcriptions[0];
     if (!latest) {
-      throw new Error("No transcript file is available yet. Try again in a minute.");
+      throw new Error(
+        "No transcript file is available yet. Try again in a minute."
+      );
     }
 
     const transcriptRaw = await fetchStreamTranscriptText({
@@ -821,7 +893,9 @@ export const openMeetingTranscriptFile = action({
     });
     const utterances = parseTranscriptJsonl(transcriptRaw);
     if (utterances.length === 0) {
-      throw new Error("Transcript file was found but no readable transcript lines were detected.");
+      throw new Error(
+        "Transcript file was found but no readable transcript lines were detected."
+      );
     }
 
     return {
@@ -850,10 +924,13 @@ export const startMeetingTranscription = action({
     const streamApiSecret = readRequiredEnv("STREAM_API_SECRET");
     assertLooksLikeStreamCredentials(streamApiKey, streamApiSecret);
 
-    const authJoin = await ctx.runQuery(internalApi.meetings.resolveAuthenticatedJoiner, {
-      callId: args.callId,
-      clerkId: identity.subject,
-    });
+    const authJoin = await ctx.runQuery(
+      internalApi.meetings.resolveAuthenticatedJoiner,
+      {
+        callId: args.callId,
+        clerkId: identity.subject,
+      }
+    );
 
     if (!authJoin) {
       throw new Error("You are not allowed to join this meeting.");
@@ -867,7 +944,10 @@ export const startMeetingTranscription = action({
       return { skipped: true, reason: "disabled" as const };
     }
 
-    const hostToken = createStreamUserToken(`clerk_${identity.subject}`, streamApiSecret);
+    const hostToken = createStreamUserToken(
+      `clerk_${identity.subject}`,
+      streamApiSecret
+    );
     await ensureStreamTranscriptionConfigured({
       apiKey: streamApiKey,
       token: hostToken,
@@ -876,7 +956,9 @@ export const startMeetingTranscription = action({
       startsAt: authJoin.meeting.startsAt,
     });
 
-    const transcriptionExternalStorage = readOptionalEnv("STREAM_TRANSCRIPTION_STORAGE_NAME");
+    const transcriptionExternalStorage = readOptionalEnv(
+      "STREAM_TRANSCRIPTION_STORAGE_NAME"
+    );
     const startResult = await startStreamCallTranscription({
       apiKey: streamApiKey,
       token: hostToken,
@@ -894,7 +976,7 @@ export const startMeetingTranscription = action({
 
       if (!alreadyStarted) {
         throw new Error(
-          `Stream failed to start transcription (${startResult.status}). ${startResult.body || "No response body."}`,
+          `Stream failed to start transcription (${startResult.status}). ${startResult.body || "No response body."}`
         );
       }
 
