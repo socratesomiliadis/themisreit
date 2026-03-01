@@ -39,3 +39,13 @@ Routes:
 - `/` dashboard (auth required)
 - `/join/:inviteCode` guest/auth invite entry
 - `/room/:callId` video room
+
+## Troubleshooting
+
+- `AccessKeyError` / `initial WS connection could not be established`:
+  - Ensure `STREAM_API_KEY` and `STREAM_API_SECRET` are set in Convex env.
+  - Ensure both values belong to the same Stream app.
+  - Ensure values are pasted without quotes or trailing spaces.
+- Clerk redirect deprecation warning:
+  - Remove old `*_AFTER_SIGN_IN_URL` / `*_AFTER_SIGN_UP_URL` env vars.
+  - Use fallback/force redirect config vars supported by current Clerk docs.

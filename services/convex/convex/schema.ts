@@ -34,6 +34,8 @@ export default defineSchema({
     description: v.optional(v.string()),
     kind: v.union(v.literal("instant"), v.literal("scheduled")),
     startsAt: v.optional(v.number()),
+    endedAt: v.optional(v.number()),
+    endedByClerkId: v.optional(v.string()),
     createdByClerkId: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),

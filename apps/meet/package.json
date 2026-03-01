@@ -11,12 +11,14 @@
   "dependencies": {
     "@clerk/nextjs": "^6.38.3",
     "@pensatori/convex": "workspace:*",
+    "@stream-io/audio-filters-web": "^0.7.2",
     "@stream-io/video-react-sdk": "^1.19.1",
     "@workspace/ui": "workspace:*",
     "convex": "^1.32.0",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "stream-chat": "^9.35.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

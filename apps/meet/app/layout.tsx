@@ -41,7 +41,7 @@ export default function RootLayout({
       <body
         className={`font-helvetica-now ${ppEditorial.variable} ${helveticaNow.variable} ${ballet.variable} ${someTypeMono.variable} antialiased`}
       >
-        <ClerkProvider>
+        <ClerkProvider signInFallbackRedirectUrl="/" signUpFallbackRedirectUrl="/">
           <ConvexClientProvider>
             <TooltipProvider>{children}</TooltipProvider>
           </ConvexClientProvider>

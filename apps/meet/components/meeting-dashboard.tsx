@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { UserButton } from "@clerk/nextjs";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import type { Id } from "@convex/_generated/dataModel";
 
 import { api } from "@/lib/convex-api";
@@ -22,11 +22,13 @@ function formatDate(ts?: number) {
 }
 
 export function MeetingDashboard() {
-  const meetings = useQuery(api.meetings.listForViewer) ?? [];
+  const meetingsQuery = useQuery(api.meetings.listForViewer);
+  const meetings = useMemo(() => meetingsQuery ?? [], [meetingsQuery]);
   const createInstantMeeting = useMutation(api.meetings.createInstantMeeting);
   const scheduleMeeting = useMutation(api.meetings.scheduleMeeting);
   const createInvite = useMutation(api.meetings.createInvite);
   const revokeInvite = useMutation(api.meetings.revokeInvite);
+  const endMeeting = useAction(api.stream.endMeetingForAll);
 
   const [instantTitle, setInstantTitle] = useState("");
   const [scheduledTitle, setScheduledTitle] = useState("");
@@ -38,11 +40,21 @@ export function MeetingDashboard() {
   const [inviteNameByMeeting, setInviteNameByMeeting] = useState<
     Record<string, string>
   >({});
+  const [nowMs, setNowMs] = useState(0);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    const refreshNow = () => setNowMs(Date.now());
+    refreshNow();
+    const timer = window.setInterval(refreshNow, 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   const nextMeeting = useMemo(() => {
-    return meetings.find((meeting) => (meeting.startsAt ?? Date.now()) >= Date.now());
-  }, [meetings]);
+    return meetings.find(
+      (meeting) => !meeting.endedAt && (meeting.startsAt ?? nowMs) >= nowMs,
+    );
+  }, [meetings, nowMs]);
 
   const copyInvite = async (inviteCode: string) => {
     const invitePath = `/join/${inviteCode}`;
@@ -128,6 +140,26 @@ export function MeetingDashboard() {
         setStatus("Invite revoked.");
       } catch (error) {
         setStatus(error instanceof Error ? error.message : "Could not revoke invite.");
+      }
+    });
+  };
+
+  const onEndMeeting = (meetingId: Id<"meetings">, title: string) => {
+    const confirmed = window.confirm(
+      `End "${title}" for everyone? This cannot be undone and nobody will be able to rejoin.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    startTransition(async () => {
+      setStatus(null);
+
+      try {
+        const result = await endMeeting({ meetingId });
+        setStatus(`Meeting ended for all participants: /room/${result.callId}`);
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : "Could not end the meeting.");
       }
     });
   };
@@ -226,6 +258,7 @@ export function MeetingDashboard() {
                       <p className="mt-1 text-sm text-black/70">
                         {meeting.kind === "scheduled" ? "Scheduled" : "Instant"} • {" "}
                         {formatDate(meeting.startsAt)}
+                        {meeting.endedAt ? " • Ended" : ""}
                       </p>
                       {meeting.description ? (
                         <p className="mt-1 text-sm text-black/60">{meeting.description}</p>
@@ -233,42 +266,59 @@ export function MeetingDashboard() {
                     </div>
                     <div className="flex gap-2">
                       <Button asChild>
-                        <Link href={`/room/${meeting.callId}`}>Join room</Link>
+                        <Link href={`/room/${meeting.callId}`}>
+                          {meeting.endedAt ? "View room" : "Join room"}
+                        </Link>
                       </Button>
+                      {!meeting.endedAt ? (
+                        <Button
+                          variant="destructive"
+                          onClick={() => onEndMeeting(meetingId, meeting.title)}
+                          disabled={isPending}
+                        >
+                          End call for all
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
 
-                  <div className="mt-4 rounded-xl border border-black/10 bg-[#f8f7f2] p-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
-                      Invite people
-                    </p>
-                    <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
-                      <Input
-                        type="email"
-                        placeholder="Optional email restriction"
-                        value={inviteEmailByMeeting[meetingKey] ?? ""}
-                        onChange={(event) =>
-                          setInviteEmailByMeeting((current) => ({
-                            ...current,
-                            [meetingKey]: event.target.value,
-                          }))
-                        }
-                      />
-                      <Input
-                        placeholder="Invite display name"
-                        value={inviteNameByMeeting[meetingKey] ?? ""}
-                        onChange={(event) =>
-                          setInviteNameByMeeting((current) => ({
-                            ...current,
-                            [meetingKey]: event.target.value,
-                          }))
-                        }
-                      />
-                      <Button onClick={() => onCreateInvite(meetingId)} disabled={isPending}>
-                        New invite link
-                      </Button>
+                  {!meeting.endedAt ? (
+                    <div className="mt-4 rounded-xl border border-black/10 bg-[#f8f7f2] p-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/60">
+                        Invite people
+                      </p>
+                      <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+                        <Input
+                          type="email"
+                          placeholder="Optional email restriction"
+                          value={inviteEmailByMeeting[meetingKey] ?? ""}
+                          onChange={(event) =>
+                            setInviteEmailByMeeting((current) => ({
+                              ...current,
+                              [meetingKey]: event.target.value,
+                            }))
+                          }
+                        />
+                        <Input
+                          placeholder="Invite display name"
+                          value={inviteNameByMeeting[meetingKey] ?? ""}
+                          onChange={(event) =>
+                            setInviteNameByMeeting((current) => ({
+                              ...current,
+                              [meetingKey]: event.target.value,
+                            }))
+                          }
+                        />
+                        <Button onClick={() => onCreateInvite(meetingId)} disabled={isPending}>
+                          New invite link
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="mt-4 rounded-xl border border-black/10 bg-[#f8f7f2] p-3 text-sm text-black/60">
+                      This meeting has ended and invite links are disabled.
+                    </div>
+                  )}
 
                   <div className="mt-4 space-y-2">
                     {meeting.invites.length === 0 ? (

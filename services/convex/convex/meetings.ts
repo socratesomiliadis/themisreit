@@ -50,6 +50,16 @@ function meetingTitle(title: string | undefined, kind: "instant" | "scheduled") 
   return kind === "instant" ? "Instant meeting" : "Scheduled meeting";
 }
 
+function isMeetingEnded(meeting: Doc<"meetings">) {
+  return typeof meeting.endedAt === "number";
+}
+
+function assertMeetingNotEnded(meeting: Doc<"meetings">) {
+  if (isMeetingEnded(meeting)) {
+    throw new Error("This meeting has already ended.");
+  }
+}
+
 function isInviteActive(invite: Doc<"meetingInvites">, timestamp: number) {
   if (invite.revokedAt) {
     return false;
@@ -162,7 +172,7 @@ async function getOrCreateMeetingParticipant(
 }
 
 async function assertMeetingHost(
-  ctx: MutationCtx,
+  ctx: QueryCtx | MutationCtx,
   meetingId: Id<"meetings">,
   clerkId: string,
 ): Promise<Doc<"meetings">> {
@@ -303,7 +313,8 @@ export const createInvite = mutation({
     const auth = await requireAuthDetails(ctx);
     const timestamp = now();
 
-    await assertMeetingHost(ctx, args.meetingId, auth.clerkId);
+    const meeting = await assertMeetingHost(ctx, args.meetingId, auth.clerkId);
+    assertMeetingNotEnded(meeting);
 
     if (typeof args.maxUses === "number" && args.maxUses <= 0) {
       throw new Error("maxUses must be greater than zero.");
@@ -332,6 +343,85 @@ export const createInvite = mutation({
     }
 
     return invite;
+  },
+});
+
+export const endMeeting = mutation({
+  args: {
+    meetingId: v.id("meetings"),
+  },
+  handler: async (ctx, args) => {
+    const auth = await requireAuthDetails(ctx);
+    const timestamp = now();
+    const meeting = await assertMeetingHost(ctx, args.meetingId, auth.clerkId);
+
+    if (isMeetingEnded(meeting)) {
+      return {
+        meetingId: meeting._id,
+        callId: meeting.callId,
+        endedAt: meeting.endedAt,
+      };
+    }
+
+    await ctx.db.patch(meeting._id, {
+      endedAt: timestamp,
+      endedByClerkId: auth.clerkId,
+      updatedAt: timestamp,
+    });
+
+    return {
+      meetingId: meeting._id,
+      callId: meeting.callId,
+      endedAt: timestamp,
+    };
+  },
+});
+
+export const getMeetingForEnding = internalQuery({
+  args: {
+    meetingId: v.id("meetings"),
+    clerkId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const meeting = await assertMeetingHost(ctx, args.meetingId, args.clerkId);
+
+    return {
+      meetingId: meeting._id,
+      callId: meeting.callId,
+      callType: meeting.callType,
+      endedAt: meeting.endedAt,
+    };
+  },
+});
+
+export const finalizeEndedMeeting = internalMutation({
+  args: {
+    meetingId: v.id("meetings"),
+    clerkId: v.string(),
+    endedAt: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const meeting = await assertMeetingHost(ctx, args.meetingId, args.clerkId);
+
+    if (isMeetingEnded(meeting)) {
+      return {
+        meetingId: meeting._id,
+        callId: meeting.callId,
+        endedAt: meeting.endedAt,
+      };
+    }
+
+    await ctx.db.patch(meeting._id, {
+      endedAt: args.endedAt,
+      endedByClerkId: args.clerkId,
+      updatedAt: args.endedAt,
+    });
+
+    return {
+      meetingId: meeting._id,
+      callId: meeting.callId,
+      endedAt: args.endedAt,
+    };
   },
 });
 
@@ -405,6 +495,8 @@ export const listForViewer = query({
           description: meeting.description,
           kind: meeting.kind,
           startsAt: meeting.startsAt,
+          endedAt: meeting.endedAt,
+          endedByClerkId: meeting.endedByClerkId,
           createdAt: meeting.createdAt,
           invites,
         };
@@ -438,6 +530,9 @@ export const getInviteLanding = query({
 
     const meeting = await ctx.db.get(invite.meetingId);
     if (!meeting) {
+      return null;
+    }
+    if (isMeetingEnded(meeting)) {
       return null;
     }
 
@@ -483,6 +578,7 @@ export const createGuestSessionFromInvite = mutation({
     if (!meeting) {
       throw new Error("Meeting not found for this invite.");
     }
+    assertMeetingNotEnded(meeting);
 
     const sessionToken = makeGuestSessionToken();
     const streamUserId = `guest_${randomToken(12).toLowerCase()}`;
@@ -539,6 +635,7 @@ export const acceptInviteAsAuthenticated = mutation({
     if (!meeting) {
       throw new Error("Meeting not found for this invite.");
     }
+    assertMeetingNotEnded(meeting);
 
     if (invite.email) {
       let viewerEmail = auth.email;
@@ -588,6 +685,9 @@ export const getMeetingForCall = query({
     if (!meeting) {
       return null;
     }
+    if (isMeetingEnded(meeting)) {
+      return null;
+    }
 
     const canJoin = await canAccessMeeting(ctx, meeting._id, auth.clerkId);
     if (!canJoin) {
@@ -600,6 +700,54 @@ export const getMeetingForCall = query({
       title: meeting.title,
       kind: meeting.kind,
       startsAt: meeting.startsAt,
+      endedAt: meeting.endedAt,
+    };
+  },
+});
+
+export const getRoomStatus = query({
+  args: {
+    callId: v.string(),
+    guestSessionToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const meeting = await getMeetingByCallId(ctx, args.callId);
+    if (!meeting) {
+      return null;
+    }
+
+    const auth = await getAuthDetails(ctx);
+    if (auth) {
+      const canJoin = await canAccessMeeting(ctx, meeting._id, auth.clerkId);
+      if (!canJoin) {
+        return null;
+      }
+
+      return {
+        callId: meeting.callId,
+        title: meeting.title,
+        endedAt: meeting.endedAt,
+      };
+    }
+
+    const guestSessionToken = args.guestSessionToken;
+    if (!guestSessionToken) {
+      return null;
+    }
+
+    const guestSession = await ctx.db
+      .query("meetingGuestSessions")
+      .withIndex("by_sessionToken", (q) => q.eq("sessionToken", guestSessionToken))
+      .unique();
+
+    if (!guestSession || guestSession.meetingId !== meeting._id) {
+      return null;
+    }
+
+    return {
+      callId: meeting.callId,
+      title: meeting.title,
+      endedAt: meeting.endedAt,
     };
   },
 });
@@ -612,6 +760,9 @@ export const resolveAuthenticatedJoiner = internalQuery({
   handler: async (ctx, args) => {
     const meeting = await getMeetingByCallId(ctx, args.callId);
     if (!meeting) {
+      return null;
+    }
+    if (isMeetingEnded(meeting)) {
       return null;
     }
 
@@ -662,6 +813,9 @@ export const resolveGuestJoiner = internalQuery({
   handler: async (ctx, args) => {
     const meeting = await getMeetingByCallId(ctx, args.callId);
     if (!meeting) {
+      return null;
+    }
+    if (isMeetingEnded(meeting)) {
       return null;
     }
 
